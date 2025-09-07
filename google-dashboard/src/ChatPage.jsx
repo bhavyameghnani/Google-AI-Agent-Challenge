@@ -1,19 +1,12 @@
-import React from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 
 async function convertFilesToDataURLs(files) {
   return Promise.all(
     Array.from(files).map(
       (file) =>
-        new Promise() <
-        {
-          type: "file",
-          mediaType: string,
-          url: string,
-        } >
-        ((resolve, reject) => {
+        new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             resolve({
@@ -31,12 +24,12 @@ async function convertFilesToDataURLs(files) {
 
 export default function Chat() {
   const [input, setInput] = useState("");
-  const [files, setFiles] = useState();
+  const [files, setFiles] = useState(undefined);
   const fileInputRef = useRef(null);
 
   const { messages, sendMessage } = useChat({
     transport: new DefaultChatTransport({
-      api: "http://localhost:8080",
+      api: "http://localhost:8080", // 👈 adjust to your Express API
     }),
   });
 
@@ -49,22 +42,67 @@ export default function Chat() {
             if (part.type === "text") {
               return <span key={`${m.id}-text-${index}`}>{part.text}</span>;
             }
+            if (part.type === "file" && part.mediaType?.startsWith("image/")) {
+              return (
+                <img
+                  key={`${m.id}-image-${index}`}
+                  src={part.url}
+                  width={500}
+                  height={500}
+                  alt={`attachment-${index}`}
+                />
+              );
+            }
+            if (part.type === "file" && part.mediaType === "application/pdf") {
+              return (
+                <iframe
+                  key={`${m.id}-pdf-${index}`}
+                  src={part.url}
+                  width={500}
+                  height={600}
+                  title={`pdf-${index}`}
+                />
+              );
+            }
             return null;
           })}
         </div>
       ))}
 
       <form
+        className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"
         onSubmit={async (event) => {
           event.preventDefault();
+
+          const fileParts =
+            files && files.length > 0
+              ? await convertFilesToDataURLs(files)
+              : [];
+
           sendMessage({
             role: "user",
-            parts: [{ type: "text", text: input }],
+            parts: [{ type: "text", text: input }, ...fileParts],
           });
+
           setInput("");
+          setFiles(undefined);
+
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
         }}
-        className="fixed bottom-0 w-full max-w-md mb-8 border border-gray-300 rounded shadow-xl"
       >
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={(event) => {
+            if (event.target.files) {
+              setFiles(event.target.files);
+            }
+          }}
+          multiple
+          ref={fileInputRef}
+        />
         <input
           className="w-full p-2"
           value={input}
