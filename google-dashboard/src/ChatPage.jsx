@@ -1,6 +1,36 @@
+import { useState, useRef, Fragment } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useRef, useState } from "react";
+
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input";
+import { Actions, Action } from "@/components/ai-elements/actions";
+import { Response } from "@/components/ai-elements/response";
+import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+} from "@/components/ai-elements/sources";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/ai-elements/reasoning";
+import { Loader } from "@/components/ai-elements/loader";
+
+import { CopyIcon, RefreshCcwIcon, Paperclip } from "lucide-react";
 
 async function convertFilesToDataURLs(files) {
   return Promise.all(
@@ -27,89 +57,171 @@ export default function Chat() {
   const [files, setFiles] = useState(undefined);
   const fileInputRef = useRef(null);
 
-  const { messages, sendMessage } = useChat({
+  const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: "http://localhost:8080", // 👈 adjust to your Express API
+      api: "http://localhost:8080", // your backend
     }),
   });
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const fileParts =
+      files && files.length > 0 ? await convertFilesToDataURLs(files) : [];
+
+    sendMessage({
+      role: "user",
+      parts: [{ type: "text", text: input }, ...fileParts],
+    });
+
+    setInput("");
+    setFiles(undefined);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   return (
-    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      {messages.map((m) => (
-        <div key={m.id} className="whitespace-pre-wrap">
-          {m.role === "user" ? "User: " : "AI: "}
-          {m.parts.map((part, index) => {
-            if (part.type === "text") {
-              return <span key={`${m.id}-text-${index}`}>{part.text}</span>;
-            }
-            if (part.type === "file" && part.mediaType?.startsWith("image/")) {
-              return (
-                <img
-                  key={`${m.id}-image-${index}`}
-                  src={part.url}
-                  width={500}
-                  height={500}
-                  alt={`attachment-${index}`}
-                />
-              );
-            }
-            if (part.type === "file" && part.mediaType === "application/pdf") {
-              return (
-                <iframe
-                  key={`${m.id}-pdf-${index}`}
-                  src={part.url}
-                  width={500}
-                  height={600}
-                  title={`pdf-${index}`}
-                />
-              );
-            }
-            return null;
-          })}
-        </div>
-      ))}
+    <div className="flex flex-col h-screen w-screen m-auto p-4">
+      {/* Chat window */}
+      <Conversation className="h-full">
+        <ConversationContent>
+          {messages.map((message) => (
+            <div key={message.id}>
+              {/* sources (citations) */}
+              {message.role === "assistant" &&
+                message.parts.filter((p) => p.type === "source-url").length >
+                  0 && (
+                  <Sources>
+                    <SourcesTrigger
+                      count={
+                        message.parts.filter((p) => p.type === "source-url")
+                          .length
+                      }
+                    />
+                    {message.parts
+                      .filter((p) => p.type === "source-url")
+                      .map((part, i) => (
+                        <SourcesContent key={`${message.id}-${i}`}>
+                          <Source href={part.url} title={part.url} />
+                        </SourcesContent>
+                      ))}
+                  </Sources>
+                )}
 
-      <form
-        className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl space-y-2"
-        onSubmit={async (event) => {
-          event.preventDefault();
+              {/* messages */}
+              {message.parts.map((part, i) => {
+                switch (part.type) {
+                  case "text":
+                    return (
+                      <Fragment key={`${message.id}-${i}`}>
+                        <Message from={message.role}>
+                          <MessageContent>
+                            <Response>{part.text}</Response>
+                          </MessageContent>
+                        </Message>
 
-          const fileParts =
-            files && files.length > 0
-              ? await convertFilesToDataURLs(files)
-              : [];
+                        {/* assistant actions: retry, copy */}
+                        {message.role === "assistant" &&
+                          i === message.parts.length - 1 && (
+                            <Actions className="mt-2">
+                              <Action
+                                onClick={() => window.location.reload()}
+                                label="Retry"
+                              >
+                                <RefreshCcwIcon className="size-3" />
+                              </Action>
+                              <Action
+                                onClick={() =>
+                                  navigator.clipboard.writeText(part.text)
+                                }
+                                label="Copy"
+                              >
+                                <CopyIcon className="size-3" />
+                              </Action>
+                            </Actions>
+                          )}
+                      </Fragment>
+                    );
 
-          sendMessage({
-            role: "user",
-            parts: [{ type: "text", text: input }, ...fileParts],
-          });
+                  case "reasoning":
+                    return (
+                      <Reasoning
+                        key={`${message.id}-${i}`}
+                        className="w-full"
+                        isStreaming={
+                          status === "streaming" &&
+                          i === message.parts.length - 1 &&
+                          message.id === messages.at(-1)?.id
+                        }
+                      >
+                        <ReasoningTrigger />
+                        <ReasoningContent>{part.text}</ReasoningContent>
+                      </Reasoning>
+                    );
 
-          setInput("");
-          setFiles(undefined);
+                  case "file":
+                    if (part.mediaType?.startsWith("image/")) {
+                      return (
+                        <img
+                          key={`${message.id}-${i}`}
+                          src={part.url}
+                          alt="attachment"
+                          className="max-w-xs rounded my-2"
+                        />
+                      );
+                    }
+                    if (part.mediaType === "application/pdf") {
+                      return (
+                        <iframe
+                          key={`${message.id}-${i}`}
+                          src={part.url}
+                          width={400}
+                          height={500}
+                          className="my-2 border"
+                        />
+                      );
+                    }
+                    return null;
 
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-        }}
-      >
-        <input
-          type="file"
-          accept="image/*,application/pdf"
-          onChange={(event) => {
-            if (event.target.files) {
-              setFiles(event.target.files);
-            }
-          }}
-          multiple
-          ref={fileInputRef}
-        />
-        <input
-          className="w-full p-2"
+                  default:
+                    return null;
+                }
+              })}
+            </div>
+          ))}
+
+          {/* loader while waiting */}
+          {status === "submitted" && <Loader />}
+        </ConversationContent>
+
+        <ConversationScrollButton />
+      </Conversation>
+
+      {/* Input bar */}
+      <PromptInput onSubmit={handleSubmit} className="mt-4">
+        <PromptInputTextarea
+          onChange={(e) => setInput(e.target.value)}
           value={input}
           placeholder="Say something..."
-          onChange={(e) => setInput(e.target.value)}
         />
-      </form>
+        <PromptInputToolbar>
+          <PromptInputTools>
+            {/* file picker */}
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => setFiles(e.target.files)}
+              multiple
+              ref={fileInputRef}
+              className="hidden"
+              id="file-upload"
+            />
+            <label htmlFor="file-upload" className="cursor-pointer px-2">
+              <Paperclip size={16} />
+            </label>
+          </PromptInputTools>
+          <PromptInputSubmit disabled={!input} status={status} />
+        </PromptInputToolbar>
+      </PromptInput>
     </div>
   );
 }
