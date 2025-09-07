@@ -12,6 +12,10 @@ const Deals = ({ data }) => {
     { label: 'Sarvam AI', value: 837 },
   ];
 
+  // Ensure data and its properties are defined
+  const raisedAmount = data?.raised || 'N/A';
+  const mockHeadcountData = data?.mockHeadcountData || [];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
@@ -21,7 +25,7 @@ const Deals = ({ data }) => {
             <p className="text-sm text-gray-500">Total Equity Funding: Sarvam AI</p>
             <div className="h-48 flex items-end justify-center mt-4">
               <div className="w-24 bg-blue-500 rounded-lg shadow-md flex flex-col items-center justify-end h-full">
-                <div className="text-white text-lg font-bold mb-2 p-2">${data.raised}M</div>
+                <div className="text-white text-lg font-bold mb-2 p-2">${raisedAmount}M</div>
                 <div className="bg-blue-600 w-full rounded-b-lg text-center text-sm text-white py-1">2023</div>
               </div>
             </div>
