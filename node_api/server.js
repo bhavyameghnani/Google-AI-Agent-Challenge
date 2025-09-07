@@ -37,6 +37,8 @@ app.post("/", async (req, res) => {
   const result = streamText({
     model: openai("gpt-4o"),
     messages: convertToModelMessages(messages),
+    stopWhen: stepCountIs(5),
+    tools,
   });
 
   result.pipeUIMessageStreamToResponse(res);
