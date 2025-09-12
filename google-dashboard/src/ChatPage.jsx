@@ -30,7 +30,7 @@ import {
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
 
-import { CopyIcon, RefreshCcwIcon, Paperclip } from "lucide-react";
+import { Clipboard, RefreshCcw, Paperclip } from "lucide-react";
 
 async function convertFilesToDataURLs(files) {
   return Promise.all(
@@ -52,20 +52,18 @@ async function convertFilesToDataURLs(files) {
   );
 }
 
-export default function Chat() {
+export default function ChatPage() {
   const [input, setInput] = useState("");
   const [files, setFiles] = useState(undefined);
   const fileInputRef = useRef(null);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: "http://localhost:8080", // your backend
+      api: "http://localhost:8080",
     }),
   });
 
   async function handleSubmit(e) {
-    e.preventDefault();
-
     const fileParts =
       files && files.length > 0 ? await convertFilesToDataURLs(files) : [];
 
@@ -80,13 +78,12 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen m-auto p-4">
-      {/* Chat window */}
-      <Conversation className="h-full">
+    <div className="w-screen h-screen p-6 relative flex flex-col bg-gray-50 text-gray-900">
+      <Conversation className="flex-1 rounded-2xl border border-gray-200 shadow-sm bg-white p-4">
         <ConversationContent>
           {messages.map((message) => (
-            <div key={message.id}>
-              {/* sources (citations) */}
+            <div key={message.id} className="mb-4">
+              {/* Sources (citations) */}
               {message.role === "assistant" &&
                 message.parts.filter((p) => p.type === "source-url").length >
                   0 && (
@@ -97,45 +94,58 @@ export default function Chat() {
                           .length
                       }
                     />
-                    {message.parts
-                      .filter((p) => p.type === "source-url")
-                      .map((part, i) => (
-                        <SourcesContent key={`${message.id}-${i}`}>
-                          <Source href={part.url} title={part.url} />
-                        </SourcesContent>
-                      ))}
+                    <SourcesContent>
+                      {message.parts
+                        .filter((p) => p.type === "source-url")
+                        .map((part, i) => (
+                          <Source
+                            key={`${message.id}-source-${i}`}
+                            href={part.url}
+                            title={part.url}
+                          />
+                        ))}
+                    </SourcesContent>
                   </Sources>
                 )}
 
-              {/* messages */}
+              {/* Message parts */}
               {message.parts.map((part, i) => {
                 switch (part.type) {
                   case "text":
                     return (
-                      <Fragment key={`${message.id}-${i}`}>
-                        <Message from={message.role}>
+                      <Fragment key={`${message.id}-text-${i}`}>
+                        <Message
+                          from={message.role}
+                          className={`p-3 rounded-xl ${
+                            message.role === "user"
+                              ? "bg-blue-50 text-blue-900 self-end"
+                              : "bg-gray-100 text-gray-800 self-start"
+                          }`}
+                        >
                           <MessageContent>
                             <Response>{part.text}</Response>
                           </MessageContent>
                         </Message>
 
-                        {/* assistant actions: retry, copy */}
+                        {/* Assistant actions */}
                         {message.role === "assistant" &&
                           i === message.parts.length - 1 && (
-                            <Actions className="mt-2">
+                            <Actions className="mt-2 flex gap-2">
                               <Action
                                 onClick={() => window.location.reload()}
-                                label="Retry"
+                                tooltip="Retry"
+                                className="bg-white hover:bg-gray-200"
                               >
-                                <RefreshCcwIcon className="size-3" />
+                                <RefreshCcw className="size-4" />
                               </Action>
                               <Action
                                 onClick={() =>
                                   navigator.clipboard.writeText(part.text)
                                 }
-                                label="Copy"
+                                tooltip="Copy"
+                                className="bg-white hover:bg-gray-200"
                               >
-                                <CopyIcon className="size-3" />
+                                <Clipboard className="size-4" />
                               </Action>
                             </Actions>
                           )}
@@ -145,8 +155,8 @@ export default function Chat() {
                   case "reasoning":
                     return (
                       <Reasoning
-                        key={`${message.id}-${i}`}
-                        className="w-full"
+                        key={`${message.id}-reasoning-${i}`}
+                        className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 text-yellow-800"
                         isStreaming={
                           status === "streaming" &&
                           i === message.parts.length - 1 &&
@@ -161,23 +171,36 @@ export default function Chat() {
                   case "file":
                     if (part.mediaType?.startsWith("image/")) {
                       return (
-                        <img
-                          key={`${message.id}-${i}`}
-                          src={part.url}
-                          alt="attachment"
-                          className="max-w-xs rounded my-2"
-                        />
+                        <Message
+                          key={`${message.id}-image-${i}`}
+                          from={message.role}
+                        >
+                          <MessageContent>
+                            <img
+                              src={part.url}
+                              alt="attachment"
+                              className="max-w-sm rounded-lg border border-gray-200 shadow-sm"
+                            />
+                          </MessageContent>
+                        </Message>
                       );
                     }
                     if (part.mediaType === "application/pdf") {
                       return (
-                        <iframe
-                          key={`${message.id}-${i}`}
-                          src={part.url}
-                          width={400}
-                          height={500}
-                          className="my-2 border"
-                        />
+                        <Message
+                          key={`${message.id}-pdf-${i}`}
+                          from={message.role}
+                        >
+                          <MessageContent>
+                            <iframe
+                              src={part.url}
+                              width={400}
+                              height={500}
+                              className="border rounded-lg shadow-sm"
+                              title="PDF attachment"
+                            />
+                          </MessageContent>
+                        </Message>
                       );
                     }
                     return null;
@@ -189,23 +212,27 @@ export default function Chat() {
             </div>
           ))}
 
-          {/* loader while waiting */}
+          {/* Loading indicator */}
           {status === "submitted" && <Loader />}
         </ConversationContent>
 
-        <ConversationScrollButton />
+        <ConversationScrollButton className="bg-white hover:bg-gray-200" />
       </Conversation>
 
-      {/* Input bar */}
-      <PromptInput onSubmit={handleSubmit} className="mt-4">
+      {/* Input area */}
+      <PromptInput
+        onSubmit={handleSubmit}
+        className="mt-4 rounded-xl border border-gray-300 bg-white shadow-sm"
+      >
         <PromptInputTextarea
           onChange={(e) => setInput(e.target.value)}
           value={input}
-          placeholder="Say something..."
+          placeholder="Type a message..."
+          className="text-gray-900 placeholder-gray-400"
         />
         <PromptInputToolbar>
           <PromptInputTools>
-            {/* file picker */}
+            {/* File attachment button */}
             <input
               type="file"
               accept="image/*,application/pdf"
@@ -215,11 +242,23 @@ export default function Chat() {
               className="hidden"
               id="file-upload"
             />
-            <label htmlFor="file-upload" className="cursor-pointer px-2">
-              <Paperclip size={16} />
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer p-2 hover:bg-gray-100 rounded"
+            >
+              <Paperclip size={16} className="text-gray-600" />
             </label>
+            {files && files.length > 0 && (
+              <span className="text-xs text-gray-500">
+                {files.length} file(s) selected
+              </span>
+            )}
           </PromptInputTools>
-          <PromptInputSubmit disabled={!input} status={status} />
+          <PromptInputSubmit
+            disabled={!input && !files}
+            status={status}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+          />
         </PromptInputToolbar>
       </PromptInput>
     </div>

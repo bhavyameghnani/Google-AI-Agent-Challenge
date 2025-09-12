@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 const LoaderIcon = ({
   size = 16
@@ -6,7 +6,7 @@ const LoaderIcon = ({
   <svg
     height={size}
     strokeLinejoin="round"
-    style={{ color: 'currentcolor' }}
+    style={{ color: "currentcolor" }}
     viewBox="0 0 16 16"
     width={size}>
     <title>Loader</title>
@@ -68,7 +68,7 @@ export const Loader = ({
   ...props
 }) => (
   <div
-    className={cn('inline-flex animate-spin items-center justify-center', className)}
+    className={cn("inline-flex animate-spin items-center justify-center", className)}
     {...props}>
     <LoaderIcon size={size} />
   </div>

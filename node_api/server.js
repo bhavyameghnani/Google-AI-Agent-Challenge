@@ -42,8 +42,10 @@ app.post("/", async (req, res) => {
     stopWhen: stepCountIs(5),
     tools,
   });
-
-  result.pipeUIMessageStreamToResponse(res);
+  result.pipeUIMessageStreamToResponse(res, {
+    sendReasoning: true,
+    sendSources: true,
+  });
 });
 
 app.listen(8080, () => {
