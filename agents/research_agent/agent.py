@@ -293,7 +293,8 @@ data_synthesis_agent = LlmAgent(
         Output only the structured company profile following this exact format. Use bullet points and clear formatting for readability.""",
     description="Synthesizes all extracted company data into a comprehensive structured profile.",
     output_schema=CompanyProfile,
-    output_key="company_profile"
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True
 )
 
 # 4. Create the SequentialAgent (Orchestrates the overall workflow)
