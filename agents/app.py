@@ -294,34 +294,6 @@ async def extract_company(request: CompanyRequest):
         extraction_status="completed"
     )
 
-@app.get("/company/{company_name}", response_model=CompanyResponse)
-async def get_company(company_name: str):
-    """
-    Get company data from Firebase cache only (no extraction)
-    
-    Returns cached company data or 404 if not found
-    """
-    # Validate input
-    is_valid, error_msg = validate_company_name(company_name)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-    
-    cached_data = get_company_from_firebase(company_name)
-    
-    if not cached_data:
-        raise HTTPException(status_code=404, detail="Company not found in database")
-    
-    cache_age = (datetime.now(timezone.utc) - cached_data['last_updated']).days
-    
-    return CompanyResponse(
-        company_name=company_name,
-        data=CompanyProfile(**cached_data['data']),
-        source="database",
-        last_updated=cached_data['last_updated'].isoformat(),
-        cache_age_days=cache_age,
-        extraction_status=cached_data.get('extraction_status', 'completed')
-    )
-
 @app.get("/companies", response_model=CompanyListResponse)
 async def list_companies():
     """
@@ -394,36 +366,66 @@ async def get_stats():
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/refresh/{company_name}", response_model=CompanyResponse)
-async def refresh_company(company_name: str):
-    """
-    Force refresh company data (bypass cache)
     
-    Always extracts fresh data regardless of cache status
-    """
-    # Validate input
-    is_valid, error_msg = validate_company_name(company_name)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-    
-    # Force fresh extraction
-    print(f"🔄 Force refreshing data for: {company_name}")
-    company_profile = await extract_company_data_with_adk(company_name)
-    
-    # Save to Firebase
-    save_company_to_firebase(company_name, company_profile)
-    
-    return CompanyResponse(
-        company_name=company_name,
-        data=company_profile,
-        source="forced_extraction",
-        last_updated=datetime.now(timezone.utc).isoformat(),
-        cache_age_days=0,
-        extraction_status="completed"
-    )
-
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5005)
+
+
+
+# @app.get("/company/{company_name}", response_model=CompanyResponse)
+# async def get_company(company_name: str):
+#     """
+#     Get company data from Firebase cache only (no extraction)
+    
+#     Returns cached company data or 404 if not found
+#     """
+#     # Validate input
+#     is_valid, error_msg = validate_company_name(company_name)
+#     if not is_valid:
+#         raise HTTPException(status_code=400, detail=error_msg)
+    
+#     cached_data = get_company_from_firebase(company_name)
+    
+#     if not cached_data:
+#         raise HTTPException(status_code=404, detail="Company not found in database")
+    
+#     cache_age = (datetime.now(timezone.utc) - cached_data['last_updated']).days
+    
+#     return CompanyResponse(
+#         company_name=company_name,
+#         data=CompanyProfile(**cached_data['data']),
+#         source="database",
+#         last_updated=cached_data['last_updated'].isoformat(),
+#         cache_age_days=cache_age,
+#         extraction_status=cached_data.get('extraction_status', 'completed')
+#     )
+
+# @app.post("/refresh/{company_name}", response_model=CompanyResponse)
+# async def refresh_company(company_name: str):
+#     """
+#     Force refresh company data (bypass cache)
+    
+#     Always extracts fresh data regardless of cache status
+#     """
+#     # Validate input
+#     is_valid, error_msg = validate_company_name(company_name)
+#     if not is_valid:
+#         raise HTTPException(status_code=400, detail=error_msg)
+    
+#     # Force fresh extraction
+#     print(f"🔄 Force refreshing data for: {company_name}")
+#     company_profile = await extract_company_data_with_adk(company_name)
+    
+#     # Save to Firebase
+#     save_company_to_firebase(company_name, company_profile)
+    
+#     return CompanyResponse(
+#         company_name=company_name,
+#         data=company_profile,
+#         source="forced_extraction",
+#         last_updated=datetime.now(timezone.utc).isoformat(),
+#         cache_age_days=0,
+#         extraction_status="completed"
+#     )
