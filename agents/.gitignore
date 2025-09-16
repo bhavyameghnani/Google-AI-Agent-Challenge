@@ -2,3 +2,5 @@ venv
 .env
 __pycache__
 ai-agent-company-data-firebase-adminsdk-fbsvc-dee36e1d04.json
+
+.idea

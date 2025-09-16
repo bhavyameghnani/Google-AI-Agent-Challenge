@@ -287,8 +287,8 @@ data_combiner_agent = LlmAgent(
     output_key="final_evaluation_scores",
 )
 
-root_agent = SequentialAgent(
-    name="root_agent",
+final_evaluation_score_agent = SequentialAgent(
+    name="final_evaluation_score_agent",
     description="""This is the root agent that coordinates the data fetching and combining agents.
     It first calls the 'data_fetcher_agent' to get the founder background score and startup evaluation scores.
     Then, it calls the 'data_combiner_agent' to combine these scores into a final structured output.

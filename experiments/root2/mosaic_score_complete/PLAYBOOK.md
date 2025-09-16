@@ -4,7 +4,7 @@ https://google.github.io/adk-docs/get-started/quickstart/#agentpy
 
 
 ## Commands
-cd D:\DMisc\google-ai-hack\experiments\root2
+cd D:\DMisc\google-ai-hack\code\Google-AI-Agent-Challenge\experiments\root2
 adk web
 
 ## Insights
