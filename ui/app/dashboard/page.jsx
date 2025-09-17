@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Building2, Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 // Import tab components
 import OverviewTab from "./tabs/OverviewTab";
@@ -15,51 +16,22 @@ import MarketTab from "./tabs/MarketTab";
 import NewsTab from "./tabs/NewsTab";
 import InsightsTab from "./tabs/InsightsTab";
 
-// Move SearchSection outside to prevent re-creation on every render
-const SearchSection = ({
-  searchQuery,
-  setSearchQuery,
-  handleSearch,
-  loadingExtract,
-}) => (
-  <div className="mb-8">
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-2">
-        Company Intelligence Platform
-      </h1>
-      <p className="text-gray-600 text-center mb-6">
-        Get comprehensive insights on any company
-      </p>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Enter company name (e.g., OpenAI, Google)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            className="pl-10"
-          />
-        </div>
-        <Button onClick={handleSearch} disabled={loadingExtract}>
-          {loadingExtract ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            "Analyze"
-          )}
-        </Button>
-      </div>
-    </div>
-  </div>
-);
-
 const CompanyDashboard = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const companyFromURL = searchParams.get("company");
+
+  const [searchQuery, setSearchQuery] = useState(companyFromURL || "");
   const [companyData, setCompanyData] = useState(null);
   const [competitorData, setCompetitorData] = useState(null);
   const [loadingExtract, setLoadingExtract] = useState(false);
   const [loadingCompetitors, setLoadingCompetitors] = useState(false);
+
+  // Auto-search if company is provided in URL
+  // useEffect(() => {
+  //   if (companyFromURL && !companyData) {
+  //     handleSearch();
+  //   }
+  // }, [companyFromURL]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -69,7 +41,6 @@ const CompanyDashboard = () => {
     setCompetitorData(null);
 
     try {
-      // Call /extract endpoint
       const extractResponse = await fetch("http://127.0.0.1:5005/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,7 +50,6 @@ const CompanyDashboard = () => {
       setCompanyData(extractData);
       setLoadingExtract(false);
 
-      // Start competitor analysis
       setLoadingCompetitors(true);
       const competitorResponse = await fetch(
         "http://127.0.0.1:5005/competitor-analysis",
@@ -98,6 +68,44 @@ const CompanyDashboard = () => {
       setLoadingCompetitors(false);
     }
   };
+
+  const SearchSection = () => (
+    <div className="mb-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-2">
+          Company Intelligence Platform
+        </h1>
+        <p className="text-gray-600 text-center mb-6">
+          Get comprehensive insights on any company
+        </p>
+
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Enter company name (e.g., OpenAI, Google)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // ✅ consistent with LandingPage
+                  handleSearch();
+                }
+              }}
+              className="pl-10"
+            />
+          </div>
+          <Button onClick={handleSearch} disabled={loadingExtract}>
+            {loadingExtract ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Analyze"
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   const CompanyHeader = ({ company }) => (
     <div className="mb-6">
@@ -156,12 +164,7 @@ const CompanyDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <SearchSection
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleSearch={handleSearch}
-          loadingExtract={loadingExtract}
-        />
+        <SearchSection />
 
         {loadingExtract && (
           <LoadingState message="Extracting company data..." />
@@ -231,4 +234,3 @@ const CompanyDashboard = () => {
 };
 
 export default CompanyDashboard;
-g;
