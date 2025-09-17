@@ -5,7 +5,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Building2, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Search,
+  Building2,
+  Loader2,
+  Info,
+  Calendar,
+  MapPin,
+  TrendingUp,
+  Database,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 // Import tab components
@@ -23,18 +33,31 @@ const CompanyDashboard = () => {
   const [searchQuery, setSearchQuery] = useState(companyFromURL || "");
   const [companyData, setCompanyData] = useState(null);
   const [competitorData, setCompetitorData] = useState(null);
+  const [companiesList, setCompaniesList] = useState([]);
   const [loadingExtract, setLoadingExtract] = useState(false);
   const [loadingCompetitors, setLoadingCompetitors] = useState(false);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
 
-  // Auto-search if company is provided in URL
-  // useEffect(() => {
-  //   if (companyFromURL && !companyData) {
-  //     handleSearch();
-  //   }
-  // }, [companyFromURL]);
+  // Fetch companies list on mount
+  useEffect(() => {
+    fetchCompaniesList();
+  }, []);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const fetchCompaniesList = async () => {
+    setLoadingCompanies(true);
+    try {
+      const response = await fetch("http://127.0.0.1:5005/companies");
+      const data = await response.json();
+      setCompaniesList(data.companies || []);
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  const handleSearch = async (companyName = searchQuery) => {
+    if (!companyName.trim()) return;
 
     setLoadingExtract(true);
     setCompanyData(null);
@@ -44,7 +67,7 @@ const CompanyDashboard = () => {
       const extractResponse = await fetch("http://127.0.0.1:5005/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_name: searchQuery }),
+        body: JSON.stringify({ company_name: companyName }),
       });
       const extractData = await extractResponse.json();
       setCompanyData(extractData);
@@ -56,7 +79,7 @@ const CompanyDashboard = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ company_name: searchQuery }),
+          body: JSON.stringify({ company_name: companyName }),
         }
       );
       const competitorData = await competitorResponse.json();
@@ -67,6 +90,19 @@ const CompanyDashboard = () => {
       setLoadingExtract(false);
       setLoadingCompetitors(false);
     }
+  };
+
+  const handleCompanyCardClick = (companyName) => {
+    setSearchQuery(companyName);
+    handleSearch(companyName);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const SearchSection = () => (
@@ -88,14 +124,14 @@ const CompanyDashboard = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault(); // ✅ consistent with LandingPage
+                  e.preventDefault();
                   handleSearch();
                 }
               }}
               className="pl-10"
             />
           </div>
-          <Button onClick={handleSearch} disabled={loadingExtract}>
+          <Button onClick={() => handleSearch()} disabled={loadingExtract}>
             {loadingExtract ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -104,6 +140,127 @@ const CompanyDashboard = () => {
           </Button>
         </div>
       </div>
+    </div>
+  );
+
+  const InfoBanner = () => (
+    <div className="mb-8 max-w-4xl mx-auto">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="text-sm font-semibold text-blue-900 mb-1">
+              AI-Powered Analysis
+            </h3>
+            <p className="text-sm text-blue-700">
+              New companies may take 2-3 minutes to analyze as our AI agents
+              research comprehensive data from multiple sources. Existing
+              companies load instantly from our database.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const CompaniesList = () => (
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Database className="h-5 w-5 text-gray-600" />
+        <h2 className="text-xl font-semibold text-gray-900">
+          Available Companies ({companiesList.length})
+        </h2>
+      </div>
+
+      {loadingCompanies ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+          <span className="ml-2 text-gray-600">Loading companies...</span>
+        </div>
+      ) : companiesList.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No companies available yet. Start by analyzing your first company
+          above.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {companiesList.map((company, index) => (
+            <Card
+              key={index}
+              className="hover:shadow-md transition-all duration-200 cursor-pointer hover:border-blue-300 group"
+              onClick={() => handleCompanyCardClick(company.company_name)}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-lg group-hover:text-blue-600 transition-colors truncate">
+                        {company.company_name}
+                      </CardTitle>
+                      {company.industry_sector && (
+                        <Badge variant="secondary" className="mt-1 text-xs">
+                          {company.industry_sector}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        company.is_fresh ? "bg-green-500" : "bg-orange-500"
+                      }`}
+                    />
+                    <span className="text-xs text-gray-500">
+                      {company.is_fresh ? "Fresh" : "Stale"}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-0">
+                <div className="space-y-2 text-sm text-gray-600">
+                  {company.headquarters_location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {company.headquarters_location}
+                      </span>
+                    </div>
+                  )}
+
+                  {company.year_founded && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 flex-shrink-0" />
+                      <span>Founded {company.year_founded}</span>
+                    </div>
+                  )}
+
+                  {company.latest_valuation && (
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate font-medium text-green-600">
+                        {company.latest_valuation}
+                      </span>
+                    </div>
+                  )}
+
+                  {company.last_updated && (
+                    <div className="text-xs text-gray-500 pt-1 border-t">
+                      Updated {formatDate(company.last_updated)}
+                      <span className="ml-2">
+                        ({company.cache_age_days}d ago)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -165,6 +322,10 @@ const CompanyDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <SearchSection />
+        <InfoBanner />
+
+        {/* Show companies list when not analyzing */}
+        {!loadingExtract && !companyData && <CompaniesList />}
 
         {loadingExtract && (
           <LoadingState message="Extracting company data..." />
