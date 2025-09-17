@@ -82,6 +82,10 @@ class CompetitorResponse(BaseModel):
 
 class CompanyListItem(BaseModel):
     company_name: str
+    industry_sector: Optional[str] = None
+    year_founded: Optional[int] = None
+    headquarters_location: Optional[str] = None
+    latest_valuation: Optional[str] = None
     last_updated: Optional[str]
     cache_age_days: Optional[int]
     extraction_status: str
@@ -627,6 +631,10 @@ async def list_companies():
             
             companies.append(CompanyListItem(
                 company_name=data.get('company_name', 'Unknown'),
+                industry_sector=data.get("data", {}).get("company_info", {}).get("industry_sector"),
+                year_founded=data.get("data", {}).get("company_info", {}).get("year_founded"),
+                headquarters_location=data.get("data", {}).get("company_info", {}).get("headquarters_location"),
+                latest_valuation=data.get("data", {}).get("financial_data", {}).get("valuation", {}).get("value"),
                 last_updated=data['last_updated'].isoformat() if data.get('last_updated') else None,
                 cache_age_days=cache_age,
                 extraction_status=data.get('extraction_status', 'unknown'),
