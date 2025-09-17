@@ -25,15 +25,7 @@ from firebase_admin import credentials, firestore
 # Import your enhanced ADK agent with citations
 from research_agent.agentv2 import (
     root_agent, 
-    CompanyProfile, 
-    CitedValue, 
-    NewsItem, 
-    KeyPerson,
-    CompanyBasicInfo,
-    FinancialData,
-    PeopleData,
-    MarketData,
-    ReputationData
+    CompanyProfile
 )
 from competitor_analysis_agent.agent import competitor_analysis_agent, AllCompetitorsInfo, CompetitorInfoWithScore, \
     AllCompetitorsInfoWithScore
@@ -58,7 +50,7 @@ app.add_middleware(
 )
 
 # Initialize Firebase
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "ai-agent-company-data-firebase-adminsdk-fbsvc-7f109887f6.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "ai-agent-company-data-firebase-adminsdk-creds.json"
 cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred)
 
@@ -564,7 +556,7 @@ async def competitor_analysis(request: CompanyRequest):
         raise HTTPException(status_code=400, detail=error_msg)
     
     # Check Firebase cache first
-    # print(f"🗄️ Checking cache for: {company_name}")
+    print(f"🗄️ Checking cache for: {company_name}")
     cached_data = get_competitors_from_firebase(company_name)
     # cached_data = None  # Disable caching for competitor analysis for now
 
@@ -578,7 +570,7 @@ async def competitor_analysis(request: CompanyRequest):
         except ValueError as e:
             print(f"⚠️ Cached data corrupted, re-extracting: {e}")
             # If cached data is corrupted, extract fresh data
-            competitor_data = await extract_company_data_with_adk(company_name)
+            competitor_data = await competitor_analysis_with_adk(company_name)
             save_company_competitors_to_firebase(company_name, competitor_data)
 
             return CompetitorResponse(
@@ -724,33 +716,6 @@ async def get_company(company_name: str):
         extraction_status=cached_data.get('extraction_status', 'completed')
     )
 
-@app.post("/refresh/{company_name}", response_model=CompanyResponse)
-async def refresh_company(company_name: str):
-    """
-    Force refresh company data with citations (bypass cache)
-    
-    Always extracts fresh data with citations regardless of cache status
-    """
-    # Validate input
-    is_valid, error_msg = validate_company_name(company_name)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-    
-    # Force fresh extraction with citations
-    print(f"🔄 Force refreshing data with citations for: {company_name}")
-    company_profile = await extract_company_data_with_adk(company_name)
-    
-    # Save to Firebase
-    save_company_to_firebase(company_name, company_profile)
-    
-    return CompanyResponse(
-        company_name=company_name,
-        data=company_profile,
-        source="forced_extraction",
-        last_updated=datetime.now(timezone.utc).isoformat(),
-        cache_age_days=0,
-        extraction_status="completed"
-    )
     
 # --- Run Server ---
 if __name__ == "__main__":
