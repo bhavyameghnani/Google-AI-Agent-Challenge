@@ -80,7 +80,7 @@ export default function LandingPage() {
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Genesis
+                SenseAI
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -119,14 +119,14 @@ export default function LandingPage() {
               X-Ray Vision for
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {" "}
-                Businesses
+                Startups
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
               Get comprehensive insights on any company. From financials to
               leadership, market position to growth metrics - all powered by
-              Genesis AI.
+              SenseAI.
             </p>
 
             {/* Search Bar */}
@@ -230,7 +230,7 @@ export default function LandingPage() {
                 </h2>
                 <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
                   Join thousands of investors, analysts, and business
-                  professionals who trust Genesis for their research needs.
+                  professionals who trust SenseAI for their research needs.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button
@@ -265,10 +265,10 @@ export default function LandingPage() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900">Genesis</span>
+              <span className="text-xl font-bold text-slate-900">SenseAI</span>
             </div>
             <p className="text-slate-600">
-              © 2025 Genesis. Powered by AI. Built for the future of business
+              © 2025 SenseAI. Powered by AI. Built for the future of business
               intelligence.
             </p>
           </div>

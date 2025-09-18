@@ -1,4 +1,3 @@
-import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { streamText, convertToModelMessages } from "ai";
 
@@ -15,10 +14,6 @@ export async function POST(req) {
     },
     messages: convertToModelMessages(messages),
   });
-
-  // const metadata = providerMetadata?.google;
-  // const groundingMetadata = metadata?.groundingMetadata;
-  // const safetyRatings = metadata?.safetyRatings;
 
   return result.toUIMessageStreamResponse({
     sendSources: true,

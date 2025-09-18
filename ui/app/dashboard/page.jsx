@@ -15,6 +15,7 @@ import {
   MapPin,
   TrendingUp,
   Database,
+  Bot,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
@@ -25,6 +26,7 @@ import PeopleTab from "./tabs/PeopleTab";
 import MarketTab from "./tabs/MarketTab";
 import NewsTab from "./tabs/NewsTab";
 import InsightsTab from "./tabs/InsightsTab";
+import AIChatTab from "./tabs/AIChatTab";
 
 const CompanyDashboard = () => {
   const searchParams = useSearchParams();
@@ -108,11 +110,9 @@ const CompanyDashboard = () => {
   const SearchSection = () => (
     <div className="mb-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-2">
-          Company Intelligence Platform
-        </h1>
+        <h1 className="text-3xl font-bold text-center mb-4">SenseAI</h1>
         <p className="text-gray-600 text-center mb-6">
-          Get comprehensive insights on any company
+          X-Ray Vision for Startups
         </p>
 
         <div className="flex gap-2">
@@ -336,7 +336,7 @@ const CompanyDashboard = () => {
             <CompanyHeader company={companyData} />
 
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="financials">Financials</TabsTrigger>
                 <TabsTrigger value="people">People</TabsTrigger>
@@ -347,6 +347,10 @@ const CompanyDashboard = () => {
                   {loadingCompetitors && (
                     <Loader2 className="h-3 w-3 animate-spin ml-1" />
                   )}
+                </TabsTrigger>
+                <TabsTrigger value="ai-chat">
+                  <Bot className="h-4 w-4 mr-1" />
+                  AI Chat
                 </TabsTrigger>
               </TabsList>
 
@@ -385,6 +389,10 @@ const CompanyDashboard = () => {
                     </p>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="ai-chat" className="mt-6">
+                <AIChatTab companyData={companyData} />
               </TabsContent>
             </Tabs>
           </div>
