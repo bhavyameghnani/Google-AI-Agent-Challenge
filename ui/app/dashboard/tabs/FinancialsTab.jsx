@@ -177,13 +177,13 @@ const FinancialsTab = ({ company }) => {
               <span className="font-medium">Last Updated:</span>{" "}
               {new Date(company.last_updated).toLocaleDateString()}
             </div>
-            <div>
+            {/* <div>
               <span className="font-medium">Source:</span> {company.source}
-            </div>
-            <div>
+            </div> */}
+            {/* <div>
               <span className="font-medium">Cache Age:</span>{" "}
               {company.cache_age_days} days
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>

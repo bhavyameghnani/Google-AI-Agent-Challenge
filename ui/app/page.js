@@ -42,15 +42,16 @@ export default function LandingPage() {
     },
     {
       icon: <Users className="h-6 w-6" />,
-      title: "Leadership Insights",
+      title: "SenseAI Score",
       description:
-        "Comprehensive profiles of key executives and founding teams",
+        "Our proprietary algorithm rates company health and growth potential",
       color: "from-purple-500 to-purple-600",
     },
     {
       icon: <Globe className="h-6 w-6" />,
-      title: "Market Analysis",
-      description: "Competitive landscape and market positioning intelligence",
+      title: "Multimodal Insights",
+      description:
+        "Leverage startup spitchdecks, transcripts, reports, videos and more",
       color: "from-green-500 to-green-600",
     },
     {
@@ -63,10 +64,10 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { number: "10K+", label: "Companies Analyzed" },
-    { number: "99.9%", label: "Data Accuracy" },
-    { number: "<30s", label: "Analysis Time" },
-    { number: "Real-time", label: "Data Updates" },
+    { number: "10K+", label: "Datapoints analyzed" },
+    { number: ">96%", label: "Data Accuracy (Manually vetted)" },
+    { number: "<120s", label: "Analysis Time" },
+    { number: "On demand", label: "Data Updates" },
   ];
 
   return (
@@ -86,10 +87,10 @@ export default function LandingPage() {
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
-                className="text-slate-600 hover:text-slate-900"
+                className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
                 onClick={() => router.push("/chat")}
               >
-                AI Chat
+                🤖 Talk to SenseAI
               </Button>
               <Button
                 onClick={() => router.push("/dashboard")}
@@ -248,7 +249,7 @@ export default function LandingPage() {
                     className="border-white text-blue-600 hover:bg-white hover:text-blue-900 px-8 py-4 text-lg font-semibold backdrop-blur-sm"
                   >
                     <MessageSquare className="mr-2 h-5 w-5" />
-                    Try AI Chat
+                    Try 🤖 Talk to SenseAI
                   </Button>
                 </div>
               </CardContent>

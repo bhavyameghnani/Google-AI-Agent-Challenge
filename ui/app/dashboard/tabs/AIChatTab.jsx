@@ -76,7 +76,7 @@ const AIChatTab = ({ companyData }) => {
   return (
     <div className="flex flex-col h-[600px]">
       {/* Company Context Header */}
-      <Card className="mb-4">
+      {/* <Card className="mb-4">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
@@ -97,7 +97,7 @@ const AIChatTab = ({ companyData }) => {
             </div>
           </div>
         </CardHeader>
-      </Card>
+      </Card> */}
 
       {/* Chat Interface */}
       <div className="flex-1 flex flex-col">

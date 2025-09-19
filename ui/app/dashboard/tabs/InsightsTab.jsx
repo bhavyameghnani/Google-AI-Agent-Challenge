@@ -23,8 +23,8 @@ const InsightsTab = ({ company, competitors }) => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-4">
-            Analysis of {competitorData.length} companies in the competitive
-            landscape
+            SenseAI’s proprietary scoring system for sharper, data-driven
+            decisions.
           </p>
 
           <div className="overflow-x-auto">
@@ -92,7 +92,7 @@ const InsightsTab = ({ company, competitors }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Evaluation Score Breakdown
+            SenseAI Score Breakdown
           </CardTitle>
         </CardHeader>
         <CardContent>

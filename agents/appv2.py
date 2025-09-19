@@ -22,6 +22,10 @@ from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+if not os.getenv('GOOGLE_API_KEY'):
+    print("WARNING: GOOGLE_API_KEY not found in environment variables")
+    print("Please add GOOGLE_API_KEY to your .env file")
+
 # Import your enhanced ADK agent with citations
 from research_agent.agentv2 import (
     root_agent, 
