@@ -78,7 +78,7 @@ export const Navbar = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => router.push("/chat")}
+                onClick={() => router.push("/pitch-analyzer")}
                 className="text-gray-600 hover:text-gray-900"
               >
                 ⚡ Analyze Pitchdeck
