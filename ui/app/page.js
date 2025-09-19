@@ -93,6 +93,13 @@ export default function LandingPage() {
                 🤖 Talk to SenseAI
               </Button>
               <Button
+                variant="ghost"
+                className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
+                onClick={() => router.push("/chat")}
+              >
+                ⚡ Analyze Pitchdeck
+              </Button>
+              <Button
                 onClick={() => router.push("/dashboard")}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >

@@ -76,6 +76,13 @@ export const Navbar = () => {
                 <MessageSquare className="h-4 w-4 mr-2" />
                 🤖 Talk to SenseAI
               </Button>
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/chat")}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                ⚡ Analyze Pitchdeck
+              </Button>
             </div>
           </div>
 
