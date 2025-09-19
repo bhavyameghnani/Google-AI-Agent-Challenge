@@ -27,20 +27,23 @@ import {
   Bot,
   Lightbulb,
 } from "lucide-react";
+import { DefaultChatTransport } from "ai";
 import { Loader } from "@/components/ai-elements/loader";
 import { useCompanyChat } from "@/hooks/useCompanyChat";
+import { useChat } from "@ai-sdk/react";
 
 const AIChatTab = ({ companyData }) => {
   const [input, setInput] = useState("");
-
-  console.log("=== AIChatTab RENDER ===");
-  console.log("Company data passed:", companyData ? "YES" : "NO");
-  console.log("Company name:", companyData?.company_name);
-
-  const { messages, sendMessage, status, reload } = useCompanyChat(companyData);
+  const { messages, sendMessage, status, reload } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/company-chat",
+      body: {
+        companyData: companyData,
+      },
+    }),
+  });
 
   const handleSubmit = (message) => {
-    console.log("=== SUBMIT MESSAGE ===", message.text);
     const hasText = Boolean(message.text);
     if (!hasText) return;
 
@@ -95,12 +98,6 @@ const AIChatTab = ({ companyData }) => {
           </div>
         </CardHeader>
       </Card>
-
-      {/* Debug Info */}
-      <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-        <strong>DEBUG:</strong> Status: {status} | Messages: {messages.length} |
-        Company: {companyData?.company_name || "N/A"}
-      </div>
 
       {/* Chat Interface */}
       <div className="flex-1 flex flex-col">

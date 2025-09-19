@@ -6,7 +6,12 @@ export const maxDuration = 30;
 export async function POST(req) {
   try {
     const { messages, companyData } = await req.json();
-    const systemPrompt = `You are a business analyst AI with comprehensive data about ${companyData}`;
+    console.log(companyData);
+    const systemPrompt = `You are a business analyst AI with comprehensive data about ${JSON.stringify(
+      companyData,
+      null,
+      2
+    )}. Always use this data when answering questions about the company.`;
 
     const result = streamText({
       model: google("gemini-2.5-flash"),
