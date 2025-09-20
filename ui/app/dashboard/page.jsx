@@ -21,6 +21,7 @@ import {
   Home,
   Menu,
   X,
+  Zap,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -33,7 +34,7 @@ import NewsTab from "./tabs/NewsTab";
 import InsightsTab from "./tabs/InsightsTab";
 import AIChatTab from "./tabs/AIChatTab";
 
-// Clean Navbar Component (without search)
+// Clean Navbar Component (updated with logo)
 export const Navbar = () => {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,30 +45,30 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  SenseAI
-                </span>
-                <div className="text-xs text-gray-500 -mt-1">
-                  X-Ray Vision for Startups
-                </div>
+            <div
+              className="flex items-center space-x-3 cursor-pointer"
+              onClick={() => router.push("/")}
+            >
+              {/* Replace the gradient icon with your logo */}
+              <div className="w-32 h-32 flex items-center justify-center">
+                <img
+                  src="/images/senseai-logo.png"
+                  alt="SenseAI Logo"
+                  className="w-32 h-32 object-contain hover:scale-105 transition-transform duration-200"
+                />
               </div>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              <Button
+              {/* <Button
                 variant="ghost"
                 onClick={() => router.push("/")}
                 className="text-gray-600 hover:text-gray-900"
               >
                 <Home className="h-4 w-4 mr-2" />
                 Home
-              </Button>
+              </Button> */}
               <Button
                 variant="ghost"
                 onClick={() => router.push("/chat")}
@@ -81,17 +82,9 @@ export const Navbar = () => {
                 onClick={() => router.push("/pitch-analyzer")}
                 className="text-gray-600 hover:text-gray-900"
               >
-                ⚡ Analyze Pitchdeck
+                <Zap className="h-4 w-4 mr-2" />⚡ Analyze Pitchdeck
               </Button>
             </div>
-          </div>
-
-          {/* Right Side Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Badge variant="secondary" className="text-xs">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-              Live
-            </Badge>
           </div>
 
           {/* Mobile Menu Button */}
@@ -100,6 +93,7 @@ export const Navbar = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2"
             >
               {isMobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -129,6 +123,13 @@ export const Navbar = () => {
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 🤖 Talk to SenseAI
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/pitch-analyzer")}
+                className="w-full justify-start text-gray-600"
+              >
+                <Zap className="h-4 w-4 mr-2" />⚡ Analyze Pitchdeck
               </Button>
             </div>
           </div>

@@ -77,12 +77,21 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-white" />
+              <div className="w-12 h-12 flex items-center justify-center p-1">
+                <img
+                  src="/images/senseai-logo.png"
+                  alt="SenseAI Logo"
+                  className="w-full h-full object-contain hover:scale-105 transition-transform duration-200"
+                />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                SenseAI
-              </span>
+              <div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                  SenseAI
+                </span>
+                <div className="text-xs text-gray-500 -mt-1">
+                  X-Ray Vision for Startups
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button
@@ -95,7 +104,7 @@ export default function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
-                onClick={() => router.push("/chat")}
+                onClick={() => router.push("/pitch-analyzer")}
               >
                 ⚡ Analyze Pitchdeck
               </Button>
