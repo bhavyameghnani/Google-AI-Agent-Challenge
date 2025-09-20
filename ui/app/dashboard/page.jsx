@@ -382,7 +382,9 @@ const CompanyDashboard = () => {
   const fetchCompaniesList = async () => {
     setLoadingCompanies(true);
     try {
-      const response = await fetch("http://127.0.0.1:5005/companies");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/companies`
+      );
       const data = await response.json();
       setCompaniesList(data.companies || []);
     } catch (error) {
@@ -400,18 +402,21 @@ const CompanyDashboard = () => {
     setCompetitorData(null);
 
     try {
-      const extractResponse = await fetch("http://127.0.0.1:5005/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_name: companyName }),
-      });
+      const extractResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/extract`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company_name: companyName }),
+        }
+      );
       const extractData = await extractResponse.json();
       setCompanyData(extractData);
       setLoadingExtract(false);
 
       setLoadingCompetitors(true);
       const competitorResponse = await fetch(
-        "http://127.0.0.1:5005/competitor-analysis",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/competitor-analysis`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

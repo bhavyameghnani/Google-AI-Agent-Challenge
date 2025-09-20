@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Navbar } from "../dashboard/page";
 import {
   Upload,
   FileText,
@@ -21,16 +20,25 @@ import {
   Sparkles,
   X,
   Download,
+  Building2,
+  Zap,
+  Video,
+  Youtube,
+  Play,
 } from "lucide-react";
+import { Navbar } from "../dashboard/page";
 
-const API_BASE = "http://localhost:8000"; // change if different
+const API_BASE = process.env.NEXT_PUBLIC_PITCH_URL;
 
 export default function StartupPitchAnalyzer() {
   const [transcriptText, setTranscriptText] = useState("");
   const [audioFile, setAudioFile] = useState(null);
   const [txtFile, setTxtFile] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingVideo, setLoadingVideo] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("text");
@@ -134,33 +142,80 @@ export default function StartupPitchAnalyzer() {
     }
   };
 
+  const uploadVideo = async () => {
+    setError("");
+    if (!videoFile && !youtubeUrl.trim()) {
+      setError("Provide a video file or YouTube link.");
+      return;
+    }
+    setLoadingVideo(true);
+    setResult(null);
+    try {
+      const form = new FormData();
+      if (videoFile) form.append("file", videoFile);
+      if (youtubeUrl) form.append("youtube_url", youtubeUrl);
+
+      const res = await fetch(`${API_BASE}/analyze-video/`, {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Server error");
+      setResult(data);
+
+      // reset video inputs
+      setVideoFile(null);
+      setYoutubeUrl("");
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoadingVideo(false);
+    }
+  };
+
   const clearAll = () => {
     setTranscriptText("");
     setAudioFile(null);
     setTxtFile(null);
     setPdfFile(null);
+    setVideoFile(null);
+    setYoutubeUrl("");
     setResult(null);
     setError("");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-background">
+      {/* Navbar */}
       <Navbar />
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          {/* ...existing code... */}
-          <div className="flex items-center gap-3 mb-4 justify-center">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+          <div className="flex items-center gap-3 mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
                 Startup Pitch Analyzer
               </h1>
-              <p className="text-slate-600">
-                AI-powered analysis for pitch decks and presentations
+              <p className="text-muted-foreground">
+                AI-powered analysis for pitch decks, audio, video and
+                presentations
               </p>
             </div>
           </div>
-          {/* ...existing code... */}
+
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="secondary"
+              className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0"
+            >
+              <Sparkles className="w-4 h-4 mr-1" />
+              Powered by SenseAI
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              MultiModal Analysis
+            </Badge>
+          </div>
         </div>
 
         {/* Error Banner */}
@@ -186,7 +241,7 @@ export default function StartupPitchAnalyzer() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Input Section */}
           <div className="lg:col-span-2">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5 text-blue-600" />
@@ -199,7 +254,7 @@ export default function StartupPitchAnalyzer() {
                   onValueChange={setActiveTab}
                   className="w-full"
                 >
-                  <TabsList className="grid w-full grid-cols-4 mb-6">
+                  <TabsList className="grid w-full grid-cols-5 mb-6">
                     <TabsTrigger
                       value="text"
                       className="flex items-center gap-2"
@@ -228,11 +283,18 @@ export default function StartupPitchAnalyzer() {
                       <Download className="h-4 w-4" />
                       PDF
                     </TabsTrigger>
+                    <TabsTrigger
+                      value="video"
+                      className="flex items-center gap-2"
+                    >
+                      <Video className="h-4 w-4" />
+                      Video
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="text" className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Paste your transcript here
                       </label>
                       <Textarea
@@ -272,11 +334,11 @@ export default function StartupPitchAnalyzer() {
 
                   <TabsContent value="audio" className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Upload audio file
                       </label>
-                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <Mic className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                        <Mic className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                         <input
                           type="file"
                           accept="audio/*,.wav,.mp3,.m4a,.ogg"
@@ -293,17 +355,17 @@ export default function StartupPitchAnalyzer() {
                           <span className="text-blue-600 hover:text-blue-800 font-medium">
                             Click to upload
                           </span>
-                          <span className="text-slate-500">
+                          <span className="text-muted-foreground">
                             {" "}
                             or drag and drop
                           </span>
                         </label>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           MP3, WAV, M4A, OGG files supported
                         </p>
                       </div>
                       {audioFile && (
-                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border">
                           <FileAudio className="h-4 w-4 text-blue-600" />
                           <span className="text-sm text-blue-800">
                             {audioFile.name}
@@ -340,11 +402,11 @@ export default function StartupPitchAnalyzer() {
 
                   <TabsContent value="txt" className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Upload text file
                       </label>
-                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <FileText className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                        <FileText className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                         <input
                           type="file"
                           accept=".txt"
@@ -358,17 +420,17 @@ export default function StartupPitchAnalyzer() {
                           <span className="text-blue-600 hover:text-blue-800 font-medium">
                             Click to upload
                           </span>
-                          <span className="text-slate-500">
+                          <span className="text-muted-foreground">
                             {" "}
                             or drag and drop
                           </span>
                         </label>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           TXT files only
                         </p>
                       </div>
                       {txtFile && (
-                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border">
                           <FileText className="h-4 w-4 text-blue-600" />
                           <span className="text-sm text-blue-800">
                             {txtFile.name}
@@ -405,11 +467,11 @@ export default function StartupPitchAnalyzer() {
 
                   <TabsContent value="pdf" className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Upload pitch deck (PDF)
                       </label>
-                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <Download className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                        <Download className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
                         <input
                           type="file"
                           accept=".pdf"
@@ -423,17 +485,17 @@ export default function StartupPitchAnalyzer() {
                           <span className="text-blue-600 hover:text-blue-800 font-medium">
                             Click to upload
                           </span>
-                          <span className="text-slate-500">
+                          <span className="text-muted-foreground">
                             {" "}
                             or drag and drop
                           </span>
                         </label>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           PDF files only
                         </p>
                       </div>
                       {pdfFile && (
-                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border">
                           <Download className="h-4 w-4 text-blue-600" />
                           <span className="text-sm text-blue-800">
                             {pdfFile.name}
@@ -474,14 +536,122 @@ export default function StartupPitchAnalyzer() {
                       )}
                     </Button>
                   </TabsContent>
+
+                  <TabsContent value="video" className="space-y-6">
+                    {/* Video File Upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        Upload video file
+                      </label>
+                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                        <Video className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                        <input
+                          type="file"
+                          accept="video/*,.mp4,.mov,.avi,.mkv"
+                          onChange={(e) =>
+                            setVideoFile(e.target.files?.[0] ?? null)
+                          }
+                          className="hidden"
+                          id="video-upload"
+                        />
+                        <label
+                          htmlFor="video-upload"
+                          className="cursor-pointer"
+                        >
+                          <span className="text-blue-600 hover:text-blue-800 font-medium">
+                            Click to upload
+                          </span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            or drag and drop
+                          </span>
+                        </label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          MP4, MOV, AVI, MKV files supported
+                        </p>
+                      </div>
+                      {videoFile && (
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border">
+                          <Video className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm text-blue-800">
+                            {videoFile.name}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setVideoFile(null)}
+                            className="ml-auto h-6 w-6 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* OR Divider */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-muted" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          OR
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* YouTube URL */}
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        <Youtube className="inline h-4 w-4 mr-1" />
+                        YouTube URL
+                      </label>
+                      <Input
+                        type="text"
+                        value={youtubeUrl}
+                        onChange={(e) => setYoutubeUrl(e.target.value)}
+                        placeholder="https://youtube.com/watch?v=..."
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-blue-800 text-sm">
+                        <Play className="h-4 w-4" />
+                        Video processing may take several minutes depending on
+                        duration and your backend AI calls.
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={uploadVideo}
+                      disabled={
+                        loadingVideo || (!videoFile && !youtubeUrl.trim())
+                      }
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                    >
+                      {loadingVideo ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing Video...
+                        </>
+                      ) : (
+                        <>
+                          <Video className="mr-2 h-4 w-4" />
+                          Transcribe & Analyze Video
+                        </>
+                      )}
+                    </Button>
+                  </TabsContent>
                 </Tabs>
 
                 <div className="flex justify-between items-center mt-6 pt-4 border-t">
                   <Button
                     variant="outline"
                     onClick={clearAll}
-                    disabled={loading}
+                    disabled={loading || loadingVideo}
                   >
+                    <Zap className="mr-2 h-4 w-4" />
                     Clear All
                   </Button>
                 </div>
@@ -491,7 +661,7 @@ export default function StartupPitchAnalyzer() {
 
           {/* Results Section */}
           <div className="lg:col-span-1">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl h-fit">
+            <Card className="h-fit">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-green-600" />
@@ -499,13 +669,15 @@ export default function StartupPitchAnalyzer() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {loading || loadingVideo ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                    <p className="text-slate-600 text-center">
-                      Analyzing your content...
+                    <p className="text-muted-foreground text-center">
+                      {loadingVideo
+                        ? "Processing video..."
+                        : "Analyzing your content..."}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       This may take a few moments
                     </p>
                   </div>
@@ -521,20 +693,20 @@ export default function StartupPitchAnalyzer() {
                     {result.transcript && result.analysis ? (
                       <>
                         <div>
-                          <h4 className="font-semibold text-slate-900 mb-2">
+                          <h4 className="font-semibold text-foreground mb-2">
                             Transcript:
                           </h4>
-                          <div className="bg-slate-50 p-3 rounded-lg border text-xs max-h-32 overflow-y-auto">
+                          <div className="bg-muted p-3 rounded-lg border text-xs max-h-32 overflow-y-auto">
                             <pre className="whitespace-pre-wrap">
                               {result.transcript}
                             </pre>
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-semibold text-slate-900 mb-2">
+                          <h4 className="font-semibold text-foreground mb-2">
                             Analysis:
                           </h4>
-                          <div className="bg-slate-100 p-3 rounded-lg border text-xs max-h-64 overflow-y-auto">
+                          <div className="bg-muted p-3 rounded-lg border text-xs max-h-64 overflow-y-auto">
                             <pre className="whitespace-pre-wrap">
                               {JSON.stringify(result.analysis, null, 2)}
                             </pre>
@@ -542,7 +714,7 @@ export default function StartupPitchAnalyzer() {
                         </div>
                       </>
                     ) : (
-                      <div className="bg-slate-100 p-3 rounded-lg border text-xs max-h-64 overflow-y-auto">
+                      <div className="bg-muted p-3 rounded-lg border text-xs max-h-64 overflow-y-auto">
                         <pre className="whitespace-pre-wrap">
                           {JSON.stringify(result, null, 2)}
                         </pre>
@@ -551,9 +723,11 @@ export default function StartupPitchAnalyzer() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Brain className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 mb-2">No analysis yet</p>
-                    <p className="text-xs text-slate-400">
+                    <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">
+                      No analysis yet
+                    </p>
+                    <p className="text-xs text-muted-foreground">
                       Upload content to see AI-powered insights
                     </p>
                   </div>
