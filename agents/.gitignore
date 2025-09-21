@@ -3,3 +3,4 @@ venv
 __pycache__
 ai-agent-company-data-firebase-adminsdk-creds.json
 .idea
+*.local

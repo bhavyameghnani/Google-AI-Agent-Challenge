@@ -22,26 +22,26 @@ from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-if not os.getenv('GOOGLE_API_KEY'):
+if not os.getenv("GOOGLE_API_KEY"):
     print("WARNING: GOOGLE_API_KEY not found in environment variables")
     print("Please add GOOGLE_API_KEY to your .env file")
 
 # Import your enhanced ADK agent with citations
-from research_agent.agentv2 import (
-    root_agent, 
-    CompanyProfile
+from research_agent.agentv2 import root_agent, CompanyProfile
+from competitor_analysis_agent.agent import (
+    competitor_analysis_agent,
+    AllCompetitorsInfo,
+    CompetitorInfoWithScore,
+    AllCompetitorsInfoWithScore,
 )
-from competitor_analysis_agent.agent import competitor_analysis_agent, AllCompetitorsInfo, CompetitorInfoWithScore, \
-    AllCompetitorsInfoWithScore
 from evaluation_score.agent import final_evaluation_score_agent, EvaluationScoreComplete
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Company Data Extraction API with Citations",
     description="Extract comprehensive company data with source citations using Google ADK",
-    version="2.0.0"
+    version="2.0.0",
 )
-
 
 
 # Add CORS middleware
@@ -54,19 +54,23 @@ app.add_middleware(
 )
 
 # Initialize Firebase
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "ai-agent-company-data-firebase-adminsdk-creds.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+    "ai-agent-company-data-firebase-adminsdk-creds.json"
+)
 cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
-companies_ref = db.collection('companies')
-competitors_ref = db.collection('company_competitors')
-logs_ref = db.collection('extraction_logs')
+companies_ref = db.collection("companies")
+competitors_ref = db.collection("company_competitors")
+logs_ref = db.collection("extraction_logs")
 
 # --- Pydantic Models ---
 
+
 class CompanyRequest(BaseModel):
     company_name: str
+
 
 class CompanyResponse(BaseModel):
     company_name: str
@@ -76,6 +80,7 @@ class CompanyResponse(BaseModel):
     cache_age_days: int
     extraction_status: str
 
+
 class CompetitorResponse(BaseModel):
     company_name: str
     data: AllCompetitorsInfoWithScore
@@ -83,6 +88,7 @@ class CompetitorResponse(BaseModel):
     last_updated: str
     cache_age_days: int
     extraction_status: str
+
 
 class CompanyListItem(BaseModel):
     company_name: str
@@ -95,9 +101,11 @@ class CompanyListItem(BaseModel):
     extraction_status: str
     is_fresh: bool
 
+
 class CompanyListResponse(BaseModel):
     total_companies: int
     companies: List[CompanyListItem]
+
 
 class StatsResponse(BaseModel):
     total_companies: int
@@ -106,12 +114,15 @@ class StatsResponse(BaseModel):
     extraction_attempts_7d: int
     cache_hit_rate: str
 
+
 class HealthResponse(BaseModel):
     message: str
     status: str
     timestamp: str
 
+
 # --- Helper Functions ---
+
 
 def validate_company_name(company_name: str) -> tuple[bool, str]:
     """Validate company name input"""
@@ -120,6 +131,7 @@ def validate_company_name(company_name: str) -> tuple[bool, str]:
     if len(company_name.strip()) < 2:
         return False, "Company name must be at least 2 characters"
     return True, ""
+
 
 def serialize_company_data(company_data: CompanyProfile) -> Dict[str, Any]:
     """Convert CompanyProfile to Firebase-compatible dict"""
@@ -130,6 +142,7 @@ def serialize_company_data(company_data: CompanyProfile) -> Dict[str, Any]:
         # Fallback for older Pydantic versions
         return company_data.dict()
 
+
 def deserialize_company_data(data_dict: Dict[str, Any]) -> CompanyProfile:
     """Convert Firebase dict back to CompanyProfile"""
     try:
@@ -139,18 +152,20 @@ def deserialize_company_data(data_dict: Dict[str, Any]) -> CompanyProfile:
         # Try to handle partial data gracefully
         raise ValueError(f"Invalid company data structure: {e}")
 
+
 def get_company_from_firebase(company_name: str) -> Optional[Dict[str, Any]]:
     """Get company data from Firebase"""
     try:
         doc_id = company_name.lower().replace(" ", "_")
         doc = companies_ref.document(doc_id).get()
-        
+
         if doc.exists:
             return doc.to_dict()
         return None
     except Exception as e:
         print(f"Error reading from Firebase: {e}")
         return None
+
 
 def get_competitors_from_firebase(company_name: str) -> Optional[Dict[str, Any]]:
     """Get company data from Firebase"""
@@ -165,69 +180,80 @@ def get_competitors_from_firebase(company_name: str) -> Optional[Dict[str, Any]]
         print(f"Error reading from Firebase: {e}")
         return None
 
+
 def save_company_to_firebase(company_name: str, company_data: CompanyProfile) -> bool:
     """Save company data to Firebase with proper serialization"""
     try:
         doc_id = company_name.lower().replace(" ", "_")
-        
+
         # Serialize the enhanced company data
         serialized_data = serialize_company_data(company_data)
-        
+
         document_data = {
-            'company_name': company_name,
-            'last_updated': datetime.now(timezone.utc),
-            'extraction_status': 'completed',
-            'created_at': firestore.SERVER_TIMESTAMP,
-            'data': serialized_data
+            "company_name": company_name,
+            "last_updated": datetime.now(timezone.utc),
+            "extraction_status": "completed",
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "data": serialized_data,
         }
-        
+
         companies_ref.document(doc_id).set(document_data)
         print(f"✅ Saved {company_name} to Firebase with citations")
         return True
-        
+
     except Exception as e:
         print(f"❌ Error saving to Firebase: {e}")
         return False
 
-def save_company_competitors_to_firebase(company_name: str, competitor_data: AllCompetitorsInfo) -> bool:
+
+def save_company_competitors_to_firebase(
+    company_name: str, competitor_data: AllCompetitorsInfo
+) -> bool:
     """Save company competitors data to Firebase with proper serialization"""
     try:
         doc_id = company_name.lower().replace(" ", "_")
-        
+
         # Serialize the enhanced company data
         serialized_data = competitor_data.model_dump()
-        
+
         document_data = {
-            'company_name': company_name,
-            'last_updated': datetime.now(timezone.utc),
-            'extraction_status': 'completed',
-            'created_at': firestore.SERVER_TIMESTAMP,
-            'data': serialized_data
+            "company_name": company_name,
+            "last_updated": datetime.now(timezone.utc),
+            "extraction_status": "completed",
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "data": serialized_data,
         }
-        
+
         competitors_ref.document(doc_id).set(document_data)
         print(f"✅ Saved {company_name} competitors to Firebase with citations")
         return True
-        
+
     except Exception as e:
         print(f"❌ Error saving to Firebase: {e}")
         return False
 
-def log_extraction_attempt(company_name: str, status: str, duration: Optional[float] = None, error: Optional[str] = None):
+
+def log_extraction_attempt(
+    company_name: str,
+    status: str,
+    duration: Optional[float] = None,
+    error: Optional[str] = None,
+):
     """Log extraction attempt to Firebase"""
     try:
         log_data = {
-            'company_name': company_name,
-            'timestamp': datetime.now(timezone.utc),
-            'status': status,  # 'started', 'completed', 'failed'
-            'duration_seconds': duration,
-            'error_message': error,
-            'created_at': firestore.SERVER_TIMESTAMP
+            "company_name": company_name,
+            "timestamp": datetime.now(timezone.utc),
+            "status": status,  # 'started', 'completed', 'failed'
+            "duration_seconds": duration,
+            "error_message": error,
+            "created_at": firestore.SERVER_TIMESTAMP,
         }
-        
+
         logs_ref.add(log_data)
     except Exception as e:
         print(f"Error logging to Firebase: {e}")
+
 
 def is_data_fresh(last_updated, max_age_days: int = 30) -> bool:
     """Check if data is fresh enough"""
@@ -253,25 +279,21 @@ def is_data_fresh(last_updated, max_age_days: int = 30) -> bool:
         print(f"⚠️ is_data_fresh error: {e}")
         return False
 
+
 async def extract_company_data_with_adk(company_name: str) -> CompanyProfile:
     """Extract company data using the enhanced ADK agent with citations"""
 
-
     start_time = datetime.now(timezone.utc)
-    log_extraction_attempt(company_name, 'started')
+    log_extraction_attempt(company_name, "started")
 
     session_service = InMemorySessionService()
     runner = Runner(
-        agent=root_agent,
-        app_name="company_extraction",
-        session_service=session_service
+        agent=root_agent, app_name="company_extraction", session_service=session_service
     )
     session_id = f"extract_{uuid.uuid4().hex[:8]}"
 
     await session_service.create_session(
-        app_name="company_extraction",
-        user_id="api_user",
-        session_id=session_id
+        app_name="company_extraction", user_id="api_user", session_id=session_id
     )
 
     content = types.Content(role="user", parts=[types.Part(text=company_name)])
@@ -280,7 +302,8 @@ async def extract_company_data_with_adk(company_name: str) -> CompanyProfile:
     try:
         # Run the agent and collect all events into a list
         events = [
-            event for event in runner.run(
+            event
+            for event in runner.run(
                 user_id="api_user",
                 session_id=session_id,
                 new_message=content,
@@ -298,16 +321,18 @@ async def extract_company_data_with_adk(company_name: str) -> CompanyProfile:
         ):
             print("✅ Final JSON event with citations received from agent.")
             json_string = final_event.content.parts[0].text
-            
+
             try:
                 final_structured_output = json.loads(json_string)
                 company_profile = CompanyProfile(**final_structured_output)
-                
+
                 duration = (datetime.now(timezone.utc) - start_time).total_seconds()
-                log_extraction_attempt(company_name, 'completed', duration)
-                print(f"✅ Enhanced ADK extraction completed for: {company_name} ({duration:.1f}s)")
+                log_extraction_attempt(company_name, "completed", duration)
+                print(
+                    f"✅ Enhanced ADK extraction completed for: {company_name} ({duration:.1f}s)"
+                )
                 return company_profile
-                
+
             except json.JSONDecodeError as e:
                 raise Exception(f"Invalid JSON response from agent: {e}")
             except Exception as e:
@@ -318,7 +343,7 @@ async def extract_company_data_with_adk(company_name: str) -> CompanyProfile:
 
     except Exception as e:
         duration = (datetime.now(timezone.utc) - start_time).total_seconds()
-        log_extraction_attempt(company_name, 'failed', duration, str(e))
+        log_extraction_attempt(company_name, "failed", duration, str(e))
         print(f"❌ Enhanced ADK extraction failed for: {company_name} - {e}")
         raise HTTPException(status_code=500, detail=f"Extraction failed: {e}")
     finally:
@@ -327,23 +352,19 @@ async def extract_company_data_with_adk(company_name: str) -> CompanyProfile:
         print(f"✅ Session cleanup completed for: {session_id}")
 
 
-
 async def evaluation_score_with_adk(company_name: str) -> EvaluationScoreComplete:
     """Fetch evaluation score using the enhanced ADK agent"""
-
 
     session_service = InMemorySessionService()
     runner = Runner(
         agent=final_evaluation_score_agent,
         app_name="evaluation_score",
-        session_service=session_service
+        session_service=session_service,
     )
     session_id = f"evaluation_score_{uuid.uuid4().hex[:8]}"
 
     await session_service.create_session(
-        app_name="evaluation_score",
-        user_id="api_user",
-        session_id=session_id
+        app_name="evaluation_score", user_id="api_user", session_id=session_id
     )
 
     content = types.Content(role="user", parts=[types.Part(text=company_name)])
@@ -352,7 +373,8 @@ async def evaluation_score_with_adk(company_name: str) -> EvaluationScoreComplet
     try:
         # Run the agent and collect all events into a list
         events = [
-            event for event in runner.run(
+            event
+            for event in runner.run(
                 user_id="api_user",
                 session_id=session_id,
                 new_message=content,
@@ -370,14 +392,14 @@ async def evaluation_score_with_adk(company_name: str) -> EvaluationScoreComplet
         ):
             print("✅ Final JSON event with citations received from agent.")
             json_string = final_event.content.parts[0].text
-            
+
             try:
                 final_structured_output = json.loads(json_string)
                 evaluation_score = EvaluationScoreComplete(**final_structured_output)
 
                 print(f"✅ Enhanced ADK evaluation_score completed for: {company_name}")
                 return evaluation_score
-                
+
             except json.JSONDecodeError as e:
                 raise Exception(f"Invalid JSON response from agent: {e}")
             except Exception as e:
@@ -391,21 +413,21 @@ async def evaluation_score_with_adk(company_name: str) -> EvaluationScoreComplet
         print(f"✅ Session cleanup completed for: {session_id}")
 
 
-async def competitor_analysis_with_adk(company_name: str) -> AllCompetitorsInfoWithScore:
+async def competitor_analysis_with_adk(
+    company_name: str,
+) -> AllCompetitorsInfoWithScore:
     """Fetch competitor analysis using the enhanced ADK agent"""
 
     session_service = InMemorySessionService()
     runner = Runner(
         agent=competitor_analysis_agent,
         app_name="competitor_analysis",
-        session_service=session_service
+        session_service=session_service,
     )
     session_id = f"competitor_analysis_{uuid.uuid4().hex[:8]}"
 
     await session_service.create_session(
-        app_name="competitor_analysis",
-        user_id="api_user",
-        session_id=session_id
+        app_name="competitor_analysis", user_id="api_user", session_id=session_id
     )
 
     content = types.Content(role="user", parts=[types.Part(text=company_name)])
@@ -414,7 +436,8 @@ async def competitor_analysis_with_adk(company_name: str) -> AllCompetitorsInfoW
     try:
         # Run the agent and collect all events into a list
         events = [
-            event for event in runner.run(
+            event
+            for event in runner.run(
                 user_id="api_user",
                 session_id=session_id,
                 new_message=content,
@@ -425,10 +448,10 @@ async def competitor_analysis_with_adk(company_name: str) -> AllCompetitorsInfoW
         final_event = events[-1] if events else None
 
         if (
-                final_event
-                and final_event.is_final_response()
-                and final_event.content
-                and final_event.content.parts
+            final_event
+            and final_event.is_final_response()
+            and final_event.content
+            and final_event.content.parts
         ):
             print("✅ Final JSON event with citations received from agent.")
             json_string = final_event.content.parts[0].text
@@ -439,18 +462,25 @@ async def competitor_analysis_with_adk(company_name: str) -> AllCompetitorsInfoW
 
                 tasks = []
                 for competitor_info in all_competitor_info.competitors:
-                    tasks.append(evaluation_score_with_adk(competitor_info.competitor_name))
-
-
+                    tasks.append(
+                        evaluation_score_with_adk(competitor_info.competitor_name)
+                    )
 
                 results = await asyncio.gather(*tasks)
 
                 final_result = []
-                for result, competitor_info in zip(results, all_competitor_info.competitors):
-                    final_result.append(CompetitorInfoWithScore(**competitor_info.model_dump(), evaluation_score=result))
+                for result, competitor_info in zip(
+                    results, all_competitor_info.competitors
+                ):
+                    final_result.append(
+                        CompetitorInfoWithScore(
+                            **competitor_info.model_dump(), evaluation_score=result
+                        )
+                    )
 
-
-                print(f"✅ Enhanced ADK competitor analysis completed for: {company_name}")
+                print(
+                    f"✅ Enhanced ADK competitor analysis completed for: {company_name}"
+                )
                 return AllCompetitorsInfoWithScore(competitors=final_result)
 
             except json.JSONDecodeError as e:
@@ -468,113 +498,116 @@ async def competitor_analysis_with_adk(company_name: str) -> AllCompetitorsInfoW
 
 # --- API Routes ---
 
+
 @app.get("/", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
     return HealthResponse(
         message="Company Data Extraction API with Citations is running!",
         status="healthy",
-        timestamp=datetime.now(timezone.utc).isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat(),
     )
+
 
 @app.post("/extract", response_model=CompanyResponse)
 async def extract_company(request: CompanyRequest):
     """
     Main endpoint: Extract company data with citations and Firebase caching
-    
+
     - Checks Firebase cache first
     - Extracts fresh data with citations if cache is stale/missing
     - Returns structured company profile with source citations
     """
     company_name = request.company_name.strip()
-    
+
     # Validate input
     is_valid, error_msg = validate_company_name(company_name)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
-    
+
     # Check Firebase cache first
     print(f"🗄️ Checking cache for: {company_name}")
     cached_data = get_company_from_firebase(company_name)
 
-    if cached_data and is_data_fresh(cached_data.get('last_updated')):
+    if cached_data and is_data_fresh(cached_data.get("last_updated")):
         # Return cached data with citations
-        cache_age = (datetime.now(timezone.utc) - cached_data['last_updated']).days
+        cache_age = (datetime.now(timezone.utc) - cached_data["last_updated"]).days
         print(f"🗄️ Returning cached data with citations for: {company_name}")
-        
+
         try:
-            company_profile = deserialize_company_data(cached_data['data'])
+            company_profile = deserialize_company_data(cached_data["data"])
         except ValueError as e:
             print(f"⚠️ Cached data corrupted, re-extracting: {e}")
             # If cached data is corrupted, extract fresh data
             company_profile = await extract_company_data_with_adk(company_name)
             save_company_to_firebase(company_name, company_profile)
-            
+
             return CompanyResponse(
                 company_name=company_name,
                 data=company_profile,
                 source="extraction",  # Was corrupted, so extracted fresh
                 last_updated=datetime.now(timezone.utc).isoformat(),
                 cache_age_days=0,
-                extraction_status="completed"
+                extraction_status="completed",
             )
-        
+
         return CompanyResponse(
             company_name=company_name,
             data=company_profile,
             source="database",
-            last_updated=cached_data['last_updated'].isoformat(),
+            last_updated=cached_data["last_updated"].isoformat(),
             cache_age_days=cache_age,
-            extraction_status=cached_data.get('extraction_status', 'completed')
+            extraction_status=cached_data.get("extraction_status", "completed"),
         )
-    
+
     # Extract fresh data using enhanced ADK agent
     print(f"🔍 Extracting fresh data with citations for: {company_name}")
     company_profile = await extract_company_data_with_adk(company_name)
-    
+
     # Save to Firebase
     save_success = save_company_to_firebase(company_name, company_profile)
-    
+
     if not save_success:
         print("⚠️ Warning: Failed to save to Firebase, but extraction succeeded")
-    
+
     return CompanyResponse(
         company_name=company_name,
         data=company_profile,
         source="extraction",
         last_updated=datetime.now(timezone.utc).isoformat(),
         cache_age_days=0,
-        extraction_status="completed"
+        extraction_status="completed",
     )
+
 
 @app.post("/competitor-analysis", response_model=CompetitorResponse)
 async def competitor_analysis(request: CompanyRequest):
     """
     Main endpoint: Extract company data with citations and Firebase caching
-    
+
     - Checks Firebase cache first
     - Extracts fresh data with citations if cache is stale/missing
     - Returns structured company profile with source citations
     """
     company_name = request.company_name.strip()
-    
+
     # Validate input
     is_valid, error_msg = validate_company_name(company_name)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
-    
+
     # Check Firebase cache first
     print(f"🗄️ Checking cache for: {company_name}")
     cached_data = get_competitors_from_firebase(company_name)
     # cached_data = None  # Disable caching for competitor analysis for now
 
-    if cached_data and is_data_fresh(cached_data.get('last_updated')):
+    if cached_data and is_data_fresh(cached_data.get("last_updated")):
         # Return cached data with citations
-        cache_age = (datetime.now(timezone.utc) - cached_data['last_updated']).days
+        cache_age = (datetime.now(timezone.utc) - cached_data["last_updated"]).days
         print(f"🗄️ Returning cached data with citations for: {company_name}")
-        
+
         try:
-            competitor_data = AllCompetitorsInfoWithScore(**cached_data['data'])
+            competitor_data = AllCompetitorsInfoWithScore(**cached_data["data"])
         except ValueError as e:
             print(f"⚠️ Cached data corrupted, re-extracting: {e}")
             # If cached data is corrupted, extract fresh data
@@ -587,149 +620,174 @@ async def competitor_analysis(request: CompanyRequest):
                 source="extraction",  # Was corrupted, so extracted fresh
                 last_updated=datetime.now(timezone.utc).isoformat(),
                 cache_age_days=0,
-                extraction_status="completed"
+                extraction_status="completed",
             )
-        
+
         return CompetitorResponse(
             company_name=company_name,
             data=competitor_data,
             source="database",
-            last_updated=cached_data['last_updated'].isoformat(),
+            last_updated=cached_data["last_updated"].isoformat(),
             cache_age_days=cache_age,
-            extraction_status=cached_data.get('extraction_status', 'completed')
+            extraction_status=cached_data.get("extraction_status", "completed"),
         )
-    
+
     # Extract fresh data using enhanced ADK agent
     print(f"🔍 Finding competitor data for: {company_name}")
     competitor_analysis = await competitor_analysis_with_adk(company_name)
-    
+
     # Save to Firebase
-    save_success = save_company_competitors_to_firebase(company_name, competitor_analysis)
+    save_success = save_company_competitors_to_firebase(
+        company_name, competitor_analysis
+    )
 
     if not save_success:
         print("⚠️ Warning: Failed to save to Firebase, but extraction succeeded")
-    
+
     return CompetitorResponse(
         company_name=company_name,
         data=competitor_analysis,
         source="extraction",
         last_updated=datetime.now(timezone.utc).isoformat(),
         cache_age_days=0,
-        extraction_status="completed"
+        extraction_status="completed",
     )
+
 
 @app.get("/companies", response_model=CompanyListResponse)
 async def list_companies():
     """
     List all companies in the database
-    
+
     Returns list of all cached companies with metadata
     """
     try:
         companies = []
         docs = companies_ref.stream()
-        
+
         for doc in docs:
             data = doc.to_dict()
-            cache_age = (datetime.now(timezone.utc) - data['last_updated']).days if data.get('last_updated') else None
-            
-            companies.append(CompanyListItem(
-                company_name=data.get('company_name', 'Unknown'),
-                industry_sector=data.get("data", {}).get("company_info", {}).get("industry_sector"),
-                year_founded=data.get("data", {}).get("company_info", {}).get("year_founded"),
-                headquarters_location=data.get("data", {}).get("company_info", {}).get("headquarters_location"),
-                latest_valuation=data.get("data", {}).get("financial_data", {}).get("valuation", {}).get("value"),
-                last_updated=data['last_updated'].isoformat() if data.get('last_updated') else None,
-                cache_age_days=cache_age,
-                extraction_status=data.get('extraction_status', 'unknown'),
-                is_fresh=is_data_fresh(data.get('last_updated'))
-            ))
-        
-        return CompanyListResponse(
-            total_companies=len(companies),
-            companies=companies
-        )
-        
+            cache_age = (
+                (datetime.now(timezone.utc) - data["last_updated"]).days
+                if data.get("last_updated")
+                else None
+            )
+
+            companies.append(
+                CompanyListItem(
+                    company_name=data.get("company_name", "Unknown"),
+                    industry_sector=data.get("data", {})
+                    .get("company_info", {})
+                    .get("industry_sector"),
+                    year_founded=data.get("data", {})
+                    .get("company_info", {})
+                    .get("year_founded"),
+                    headquarters_location=data.get("data", {})
+                    .get("company_info", {})
+                    .get("headquarters_location"),
+                    latest_valuation=data.get("data", {})
+                    .get("financial_data", {})
+                    .get("valuation", {})
+                    .get("value"),
+                    last_updated=data["last_updated"].isoformat()
+                    if data.get("last_updated")
+                    else None,
+                    cache_age_days=cache_age,
+                    extraction_status=data.get("extraction_status", "unknown"),
+                    is_fresh=is_data_fresh(data.get("last_updated")),
+                )
+            )
+
+        return CompanyListResponse(total_companies=len(companies), companies=companies)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/stats", response_model=StatsResponse)
 async def get_stats():
     """
     Get database and extraction statistics
-    
+
     Returns statistics about cached companies and recent extractions
     """
     try:
         # Get all companies
         all_companies = list(companies_ref.stream())
         total_count = len(all_companies)
-        
+
         # Count fresh data
         fresh_count = 0
         recent_count = 0  # Last 7 days
-        
+
         for doc in all_companies:
             data = doc.to_dict()
-            last_updated = data.get('last_updated')
-            
+            last_updated = data.get("last_updated")
+
             if is_data_fresh(last_updated, 30):
                 fresh_count += 1
             if is_data_fresh(last_updated, 7):
                 recent_count += 1
-        
+
         # Get recent extraction logs
-        recent_logs = logs_ref.where('timestamp', '>=', datetime.now(timezone.utc) - timedelta(days=7)).stream()
+        recent_logs = logs_ref.where(
+            "timestamp", ">=", datetime.now(timezone.utc) - timedelta(days=7)
+        ).stream()
         recent_extractions = len(list(recent_logs))
-        
-        cache_hit_rate = f"{(fresh_count/total_count*100):.1f}%" if total_count > 0 else "0%"
-        
+
+        cache_hit_rate = (
+            f"{(fresh_count / total_count * 100):.1f}%" if total_count > 0 else "0%"
+        )
+
         return StatsResponse(
             total_companies=total_count,
             fresh_data_count=fresh_count,
             recent_extractions_7d=recent_count,
             extraction_attempts_7d=recent_extractions,
-            cache_hit_rate=cache_hit_rate
+            cache_hit_rate=cache_hit_rate,
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/company/{company_name}", response_model=CompanyResponse)
 async def get_company(company_name: str):
     """
     Get company data from Firebase cache only (no extraction)
-    
+
     Returns cached company data with citations or 404 if not found
     """
     # Validate input
     is_valid, error_msg = validate_company_name(company_name)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
-    
+
     cached_data = get_company_from_firebase(company_name)
-    
+
     if not cached_data:
         raise HTTPException(status_code=404, detail="Company not found in database")
-    
-    cache_age = (datetime.now(timezone.utc) - cached_data['last_updated']).days
-    
+
+    cache_age = (datetime.now(timezone.utc) - cached_data["last_updated"]).days
+
     try:
-        company_profile = deserialize_company_data(cached_data['data'])
+        company_profile = deserialize_company_data(cached_data["data"])
     except ValueError as e:
         raise HTTPException(status_code=422, detail=f"Cached data corrupted: {e}")
-    
+
     return CompanyResponse(
         company_name=company_name,
         data=company_profile,
         source="database",
-        last_updated=cached_data['last_updated'].isoformat(),
+        last_updated=cached_data["last_updated"].isoformat(),
         cache_age_days=cache_age,
-        extraction_status=cached_data.get('extraction_status', 'completed')
+        extraction_status=cached_data.get("extraction_status", "completed"),
     )
 
-    
+
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5005)
+    import os
+
+    uvicorn.run(app, host="0.0.0.0", port=os.environ("PORT"))

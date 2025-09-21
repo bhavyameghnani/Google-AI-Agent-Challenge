@@ -9,7 +9,7 @@ import fitz  # PyMuPDF
 from PIL import Image
 import google.generativeai as genai
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File, HTTPException,Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.responses import JSONResponse
 from typing import List, Dict
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +28,7 @@ from modules.video_transcribe import transcribe_video, SUPPORTED_VIDEO_EXTENSION
 # ===============================
 load_dotenv()
 
+
 def configure_gemini():
     """Configures the Gemini API with the key from environment variables."""
     api_key = os.getenv("GOOGLE_API_KEY")
@@ -35,8 +36,10 @@ def configure_gemini():
         raise ValueError("GOOGLE_API_KEY not found. Please set it in a .env file.")
     genai.configure(api_key=api_key)
 
+
 # Initialize Gemini at startup
 configure_gemini()
+
 
 # ===============================
 # Pydantic Base Model
@@ -51,7 +54,7 @@ class TranscriptRequest(BaseModel):
 app = FastAPI(
     title="Startup Pitch Analyzer API",
     description="Analyze transcripts and pitch decks using Google's Gemini",
-    version="2.0.0"
+    version="2.0.0",
 )
 
 # after creating `app = FastAPI(...)`
@@ -68,9 +71,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
     return {"message": "Welcome to the Startup Pitch Analyzer API "}
+
 
 # --- Transcript Endpoints ---
 @app.post("/analyze-text/")
@@ -80,6 +85,7 @@ async def analyze_text(request: TranscriptRequest):
     insights = analyze_transcript_with_ai(request.transcript)
     return JSONResponse(content=insights)
 
+
 @app.post("/analyze-file/")
 async def analyze_file(file: UploadFile = File(...)):
     if not file.filename.endswith(".txt"):
@@ -88,22 +94,30 @@ async def analyze_file(file: UploadFile = File(...)):
     insights = analyze_transcript_with_ai(content)
     return JSONResponse(content=insights)
 
+
 # --- Audio Transcript Endpoint ---
 @app.post("/analyze-audio/")
 async def analyze_audio(file: UploadFile = File(...)):
     if not file.filename.lower().endswith((".wav", ".mp3", ".m4a", ".ogg")):
-        raise HTTPException(status_code=400, detail="Only audio files (.wav, .mp3, .m4a, .ogg) are supported.")
-    
+        raise HTTPException(
+            status_code=400,
+            detail="Only audio files (.wav, .mp3, .m4a, .ogg) are supported.",
+        )
+
     # Save to temp file
-    with NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[-1]) as tmp:
+    with NamedTemporaryFile(
+        delete=False, suffix=os.path.splitext(file.filename)[-1]
+    ) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
-    
+
     try:
         transcript = transcribe_audio_with_gemini(tmp_path)
         if not transcript or not transcript.strip():
-            raise HTTPException(status_code=500, detail="Transcription failed or returned empty text.")
-        
+            raise HTTPException(
+                status_code=500, detail="Transcription failed or returned empty text."
+            )
+
         insights = analyze_transcript_with_ai(transcript)
         return JSONResponse(content={"transcript": transcript, "analysis": insights})
     finally:
@@ -114,18 +128,20 @@ async def analyze_audio(file: UploadFile = File(...)):
 async def analyze_pitch_deck(file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only .pdf files are supported.")
-    
+
     temp_path = f"temp_{file.filename}"
     with open(temp_path, "wb") as f:
         f.write(await file.read())
-    
+
     try:
         result = process_pitch_deck(temp_path)
         return JSONResponse(content=result)
     finally:
         os.remove(temp_path)
 
+
 SUPPORTED_VIDEO_EXTENSIONS = (".mp4", ".mov", ".mkv", ".avi")
+
 
 @app.post("/analyze-video/")
 async def analyze_video(file: UploadFile = None, youtube_url: str = Form(None)):
@@ -134,14 +150,18 @@ async def analyze_video(file: UploadFile = None, youtube_url: str = Form(None)):
         if youtube_url:
             transcript = transcribe_video(youtube_url, is_youtube=True)
             if not transcript or not transcript.strip():
-                raise HTTPException(status_code=500, detail="Transcription returned empty text.")
+                raise HTTPException(
+                    status_code=500, detail="Transcription returned empty text."
+                )
             analysis = analyze_transcript_with_ai(transcript)
             return {"transcript": transcript, "analysis": analysis}
 
         elif file:
             ext = os.path.splitext(file.filename)[-1].lower()
             if ext not in SUPPORTED_VIDEO_EXTENSIONS:
-                raise HTTPException(status_code=400, detail=f"Unsupported video format: {ext}")
+                raise HTTPException(
+                    status_code=400, detail=f"Unsupported video format: {ext}"
+                )
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
                 tmp.write(await file.read())
@@ -149,12 +169,17 @@ async def analyze_video(file: UploadFile = None, youtube_url: str = Form(None)):
 
             transcript = transcribe_video(tmp_path, is_youtube=False)
             if not transcript or not transcript.strip():
-                raise HTTPException(status_code=500, detail="Transcription returned empty text.")
+                raise HTTPException(
+                    status_code=500, detail="Transcription returned empty text."
+                )
             analysis = analyze_transcript_with_ai(transcript)
             return {"transcript": transcript, "analysis": analysis}
 
         else:
-            raise HTTPException(status_code=400, detail="Please upload a video or provide a YouTube link.")
+            raise HTTPException(
+                status_code=400,
+                detail="Please upload a video or provide a YouTube link.",
+            )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -163,6 +188,9 @@ async def analyze_video(file: UploadFile = None, youtube_url: str = Form(None)):
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
 
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5006)
+    import os
+
+    uvicorn.run(app, host="0.0.0.0", port=os.environ["PORT"])
