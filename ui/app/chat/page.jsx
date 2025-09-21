@@ -43,7 +43,7 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
-import { Navbar } from "../dashboard/page";
+import { Navbar } from "../dashboard/CompanyDashboard";
 
 const models = [
   {

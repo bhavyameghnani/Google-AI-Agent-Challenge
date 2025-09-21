@@ -26,7 +26,7 @@ import {
   Youtube,
   Play,
 } from "lucide-react";
-import { Navbar } from "../dashboard/page";
+import { Navbar } from "../dashboard/CompanyDashboard";
 import PitchAnalysisResults from "./PitchAnalysisResults";
 
 const API_BASE = process.env.NEXT_PUBLIC_PITCH_URL;
