@@ -1,6 +1,6 @@
 // ui/app/dashboard/page.tsx (Server Component)
 import { Suspense } from "react";
-import CompanyDashboard from "@/components/CompanyDashboard";
+import CompanyDashboard from "./CompanyDashboard";
 
 // Loading component for Suspense fallback
 function DashboardLoading() {
