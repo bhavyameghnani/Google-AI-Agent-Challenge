@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
 
 // Import tab components
 import OverviewTab from "./tabs/OverviewTab";
@@ -449,102 +450,104 @@ const CompanyDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Navbar />
 
-      {/* Search Section below navbar */}
-      {!companyData && (
-        <SearchSection
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleSearch={handleSearch}
-          loadingExtract={loadingExtract}
-        />
-      )}
-
-      <div className="container mx-auto px-4 py-8">
-        <InfoBanner />
-
-        {/* Show companies list when not analyzing */}
-        {!loadingExtract && !companyData && (
-          <CompaniesList
-            loadingCompanies={loadingCompanies}
-            companiesList={companiesList}
-            handleCompanyCardClick={handleCompanyCardClick}
-            formatDate={formatDate}
+        {/* Search Section below navbar */}
+        {!companyData && (
+          <SearchSection
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            handleSearch={handleSearch}
+            loadingExtract={loadingExtract}
           />
         )}
 
-        {loadingExtract && (
-          <LoadingState message="Extracting company data..." />
-        )}
+        <div className="container mx-auto px-4 py-8">
+          <InfoBanner />
 
-        {companyData && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <CompanyHeader company={companyData} />
+          {/* Show companies list when not analyzing */}
+          {!loadingExtract && !companyData && (
+            <CompaniesList
+              loadingCompanies={loadingCompanies}
+              companiesList={companiesList}
+              handleCompanyCardClick={handleCompanyCardClick}
+              formatDate={formatDate}
+            />
+          )}
 
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-7">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="insights" disabled={!competitorData}>
-                  Competitive Analysis 🔥
-                  {loadingCompetitors && (
-                    <Loader2 className="h-3 w-3 animate-spin ml-1" />
+          {loadingExtract && (
+            <LoadingState message="Extracting company data..." />
+          )}
+
+          {companyData && (
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <CompanyHeader company={companyData} />
+
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-7">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="insights" disabled={!competitorData}>
+                    Competitive Analysis 🔥
+                    {loadingCompetitors && (
+                      <Loader2 className="h-3 w-3 animate-spin ml-1" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="financials">Financials</TabsTrigger>
+                  <TabsTrigger value="people">People</TabsTrigger>
+                  <TabsTrigger value="market">Market</TabsTrigger>
+                  <TabsTrigger value="news">News</TabsTrigger>
+                  <TabsTrigger value="ai-chat">
+                    <Bot className="h-4 w-4 mr-1" />
+                    🤖 Talk to SenseAI
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="mt-6">
+                  <OverviewTab company={companyData} />
+                </TabsContent>
+
+                <TabsContent value="financials" className="mt-6">
+                  <FinancialsTab company={companyData} />
+                </TabsContent>
+
+                <TabsContent value="people" className="mt-6">
+                  <PeopleTab company={companyData} />
+                </TabsContent>
+
+                <TabsContent value="market" className="mt-6">
+                  <MarketTab company={companyData} />
+                </TabsContent>
+
+                <TabsContent value="news" className="mt-6">
+                  <NewsTab company={companyData} />
+                </TabsContent>
+
+                <TabsContent value="insights" className="mt-6">
+                  {loadingCompetitors ? (
+                    <LoadingState message="Analyzing competitors..." />
+                  ) : competitorData ? (
+                    <InsightsTab
+                      company={companyData}
+                      competitors={competitorData}
+                    />
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">
+                        Competitor analysis will appear here
+                      </p>
+                    </div>
                   )}
-                </TabsTrigger>
-                <TabsTrigger value="financials">Financials</TabsTrigger>
-                <TabsTrigger value="people">People</TabsTrigger>
-                <TabsTrigger value="market">Market</TabsTrigger>
-                <TabsTrigger value="news">News</TabsTrigger>
-                <TabsTrigger value="ai-chat">
-                  <Bot className="h-4 w-4 mr-1" />
-                  🤖 Talk to SenseAI
-                </TabsTrigger>
-              </TabsList>
+                </TabsContent>
 
-              <TabsContent value="overview" className="mt-6">
-                <OverviewTab company={companyData} />
-              </TabsContent>
-
-              <TabsContent value="financials" className="mt-6">
-                <FinancialsTab company={companyData} />
-              </TabsContent>
-
-              <TabsContent value="people" className="mt-6">
-                <PeopleTab company={companyData} />
-              </TabsContent>
-
-              <TabsContent value="market" className="mt-6">
-                <MarketTab company={companyData} />
-              </TabsContent>
-
-              <TabsContent value="news" className="mt-6">
-                <NewsTab company={companyData} />
-              </TabsContent>
-
-              <TabsContent value="insights" className="mt-6">
-                {loadingCompetitors ? (
-                  <LoadingState message="Analyzing competitors..." />
-                ) : competitorData ? (
-                  <InsightsTab
-                    company={companyData}
-                    competitors={competitorData}
-                  />
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">
-                      Competitor analysis will appear here
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="ai-chat" className="mt-6">
-                <AIChatTab companyData={companyData} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-      </div>
+                <TabsContent value="ai-chat" className="mt-6">
+                  <AIChatTab companyData={companyData} />
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </div>
+      </Suspense>
     </div>
   );
 };
