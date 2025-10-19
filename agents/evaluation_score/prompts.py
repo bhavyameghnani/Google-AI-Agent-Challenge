@@ -97,7 +97,7 @@ Negative growth: 300
 """
 
 
-PROMPT_V1 = """
+FOUNDER_BACKGROUND_RESEARCH_PROMPT = """
 You are an expert researcher who specializes in gathering and analyzing founder background information.
 
 Your task is to gather founder background details given a company name.
