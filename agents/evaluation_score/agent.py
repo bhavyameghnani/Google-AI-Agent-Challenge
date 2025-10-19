@@ -180,6 +180,8 @@ format_agent = LlmAgent(
         """
     ),
     output_schema=MultipleFoundersData,
+    disallow_transfer_to_parent=True, # <---- here 
+    disallow_transfer_to_peers=True, # <---- here 
 )
 
 points_attributer_agent = LlmAgent(
@@ -194,6 +196,8 @@ points_attributer_agent = LlmAgent(
         POINTS_ATTRIBUTER_PROMPT_V1
     ),
     output_schema=MultipleFoundersScore,
+    disallow_transfer_to_parent=True, # <---- here 
+    disallow_transfer_to_peers=True, # <---- here 
 )
 
 AGENT_NAME = "calculator_agent"
@@ -251,6 +255,8 @@ format_agent2 = LlmAgent(
     ),
     output_schema=EvaluationScoreComplete,
     output_key="evaluation_scores",
+    disallow_transfer_to_parent=True, # <---- here 
+    disallow_transfer_to_peers=True, # <---- here 
 )
 
 data_fetcher_agent = ParallelAgent(
@@ -285,6 +291,8 @@ data_combiner_agent = LlmAgent(
     ),
     output_schema=EvaluationScoreComplete,
     output_key="final_evaluation_scores",
+    disallow_transfer_to_parent=True, # <---- here 
+    disallow_transfer_to_peers=True, # <---- here 
 )
 
 final_evaluation_score_agent = SequentialAgent(

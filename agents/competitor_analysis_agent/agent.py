@@ -60,6 +60,8 @@ data_formatter_agent = LlmAgent(
       You are an expert data analyst. Your task is to format the competitor data fetched by the previous agent into a structured JSON format."""
     ),
     output_schema=AllCompetitorsInfo,
+    disallow_transfer_to_parent=True, # <---- here 
+    disallow_transfer_to_peers=True, # <---- here 
 )
 
 competitor_analysis_agent = SequentialAgent(
