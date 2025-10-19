@@ -4,7 +4,7 @@ from google.adk.agents import Agent, LlmAgent, SequentialAgent
 from google.adk.tools import google_search
 
 from evaluation_score.agent import EvaluationScoreComplete
-from .prompts import PROMPT_V1
+from .prompts import COMPETITOR_ANALYSIS_PROMPT
 from pydantic import BaseModel
 
 # class FundingRound(BaseModel):
@@ -41,7 +41,7 @@ data_fetcher_agent = Agent(
         "Agent to gather competitor details of a company."
     ), 
     instruction=(
-PROMPT_V1
+COMPETITOR_ANALYSIS_PROMPT
     ),
     tools=[google_search],
 )
