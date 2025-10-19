@@ -27,14 +27,20 @@ if not os.getenv("GOOGLE_API_KEY"):
     print("Please add GOOGLE_API_KEY to your .env file")
 
 # Import your enhanced ADK agent with citations
-from agents.research_agent.agent import root_agent, CompanyProfile
-from competitor_analysis_agent.agent import (
-    competitor_analysis_agent,
+from agents.research_agent.agent import root_agent
+from agents.research_agent.models import CompanyProfile
+from competitor_analysis_agent.models import (
     AllCompetitorsInfo,
     CompetitorInfoWithScore,
     AllCompetitorsInfoWithScore,
 )
-from evaluation_score.agent import final_evaluation_score_agent, EvaluationScoreComplete
+from competitor_analysis_agent.agent import (
+    competitor_analysis_agent,
+ 
+)
+from evaluation_score.agent import final_evaluation_score_agent
+
+from evaluation_score.models import  EvaluationScoreComplete
 
 # Initialize FastAPI app
 app = FastAPI(

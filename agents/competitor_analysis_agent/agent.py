@@ -1,38 +1,10 @@
-import datetime
-from zoneinfo import ZoneInfo
 from google.adk.agents import Agent, LlmAgent, SequentialAgent
 from google.adk.tools import google_search
 
-from evaluation_score.agent import EvaluationScoreComplete
 from .prompts import COMPETITOR_ANALYSIS_PROMPT
-from pydantic import BaseModel
+from .models import AllCompetitorsInfo
 
-# class FundingRound(BaseModel):
-#     amount: str
-#     round_type: str
-
-class CompetitorInfo(BaseModel):
-    competitor_name: str
-    # funding_rounds: list[FundingRound]
-    last_funding: str  # derived attribute
-    stage: str
-    total_funding: str  # derived attribute
-    location: str
-
-class CompetitorInfoWithScore(BaseModel):
-    competitor_name: str
-    # funding_rounds: list[FundingRound]
-    last_funding: str  # derived attribute
-    stage: str
-    total_funding: str  # derived attribute
-    location: str
-    evaluation_score: EvaluationScoreComplete
-    
-class AllCompetitorsInfo(BaseModel):
-    competitors: list[CompetitorInfo]
-
-class AllCompetitorsInfoWithScore(BaseModel):
-    competitors: list[CompetitorInfoWithScore]
+ 
 
 data_fetcher_agent = Agent(
     name="competitor_analysis_agent",
