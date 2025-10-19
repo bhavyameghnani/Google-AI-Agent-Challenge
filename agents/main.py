@@ -27,7 +27,7 @@ if not os.getenv("GOOGLE_API_KEY"):
     print("Please add GOOGLE_API_KEY to your .env file")
 
 # Import your enhanced ADK agent with citations
-from research_agent.agentv2 import root_agent, CompanyProfile
+from agents.research_agent.agent import root_agent, CompanyProfile
 from competitor_analysis_agent.agent import (
     competitor_analysis_agent,
     AllCompetitorsInfo,
