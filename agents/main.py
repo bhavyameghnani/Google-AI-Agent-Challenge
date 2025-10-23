@@ -60,9 +60,6 @@ app.add_middleware(
 )
 
 # Initialize Firebase
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-    "ai-agent-company-data-firebase-adminsdk-creds.json"
-)
 cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred)
 

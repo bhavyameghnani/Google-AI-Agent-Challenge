@@ -13,7 +13,6 @@ WORKDIR /app
 
 # Copy the requirements file into the container
 COPY requirements.txt .
-COPY ai-agent-company-data-firebase-adminsdk-creds.json .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
