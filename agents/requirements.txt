@@ -5,3 +5,4 @@ fastapi
 pydantic
 firebase-admin
 google-genai
+PyMuPDF

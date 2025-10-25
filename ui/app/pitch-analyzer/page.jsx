@@ -39,6 +39,7 @@ export default function StartupPitchAnalyzer() {
   const [videoFile, setVideoFile] = useState(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingFactCheck, setLoadingFactCheck] = useState(false);
   const [loadingVideo, setLoadingVideo] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -140,6 +141,32 @@ export default function StartupPitchAnalyzer() {
       setError(String(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const factCheckPdfFile = async () => {
+    setError("");
+    if (!pdfFile) {
+      setError("Select a .pdf file to upload for fact-checking.");
+      return;
+    }
+    setLoadingFactCheck(true);
+    setResult(null);
+    try {
+      const form = new FormData();
+      form.append("file", pdfFile);
+      const res = await fetch(`${API_BASE.replace(/\/$/,"")}/fact-check`, {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Server error");
+      // attach fact-check report into result so PitchAnalysisResults can render it
+      setResult({ ...data, _fact_check: true });
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoadingFactCheck(false);
     }
   };
 
@@ -429,7 +456,7 @@ export default function StartupPitchAnalyzer() {
 
                     <Button
                       onClick={uploadPdfFile}
-                      disabled={loading || !pdfFile}
+                      disabled={loading || loadingFactCheck || !pdfFile}
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
                     >
                       {loading ? (
@@ -444,6 +471,26 @@ export default function StartupPitchAnalyzer() {
                         </>
                       )}
                     </Button>
+                    <div className="mt-2">
+                      <Button
+                        onClick={factCheckPdfFile}
+                        disabled={loadingFactCheck || !pdfFile}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        {loadingFactCheck ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Fact-checking...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Fact-check Pitch Deck (PDF)
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="video" className="space-y-4">

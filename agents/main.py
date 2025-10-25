@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 
 import dotenv
 import firebase_admin
+import fitz
 from competitor_analysis_agent.agent import (
     competitor_analysis_agent,
 )
@@ -19,7 +20,9 @@ from competitor_analysis_agent.models import (
 )
 from evaluation_score.agent import final_evaluation_score_agent
 from evaluation_score.models import EvaluationScoreComplete
-from fastapi import FastAPI, HTTPException
+from fact_check_agent.agent import root_agent as fact_check_root
+from fact_check_agent.models import FactCheckReport
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from firebase_admin import credentials, firestore
 from google.adk.runners import Runner
@@ -38,6 +41,7 @@ if not os.getenv("GOOGLE_API_KEY"):
     print("WARNING: GOOGLE_API_KEY not found in environment variables")
     print("Please add GOOGLE_API_KEY to your .env file")
 
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Company Data Extraction API with Citations",
@@ -55,7 +59,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Firebase
+LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
+
+if LOCAL_RUN:
+    # Initialize Firebase
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+        "ai-agent-company-data-firebase-adminsdk-creds.json"
+    )
+    print("⚠️ Running in LOCAL_RUN mode with local Firebase credentials")
+
 cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred)
 
@@ -579,6 +591,206 @@ async def extract_company(request: CompanyRequest):
     )
 
 
+@app.post("/fact-check", response_model=FactCheckReport)
+async def fact_check_pdf(file: UploadFile = File(...)):
+    """Accept a PDF upload, extract text, run the fact-check agent pipeline, and return a structured report."""
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    # Save uploaded file temporarily
+    tmp_path = f"temp_{uuid.uuid4().hex}.pdf"
+    with open(tmp_path, "wb") as f:
+        f.write(await file.read())
+
+    try:
+        try:
+            # Extract text from PDF using PyMuPDF (fitz)
+            doc = fitz.open(tmp_path)
+            full_text = []
+            for page in doc:
+                text = page.get_text("text")
+                # include page markers for traceability
+                full_text.append(f"[PAGE {page.number + 1}]\n" + text)
+            doc.close()
+
+            combined_text = "\n\n".join(full_text)
+
+            # Run the ADK agent pipeline (reuse Runner pattern used elsewhere)
+            session_service = InMemorySessionService()
+            runner = Runner(
+                agent=fact_check_root,
+                app_name="fact_check",
+                session_service=session_service,
+            )
+            session_id = f"factcheck_{uuid.uuid4().hex[:8]}"
+
+            await session_service.create_session(
+                app_name="fact_check", user_id="api_user", session_id=session_id
+            )
+
+            content = types.Content(role="user", parts=[types.Part(text=combined_text)])
+
+            # Collect events
+            events = [
+                event
+                for event in runner.run(
+                    user_id="api_user", session_id=session_id, new_message=content
+                )
+            ]
+            final_event = events[-1] if events else None
+
+            if (
+                final_event
+                and final_event.is_final_response()
+                and final_event.content
+                and final_event.content.parts
+            ):
+                # Expect agent to return JSON string representing the fact-check report
+                json_string = final_event.content.parts[0].text
+
+                if not json_string or not json_string.strip():
+                    # Agent returned an empty response (often due to LLM errors like rate limiting or overload)
+                    print(
+                        "⚠️ Agent returned empty final content. Possible model error or overload."
+                    )
+                    # Try to extract any error text from the final_event
+                    try:
+                        print("Final event object:", repr(final_event))
+                    except Exception:
+                        pass
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Model did not return a response (possibly overloaded). Please retry later.",
+                    )
+
+                try:
+                    report_obj = json.loads(json_string)
+                except json.JSONDecodeError:
+                    # Log the invalid JSON for debugging and attempt to salvage a JSON substring
+                    print(
+                        "⚠️ Agent returned non-JSON response (attempting to salvage JSON):"
+                    )
+                    print(json_string[:2000])
+
+                    # Try to extract a JSON array or object substring from the returned text
+                    import re
+
+                    def try_extract_json(s: str):
+                        # Search for a JSON array first
+                        start = s.find("[")
+                        if start != -1:
+                            # Try progressively smaller end positions to find a valid JSON array
+                            for end in range(len(s) - 1, start - 1, -1):
+                                if s[end] == "]":
+                                    candidate = s[start : end + 1]
+                                    try:
+                                        return json.loads(candidate)
+                                    except Exception:
+                                        continue
+
+                        # Search for a JSON object as a fallback
+                        start = s.find("{")
+                        if start != -1:
+                            for end in range(len(s) - 1, start - 1, -1):
+                                if s[end] == "}":
+                                    candidate = s[start : end + 1]
+                                    try:
+                                        return json.loads(candidate)
+                                    except Exception:
+                                        continue
+
+                        return None
+
+                    salvaged = try_extract_json(json_string)
+                    if salvaged is not None:
+                        print("✅ Successfully salvaged JSON from agent output")
+                        report_obj = salvaged
+                        # If agent returned a list of results (legacy format), convert it
+                        # to the expected FactCheckReport mapping: {"claims": [FactCheckResult,...]}
+                        if isinstance(report_obj, list):
+                            transformed = {"claims": []}
+                            for item in report_obj:
+                                # normalize fields
+                                claim_id = item.get("claim_id") or item.get("id")
+                                # Ensure id is a string for Pydantic
+                                if claim_id is not None:
+                                    claim_id = (
+                                        str(claim_id) if claim_id is not None else ""
+                                    )
+
+                                claim_text = (
+                                    item.get("claim_text")
+                                    or item.get("claim")
+                                    or item.get("text")
+                                    or ""
+                                )
+                                claim_text = (
+                                    str(claim_text) if claim_text is not None else ""
+                                )
+
+                                # map supporting evidence urls to EvidenceItem-like dicts
+                                supporting = (
+                                    item.get("supporting_evidence")
+                                    or item.get("supporting_evidences")
+                                    or []
+                                )
+                                evidences = []
+                                for ev in supporting:
+                                    if isinstance(ev, dict):
+                                        evidences.append(
+                                            {
+                                                "url": ev.get("url"),
+                                                "title": ev.get("title"),
+                                                "snippet": ev.get("snippet"),
+                                            }
+                                        )
+                                    else:
+                                        evidences.append({"url": ev})
+
+                                transformed["claims"].append(
+                                    {
+                                        "claim": {"id": claim_id, "text": claim_text},
+                                        "verdict": item.get("verdict")
+                                        or "Unsubstantiated",
+                                        "evidences": evidences,
+                                        "corrected_value": item.get("corrected_claim")
+                                        or item.get("corrected_value"),
+                                        "reasoning": item.get("reasoning"),
+                                    }
+                                )
+
+                            report_obj = transformed
+                    else:
+                        # Could not salvage JSON — fallback to empty claims array
+                        print(
+                            "❌ Could not salvage JSON. Returning empty claims array."
+                        )
+                        return FactCheckReport(claims=[])
+
+                # Return using Pydantic model validation
+                return FactCheckReport(**report_obj)
+            else:
+                # Backend fallback: return empty claims array if agent output is not valid JSON
+                print(
+                    "❌ Agent did not produce a valid final response. Returning empty claims array."
+                )
+                return FactCheckReport(claims=[])
+
+        except Exception as e:
+            # Print full traceback to server console for debugging
+            import traceback
+
+            traceback.print_exc()
+            # Return a controlled error to the client (preserves CORS headers)
+            raise HTTPException(
+                status_code=500, detail=f"Server error: {type(e).__name__}: {e}"
+            )
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
 @app.post("/competitor-analysis", response_model=CompetitorResponse)
 async def competitor_analysis(request: CompanyRequest):
     """
@@ -789,4 +1001,5 @@ async def get_company(company_name: str):
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=os.environ("PORT"))
