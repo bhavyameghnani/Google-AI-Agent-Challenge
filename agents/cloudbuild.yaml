@@ -19,3 +19,5 @@ steps:
     - 'asia-south1'
 images:
 - 'asia-south1-docker.pkg.dev/glimpsify-445707/i-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA'
+options:
+  logging: CLOUD_LOGGING_ONLY
