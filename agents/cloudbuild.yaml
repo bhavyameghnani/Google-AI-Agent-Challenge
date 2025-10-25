@@ -1,11 +1,11 @@
 steps:
 # Build the image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA', '.']
+  args: ['build', '-t', 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/dev-ai-startup-evaluator-service:$COMMIT_SHA', '.']
   dir: 'agents'
 # Push the image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA']
+  args: ['push', 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/dev-ai-startup-evaluator-service:$COMMIT_SHA']
 # Deploy image to Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
@@ -14,10 +14,10 @@ steps:
     - 'deploy'
     - 'dev-ai-startup-evaluator-service'
     - '--image'
-    - 'asia-south1-docker.pkg.dev/glimpsify-445707/i-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA'
+    - 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/dev-ai-startup-evaluator-service:$COMMIT_SHA'
     - '--region'
     - 'asia-south1'
 images:
-- 'asia-south1-docker.pkg.dev/glimpsify-445707/i-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA'
+- 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/dev-ai-startup-evaluator-service:$COMMIT_SHA'
 options:
   logging: CLOUD_LOGGING_ONLY
