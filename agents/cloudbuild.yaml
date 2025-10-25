@@ -27,9 +27,7 @@ steps:
       - "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/dev-ai-startup-evaluator-service:$COMMIT_SHA"
       - "--region"
       - "asia-south1"
-    env:
-      - "GOOGLE_GENAI_USE_VERTEXAI=${_GOOGLE_GENAI_USE_VERTEXAI}"
-      - "GOOGLE_API_KEY=${_GOOGLE_API_KEY}"
+      - "--set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=${_GOOGLE_GENAI_USE_VERTEXAI},GOOGLE_API_KEY=${_GOOGLE_API_KEY}"
 images:
   - "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/dev-ai-startup-evaluator-service:$COMMIT_SHA"
 options:
