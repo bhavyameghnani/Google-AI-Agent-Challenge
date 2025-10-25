@@ -1,7 +1,14 @@
 from .models import CompanyProfile
 from google.adk.agents import LlmAgent, ParallelAgent, SequentialAgent
 from google.adk.tools import google_search
-from .prompts import FINANCIAL_DATA_EXTRACTION_INSTRUCTIONS, LEADERSHIP_PROFILE_EXTRACTION_INSTRUCTIONS, MARKET_DATA_EXTRACTION_INSTRUCTIONS, REPUTATION_DATA_EXTRACTION_INSTRUCTIONS, COMPANY_BASIC_INFO_EXTRACTION_INSTRUCTIONS, COMPANY_PROFILE_DATA_SYNTHESIS_INSTRUCTIONS
+from .prompts import (
+    FINANCIAL_DATA_EXTRACTION_INSTRUCTIONS,
+    LEADERSHIP_PROFILE_EXTRACTION_INSTRUCTIONS,
+    MARKET_DATA_EXTRACTION_INSTRUCTIONS,
+    REPUTATION_DATA_EXTRACTION_INSTRUCTIONS,
+    COMPANY_BASIC_INFO_EXTRACTION_INSTRUCTIONS,
+    COMPANY_PROFILE_DATA_SYNTHESIS_INSTRUCTIONS,
+)
 
 
 # Model configuration
@@ -10,32 +17,32 @@ GEMINI_MODEL = "gemini-2.0-flash"
 
 # Enhanced Financial Agent with Citations
 financial_agent = LlmAgent(
-    name="FinancialAgent", 
+    name="FinancialAgent",
     model=GEMINI_MODEL,
     instruction=FINANCIAL_DATA_EXTRACTION_INSTRUCTIONS,
     description="Extracts financial metrics with mandatory source citations.",
     tools=[google_search],
-    output_key="financial_data"
+    output_key="financial_data",
 )
 
 # Enhanced People Agent with Citations
 people_agent = LlmAgent(
     name="PeopleAgent",
-    model=GEMINI_MODEL, 
+    model=GEMINI_MODEL,
     instruction=LEADERSHIP_PROFILE_EXTRACTION_INSTRUCTIONS,
     description="Extracts leadership profiles with source citations.",
     tools=[google_search],
-    output_key="people_data"
+    output_key="people_data",
 )
 
-# Enhanced Market Agent with Citations  
+# Enhanced Market Agent with Citations
 market_agent = LlmAgent(
     name="MarketAgent",
     model=GEMINI_MODEL,
     instruction=MARKET_DATA_EXTRACTION_INSTRUCTIONS,
     description="Extracts market data with mandatory source citations.",
     tools=[google_search],
-    output_key="market_data"
+    output_key="market_data",
 )
 
 # Enhanced Reputation Agent with News Citations
@@ -45,7 +52,7 @@ reputation_agent = LlmAgent(
     instruction=REPUTATION_DATA_EXTRACTION_INSTRUCTIONS,
     description="Extracts reputation data with mandatory news citations.",
     tools=[google_search],
-    output_key="reputation_data"
+    output_key="reputation_data",
 )
 
 # Keep existing company_info_agent unchanged
@@ -55,7 +62,7 @@ company_info_agent = LlmAgent(
     instruction=COMPANY_BASIC_INFO_EXTRACTION_INSTRUCTIONS,
     description="Extracts basic company information with selective citations.",
     tools=[google_search],
-    output_key="company_info_data"
+    output_key="company_info_data",
 )
 
 # Create the ParallelAgent
@@ -66,9 +73,9 @@ parallel_extraction_agent = ParallelAgent(
         financial_agent,
         people_agent,
         market_agent,
-        reputation_agent
+        reputation_agent,
     ],
-    description="Runs multiple company data extraction agents in parallel with citation requirements."
+    description="Runs multiple company data extraction agents in parallel with citation requirements.",
 )
 
 # Enhanced Data Synthesis Agent
@@ -79,17 +86,14 @@ data_synthesis_agent = LlmAgent(
     description="Synthesizes company data into structured profile with cleaned citations.",
     output_schema=CompanyProfile,
     disallow_transfer_to_parent=True,
-    disallow_transfer_to_peers=True
+    disallow_transfer_to_peers=True,
 )
 
 # Create the SequentialAgent
 company_analysis_pipeline = SequentialAgent(
     name="CompanyAnalysisPipeline",
-    sub_agents=[
-        parallel_extraction_agent,
-        data_synthesis_agent
-    ],
-    description="Coordinates parallel data extraction with citations and synthesizes comprehensive company profile."
+    sub_agents=[parallel_extraction_agent, data_synthesis_agent],
+    description="Coordinates parallel data extraction with citations and synthesizes comprehensive company profile.",
 )
 
 # Main agent

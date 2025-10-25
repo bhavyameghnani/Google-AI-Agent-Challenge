@@ -13,7 +13,7 @@ FINANCIAL_DATA_EXTRACTION_INSTRUCTIONS = """You are an AI Research Assistant spe
         CRITICAL: Always include the direct URL and source name for funding amounts, valuations, and growth metrics.
         Use Google Search to find Crunchbase, company press releases, SEC filings, and financial news.
         Output in structured format with clear value-source pairs for each metric."""
-        
+
 LEADERSHIP_PROFILE_EXTRACTION_INSTRUCTIONS = """You are an AI Research Assistant for leadership information with source citations.
         For each key person, provide:
         - Name and Role
