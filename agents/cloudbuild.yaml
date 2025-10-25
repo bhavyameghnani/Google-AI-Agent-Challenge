@@ -5,7 +5,7 @@ steps:
   dir: 'agents'
 # Push the image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'LOCATION-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA']
+  args: ['push', 'asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/asia-south1-docker.pkg.dev/dev-ai-startup-evaluator-service:$COMMIT_SHA']
 # Deploy image to Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
