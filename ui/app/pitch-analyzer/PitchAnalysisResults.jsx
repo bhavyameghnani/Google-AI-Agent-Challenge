@@ -41,7 +41,10 @@ const PitchAnalysisResults = ({ result }) => {
     }
   }
 
-  if (!analysisData || analysisData.length === 0) {
+  // If there's no analysis data, only return early when there's also no fact-check
+  // report. This lets the fact-check UI render independently without changing
+  // the existing pitch-deck analysis UI.
+  if ((!analysisData || analysisData.length === 0) && !result?._fact_check) {
     return (
       <div className="text-center py-8">
         <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -55,6 +58,88 @@ const PitchAnalysisResults = ({ result }) => {
 
   return (
     <div className="space-y-6">
+      {/* Fact-check status */}
+      {result?._fact_check ? (
+        <div className="mb-2">
+          <span className="text-green-700 font-semibold">Fact-check successful</span>
+        </div>
+      ) : (
+        <div className="mb-2">
+          <span className="text-red-700 font-semibold">Fact-check failed or no claims found</span>
+        </div>
+      )}
+
+      {/* Fact-check results (if any) */}
+      {result?._fact_check && result.results && Array.isArray(result.results) && (
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Info className="h-4 w-4 text-slate-600" /> Fact-check Results
+          </h3>
+          <div className="space-y-4">
+            {result.results.map((r, i) => {
+              // support variations in shape: r.evidence_items (objects) or r.supporting_evidence (urls)
+              const evidenceItems = Array.isArray(r.evidence_items)
+                ? r.evidence_items
+                : Array.isArray(r.supporting_evidence)
+                ? r.supporting_evidence.map((u) => ({ url: u, title: u }))
+                : [];
+
+              // friendly verdict label and color
+              const verdict = r.verdict || "Unsubstantiated";
+              const verdictColor =
+                verdict === "Supported"
+                  ? "text-emerald-700 bg-emerald-50"
+                  : verdict === "Contradicted"
+                  ? "text-red-700 bg-red-50"
+                  : "text-amber-700 bg-amber-50";
+
+              const confidence = typeof r.confidence === "number" ? Math.round(r.confidence * 100) : (r.confidence ? r.confidence : "-");
+
+              return (
+                <div key={i} className="p-4 bg-white rounded-lg border border-gray-200">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="text-sm text-muted-foreground mb-1">Claim</div>
+                      <div className="text-base font-medium text-foreground">{r.claim_text || `Claim ${r.claim_id}`}</div>
+                      {r.context && (
+                        <div className="text-sm text-muted-foreground mt-2">{r.context}</div>
+                      )}
+                    </div>
+
+                    <div className="flex-shrink-0 text-right">
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${verdictColor}`}>
+                        {verdict}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-2">Confidence: {typeof confidence === 'number' ? `${confidence}%` : confidence}</div>
+                    </div>
+                  </div>
+
+                  {evidenceItems.length > 0 && (
+                    <div className="mt-3">
+                      <div className="text-xs text-muted-foreground mb-2">Evidence</div>
+                      <div className="space-y-2">
+                        {evidenceItems.map((ev, j) => (
+                          <div key={j} className="p-3 bg-slate-50 rounded-md border border-slate-100">
+                            <a href={ev.url || ev} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 underline">
+                              {ev.title || ev.url || ev}
+                            </a>
+                            {ev.snippet && <div className="text-sm text-muted-foreground mt-1">{ev.snippet}</div>}
+                            <div className="text-xs text-muted-foreground mt-1">{ev.source || ev.domain || (ev.url && new URL(ev.url).hostname) || ""} {ev.published_date ? ` • ${new Date(ev.published_date).toLocaleDateString()}` : ""}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {r.corrected_claim && (
+                    <div className="mt-3 text-sm text-slate-700">Corrected: <span className="font-medium">{r.corrected_claim}</span></div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* Analysis Header */}
       <div className="flex items-center gap-2 text-green-600 mb-6">
         <Star className="h-5 w-5" />
