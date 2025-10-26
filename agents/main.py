@@ -1,46 +1,42 @@
-# app.py - Updated FastAPI Firebase Implementation for Company Data Extraction with Citations
+"""Main API server for Company Data Extraction with Citations and Competitor Analysis with Scoring using Google ADK"""
+
 import asyncio
-
-import dotenv
-
-dotenv.load_dotenv()
-
+import json
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Dict, Any
-import json
+from typing import Any, Dict, List, Optional
 
+import dotenv
+import firebase_admin
+from competitor_analysis_agent.agent import (
+    competitor_analysis_agent,
+)
+from competitor_analysis_agent.models import (
+    AllCompetitorsInfo,
+    AllCompetitorsInfoWithScore,
+    CompetitorInfoWithScore,
+)
+from evaluation_score.agent import final_evaluation_score_agent
+from evaluation_score.models import EvaluationScoreComplete
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from firebase_admin import credentials, firestore
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
-
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-import firebase_admin
-from firebase_admin import credentials, firestore
-
-if not os.getenv("GOOGLE_API_KEY"):
-    print("WARNING: GOOGLE_API_KEY not found in environment variables")
-    print("Please add GOOGLE_API_KEY to your .env file")
 
 # Import your enhanced ADK agent with citations
 from research_agent.agent import root_agent
 from research_agent.models import CompanyProfile
-from competitor_analysis_agent.models import (
-    AllCompetitorsInfo,
-    CompetitorInfoWithScore,
-    AllCompetitorsInfoWithScore,
-)
-from competitor_analysis_agent.agent import (
-    competitor_analysis_agent,
- 
-)
-from evaluation_score.agent import final_evaluation_score_agent
 
-from evaluation_score.models import  EvaluationScoreComplete
+dotenv.load_dotenv()
+
+
+if not os.getenv("GOOGLE_API_KEY"):
+    print("WARNING: GOOGLE_API_KEY not found in environment variables")
+    print("Please add GOOGLE_API_KEY to your .env file")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -692,9 +688,11 @@ async def list_companies():
                     .get("financial_data", {})
                     .get("valuation", {})
                     .get("value"),
-                    last_updated=data["last_updated"].isoformat()
-                    if data.get("last_updated")
-                    else None,
+                    last_updated=(
+                        data["last_updated"].isoformat()
+                        if data.get("last_updated")
+                        else None
+                    ),
                     cache_age_days=cache_age,
                     extraction_status=data.get("extraction_status", "unknown"),
                     is_fresh=is_data_fresh(data.get("last_updated")),
@@ -791,6 +789,4 @@ async def get_company(company_name: str):
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn
-    import os
-
     uvicorn.run(app, host="0.0.0.0", port=os.environ("PORT"))

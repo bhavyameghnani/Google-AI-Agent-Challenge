@@ -1,21 +1,22 @@
-from .models import MultipleFoundersData, MultipleFoundersScore, EvaluationScoreComplete
-from google.adk.agents import Agent, LlmAgent, SequentialAgent, ParallelAgent
-from google.adk.tools import google_search
-from .prompts import FOUNDER_BACKGROUND_RESEARCH_PROMPT, POINTS_ATTRIBUTER_PROMPT_V1, FOUNDER_BACKGROUND_SCORE_CALCULATOR_PROMPT_V1
-from .prompts import FOUNDER_BACKGROUND_RESEARCH_PROMPT, POINTS_ATTRIBUTER_PROMPT_V1, REVENUE_GROWTH_SCORE_PROMPT, FINANCIAL_STRENGTH_SCORE_PROMPT, INDUSTRY_HEALTH_SCORE_PROMPT
-
+from google.adk.agents import Agent, LlmAgent, ParallelAgent, SequentialAgent
 from google.adk.code_executors import BuiltInCodeExecutor
+from google.adk.tools import google_search
 
+from .models import EvaluationScoreComplete, MultipleFoundersData, MultipleFoundersScore
+from .prompts import (
+    FINANCIAL_STRENGTH_SCORE_PROMPT,
+    FOUNDER_BACKGROUND_RESEARCH_PROMPT,
+    FOUNDER_BACKGROUND_SCORE_CALCULATOR_PROMPT_V1,
+    INDUSTRY_HEALTH_SCORE_PROMPT,
+    POINTS_ATTRIBUTER_PROMPT_V1,
+    REVENUE_GROWTH_SCORE_PROMPT,
+)
 
 founder_background_agent = Agent(
     name="founder_background_agent",
     model="gemini-2.5-pro",
-    description=(
-        "Agent to gather founder background details."
-    ),
-    instruction=(
-FOUNDER_BACKGROUND_RESEARCH_PROMPT
-    ),
+    description=("Agent to gather founder background details."),
+    instruction=(FOUNDER_BACKGROUND_RESEARCH_PROMPT),
     tools=[google_search],
 )
 
@@ -33,8 +34,8 @@ format_agent = LlmAgent(
         """
     ),
     output_schema=MultipleFoundersData,
-    disallow_transfer_to_parent=True, # <---- here 
-    disallow_transfer_to_peers=True, # <---- here 
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )
 
 points_attributer_agent = LlmAgent(
@@ -45,12 +46,10 @@ points_attributer_agent = LlmAgent(
         This is an agent that attributes points based on the the rubric provided in the instruction.
         """
     ),
-    instruction=(
-        POINTS_ATTRIBUTER_PROMPT_V1
-    ),
+    instruction=(POINTS_ATTRIBUTER_PROMPT_V1),
     output_schema=MultipleFoundersScore,
-    disallow_transfer_to_parent=True, # <---- here 
-    disallow_transfer_to_peers=True, # <---- here 
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )
 
 AGENT_NAME = "calculator_agent"
@@ -81,19 +80,25 @@ founder_background_score = SequentialAgent(
         5. It returns only the final overall founder background score as plain text. Without markdown or code.
         """
     ),
-    sub_agents=[founder_background_agent, format_agent, points_attributer_agent, code_agent],
+    sub_agents=[
+        founder_background_agent,
+        format_agent,
+        points_attributer_agent,
+        code_agent,
+    ],
 )
 
 
 startup_evaluation_agent = Agent(
     name="startup_evaluation_agent",
     model="gemini-2.5-pro",
-    description=(
-        "Agent to calculate startup evaluation scores."
-    ),
+    description=("Agent to calculate startup evaluation scores."),
     instruction=(
-        REVENUE_GROWTH_SCORE_PROMPT + "\n" + FINANCIAL_STRENGTH_SCORE_PROMPT + "\n" +
-        INDUSTRY_HEALTH_SCORE_PROMPT
+        REVENUE_GROWTH_SCORE_PROMPT
+        + "\n"
+        + FINANCIAL_STRENGTH_SCORE_PROMPT
+        + "\n"
+        + INDUSTRY_HEALTH_SCORE_PROMPT
     ),
     tools=[google_search],
 )
@@ -108,8 +113,8 @@ format_agent2 = LlmAgent(
     ),
     output_schema=EvaluationScoreComplete,
     output_key="evaluation_scores",
-    disallow_transfer_to_parent=True, # <---- here 
-    disallow_transfer_to_peers=True, # <---- here 
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )
 
 data_fetcher_agent = ParallelAgent(
@@ -144,8 +149,8 @@ data_combiner_agent = LlmAgent(
     ),
     output_schema=EvaluationScoreComplete,
     output_key="final_evaluation_scores",
-    disallow_transfer_to_parent=True, # <---- here 
-    disallow_transfer_to_peers=True, # <---- here 
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
 )
 
 final_evaluation_score_agent = SequentialAgent(
@@ -155,5 +160,4 @@ final_evaluation_score_agent = SequentialAgent(
     Then, it calls the 'data_combiner_agent' to combine these scores into a final structured output.
     """,
     sub_agents=[data_fetcher_agent, data_combiner_agent],
-    
 )
