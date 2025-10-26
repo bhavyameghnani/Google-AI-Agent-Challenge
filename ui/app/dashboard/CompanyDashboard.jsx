@@ -306,7 +306,7 @@ const CompaniesList = ({
 const CompanyHeader = ({ company }) => (
   <div className="mb-6">
     <div className="flex items-start gap-4">
-      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center w-full">
+      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
         {company.data.company_info.logo_url ? (
           <img
             src={company.data.company_info.logo_url}

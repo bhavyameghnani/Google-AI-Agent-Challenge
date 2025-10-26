@@ -2,6 +2,8 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Target, Award } from "lucide-react";
+import ToolTip from "@/components/ui/tooltip";
+import { Tool } from "@/components/ai-elements/tool";
 
 const InsightsTab = ({ company, competitors }) => {
   const competitorData = competitors.data.competitors;
@@ -103,7 +105,7 @@ const InsightsTab = ({ company, competitors }) => {
             {competitorData.map((competitor, index) => (
               <div key={index} className="p-4 border rounded-lg">
                 <h4 className="font-semibold text-lg mb-3">
-                  {competitor.competitor_name}
+                  {competitor.company_details.company_name}
                 </h4>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -111,52 +113,81 @@ const InsightsTab = ({ company, competitors }) => {
                     <div className="text-sm text-gray-600 mb-1">
                       Revenue Growth
                     </div>
-                    <div
-                      className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
-                        competitor.evaluation_score.revenue_growth_score
-                      )}`}
+                    <ToolTip
+                      className="TooltipContent"
+                      content={
+                        competitor.evaluation_score
+                          .revenue_growth_score_rationale
+                      }
                     >
-                      {competitor.evaluation_score.revenue_growth_score}
-                    </div>
+                      <div
+                        className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
+                          competitor.evaluation_score.revenue_growth_score
+                        )}`}
+                      >
+                        {competitor.evaluation_score.revenue_growth_score}
+                      </div>
+                    </ToolTip>
                   </div>
 
                   <div className="text-center">
                     <div className="text-sm text-gray-600 mb-1">
                       Financial Strength
                     </div>
-                    <div
-                      className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
-                        competitor.evaluation_score.financial_strength_score
-                      )}`}
+                    <ToolTip
+                      className="TooltipContent"
+                      content={
+                        competitor.evaluation_score
+                          .financial_strength_score_rationale
+                      }
                     >
-                      {competitor.evaluation_score.financial_strength_score}
-                    </div>
+                      <div
+                        className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
+                          competitor.evaluation_score.financial_strength_score
+                        )}`}
+                      >
+                        {competitor.evaluation_score.financial_strength_score}
+                      </div>
+                    </ToolTip>
                   </div>
 
                   <div className="text-center">
                     <div className="text-sm text-gray-600 mb-1">
                       Industry Health
                     </div>
-                    <div
-                      className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
-                        competitor.evaluation_score.industry_health_score
-                      )}`}
+                    <ToolTip
+                      className="TooltipContent"
+                      content={
+                        competitor.evaluation_score
+                          .industry_health_score_rationale
+                      }
                     >
-                      {competitor.evaluation_score.industry_health_score}
-                    </div>
+                      <div
+                        className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
+                          competitor.evaluation_score.industry_health_score
+                        )}`}
+                      >
+                        {competitor.evaluation_score.industry_health_score}
+                      </div>
+                    </ToolTip>
                   </div>
 
                   <div className="text-center">
                     <div className="text-sm text-gray-600 mb-1">
                       Founder Background
                     </div>
-                    <div
-                      className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
-                        competitor.evaluation_score.founder_background_score
-                      )}`}
+                    <ToolTip
+                      className="TooltipContent"
+                      content={competitor.evaluation_score.founder_data_summary}
                     >
-                      {competitor.evaluation_score.founder_background_score}
-                    </div>
+                      <div
+                        className={`text-lg font-bold px-2 py-1 rounded ${getScoreColor(
+                          competitor.evaluation_score.founder_background_score
+                        )}`}
+                      >
+                        {competitor.evaluation_score.founder_background_score}
+                      </div>
+                    </ToolTip>
                   </div>
                 </div>
               </div>
