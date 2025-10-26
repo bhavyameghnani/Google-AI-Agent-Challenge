@@ -45,7 +45,7 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-8 w-full">
             <div
               className="flex items-center space-x-3 cursor-pointer"
               onClick={() => router.push("/")}
@@ -61,21 +61,21 @@ export const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
+            <div className="flex-grow"></div>
             <div className="hidden md:flex items-center space-x-6">
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => router.push("/chat")}
                 className="text-gray-600 hover:text-gray-900"
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
                 🤖 Talk to SenseAI
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => router.push("/pitch-analyzer")}
                 className="text-gray-600 hover:text-gray-900"
               >
-                <Zap className="h-4 w-4 mr-2" />⚡ Analyze Pitchdeck
+                ⚡ Analyze Pitchdeck
               </Button>
             </div>
           </div>
@@ -114,7 +114,6 @@ export const Navbar = () => {
                 onClick={() => router.push("/chat")}
                 className="w-full justify-start text-gray-600"
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
                 🤖 Talk to SenseAI
               </Button>
               <Button
@@ -122,7 +121,7 @@ export const Navbar = () => {
                 onClick={() => router.push("/pitch-analyzer")}
                 className="w-full justify-start text-gray-600"
               >
-                <Zap className="h-4 w-4 mr-2" />⚡ Analyze Pitchdeck
+                ⚡ Analyze Pitchdeck
               </Button>
             </div>
           </div>
@@ -307,7 +306,7 @@ const CompaniesList = ({
 const CompanyHeader = ({ company }) => (
   <div className="mb-6">
     <div className="flex items-start gap-4">
-      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center w-full">
         {company.data.company_info.logo_url ? (
           <img
             src={company.data.company_info.logo_url}
@@ -488,10 +487,7 @@ const CompanyDashboard = () => {
                 <TabsTrigger value="people">People</TabsTrigger>
                 <TabsTrigger value="market">Market</TabsTrigger>
                 <TabsTrigger value="news">News</TabsTrigger>
-                <TabsTrigger value="ai-chat">
-                  <Bot className="h-4 w-4 mr-1" />
-                  🤖 Talk to SenseAI
-                </TabsTrigger>
+                <TabsTrigger value="ai-chat">🤖 Talk to SenseAI</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">

@@ -73,24 +73,16 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Navigation */}
-      <nav className="border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
+      <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 flex items-center justify-center p-1">
+              <div className="w-32 h-16 flex items-center justify-center p-1">
                 <img
                   src="/images/senseai-logo.png"
                   alt="SenseAI Logo"
-                  className="w-full h-full object-contain hover:scale-105 transition-transform duration-200"
+                  className="w-32 h-32  object-contain hover:scale-105 transition-transform duration-200"
                 />
-              </div>
-              <div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                  SenseAI
-                </span>
-                <div className="text-xs text-gray-500 -mt-1">
-                  X-Ray Vision for Startups
-                </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -198,7 +190,6 @@ export default function LandingPage() {
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px]"
               >
                 🤖 Talk to SenseAI
-                <MessageSquare className="ml-2 h-5 w-5" />
               </Button>
               <Button
                 size="lg"
@@ -207,7 +198,6 @@ export default function LandingPage() {
                 className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px] bg-white"
               >
                 ⚡ Analyze Pitchdeck
-                <Zap className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
