@@ -155,10 +155,13 @@ export default function StartupPitchAnalyzer() {
     try {
       const form = new FormData();
       form.append("file", pdfFile);
-      const res = await fetch(`${API_BASE.replace(/\/$/,"")}/fact-check`, {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "")}/fact-check`,
+        {
+          method: "POST",
+          body: form,
+        }
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Server error");
       // attach fact-check report into result so PitchAnalysisResults can render it

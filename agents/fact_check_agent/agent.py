@@ -16,14 +16,14 @@ from .prompts import (
     FACT_COMPARISON_PROMPT,
 )
 
-# Initialize Gemini client
-client = Client()
-
 
 # ------------------------------------------------
 # Safe Execution with Retry & Fallback
 # ------------------------------------------------
 def safe_run_agent(agent, input_text):
+    # Initialize Gemini client
+    client = Client()
+
     """Safely run an agent with retries and Gemini fallback."""
     for attempt in range(3):  # retry up to 3 times
         try:

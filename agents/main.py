@@ -6,6 +6,7 @@ import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
+import logging
 
 import dotenv
 import firebase_admin
@@ -35,6 +36,8 @@ from research_agent.agent import root_agent
 from research_agent.models import CompanyProfile
 
 dotenv.load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 if not os.getenv("GOOGLE_API_KEY"):
@@ -599,11 +602,13 @@ async def fact_check_pdf(file: UploadFile = File(...)):
 
     # Save uploaded file temporarily
     tmp_path = f"temp_{uuid.uuid4().hex}.pdf"
+    logger.info(f"Saving uploaded file to temporary path: {tmp_path}")
     with open(tmp_path, "wb") as f:
         f.write(await file.read())
-
+    logger.info(f"File saved: {tmp_path}")
     try:
         try:
+            logger.info(f"Extracting text from PDF: {tmp_path}")
             # Extract text from PDF using PyMuPDF (fitz)
             doc = fitz.open(tmp_path)
             full_text = []
@@ -614,6 +619,8 @@ async def fact_check_pdf(file: UploadFile = File(...)):
             doc.close()
 
             combined_text = "\n\n".join(full_text)
+            logger.info(f"Extracted text length: {len(combined_text)} characters")
+            logger.info("Text extraction completed. Running fact-check agent pipeline...")
 
             # Run the ADK agent pipeline (reuse Runner pattern used elsewhere)
             session_service = InMemorySessionService()
@@ -1001,5 +1008,12 @@ async def get_company(company_name: str):
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn
+    
+    if LOCAL_RUN:
 
-    uvicorn.run(app, host="0.0.0.0", port=os.environ("PORT"))
+        host = "127.0.0.1"
+    else:
+        host = "0.0.0.0"
+        
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host=host, port=port)
