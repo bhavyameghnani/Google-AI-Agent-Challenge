@@ -2,11 +2,11 @@
 
 import asyncio
 import json
+import logging
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
-import logging
+from typing import Any, Dict, Optional
 
 import dotenv
 import firebase_admin
@@ -29,7 +29,7 @@ from firebase_admin import credentials, firestore
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
-from pydantic import BaseModel
+from models import CompanyListItem, CompanyRequest, CompanyResponse, CompetitorResponse, HealthResponse, CompanyListResponse, StatsResponse
 
 # Import your enhanced ADK agent with citations
 from research_agent.agent import root_agent
@@ -80,59 +80,6 @@ competitors_ref = db.collection("company_competitors")
 logs_ref = db.collection("extraction_logs")
 
 # --- Pydantic Models ---
-
-
-class CompanyRequest(BaseModel):
-    company_name: str
-
-
-class CompanyResponse(BaseModel):
-    company_name: str
-    data: CompanyProfile
-    source: str  # "database" or "extraction" or "forced_extraction"
-    last_updated: str
-    cache_age_days: int
-    extraction_status: str
-
-
-class CompetitorResponse(BaseModel):
-    company_name: str
-    data: AllCompetitorsInfoWithScore
-    source: str  # "database" or "extraction" or "forced_extraction"
-    last_updated: str
-    cache_age_days: int
-    extraction_status: str
-
-
-class CompanyListItem(BaseModel):
-    company_name: str
-    industry_sector: Optional[str] = None
-    year_founded: Optional[int] = None
-    headquarters_location: Optional[str] = None
-    latest_valuation: Optional[str] = None
-    last_updated: Optional[str]
-    cache_age_days: Optional[int]
-    extraction_status: str
-    is_fresh: bool
-
-
-class CompanyListResponse(BaseModel):
-    total_companies: int
-    companies: List[CompanyListItem]
-
-
-class StatsResponse(BaseModel):
-    total_companies: int
-    fresh_data_count: int
-    recent_extractions_7d: int
-    extraction_attempts_7d: int
-    cache_hit_rate: str
-
-
-class HealthResponse(BaseModel):
-    message: str
-    status: str
-    timestamp: str
 
 
 # --- Helper Functions ---
@@ -620,7 +567,9 @@ async def fact_check_pdf(file: UploadFile = File(...)):
 
             combined_text = "\n\n".join(full_text)
             logger.info(f"Extracted text length: {len(combined_text)} characters")
-            logger.info("Text extraction completed. Running fact-check agent pipeline...")
+            logger.info(
+                "Text extraction completed. Running fact-check agent pipeline..."
+            )
 
             # Run the ADK agent pipeline (reuse Runner pattern used elsewhere)
             session_service = InMemorySessionService()
@@ -1008,12 +957,12 @@ async def get_company(company_name: str):
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn
-    
+
     if LOCAL_RUN:
 
         host = "127.0.0.1"
     else:
         host = "0.0.0.0"
-        
+
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host=host, port=port)
