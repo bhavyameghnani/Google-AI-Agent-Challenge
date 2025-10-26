@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 import dotenv
 import firebase_admin
 import fitz
+import google.cloud.logging
 from competitor_analysis_agent.agent import (
     competitor_analysis_agent,
 )
@@ -28,19 +29,31 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from models import (
     CompanyListItem,
+    CompanyListResponse,
     CompanyRequest,
     CompanyResponse,
     CompetitorResponse,
     HealthResponse,
-    CompanyListResponse,
     StatsResponse,
 )
 
 # Import your enhanced ADK agent with citations
 from research_agent.agent import root_agent
-from research_agent.models import CompanyProfile
+from research_agent.models import (
+    CompanyProfile,  # Imports the Cloud Logging client library
+)
 
 dotenv.load_dotenv()
+
+# Instantiates a client
+client = google.cloud.logging.Client()
+
+# Retrieves a Cloud Logging handler based on the environment
+# you're running in and integrates the handler with the
+# Python logging module. By default this captures all logs
+# at INFO level and higher
+client.setup_logging()
+
 
 logger = logging.getLogger(__name__)
 
