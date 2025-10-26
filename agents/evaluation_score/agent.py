@@ -86,8 +86,8 @@ points_calculator_agent = SequentialAgent(
 )
 
 # ---- Is a sub-agent of `points_and_rationale_agent`
-rationale_gatherer_agent = LlmAgent(
-    name="rationale_gatherer_agent",
+founder_data_summarizer = LlmAgent(
+    name="founder_data_summarizer",
     model="gemini-2.0-flash",
     description=(
         """
@@ -110,12 +110,12 @@ points_and_rationale_agent = ParallelAgent(
     description=(
         """
         This is an agent that runs two sub-agents in parallel:
-        1. 'points_calculator_agent' to calculate the overall founder background score. It also o
-        2. 'rationale_gatherer_agent' to gather rationale for the founder background score.
+        1. 'points_calculator_agent' to calculate the overall founder background score.
+        2. 'founder_data_summarizer' makes a easy to read rationale summary of the founder background data. It doesn't need to include scores.
         It returns both the score and the rationale in a structured format.
         """
     ),
-    sub_agents=[points_calculator_agent, rationale_gatherer_agent],
+    sub_agents=[points_calculator_agent, founder_data_summarizer],
 )
 
 # ---- sub-agents of `data_fetcher_agent`
