@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, Fragment } from "react";
+import { Action, Actions } from "@/components/ai-elements/actions";
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
+import { Loader } from "@/components/ai-elements/loader";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import {
   PromptInput,
@@ -15,22 +16,12 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
-import { Actions, Action } from "@/components/ai-elements/actions";
 import { Response } from "@/components/ai-elements/response";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  RefreshCcwIcon,
-  CopyIcon,
-  Building2,
-  Bot,
-  Lightbulb,
-} from "lucide-react";
-import { DefaultChatTransport } from "ai";
-import { Loader } from "@/components/ai-elements/loader";
-import { useCompanyChat } from "@/hooks/useCompanyChat";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { Bot, CopyIcon, RefreshCcwIcon } from "lucide-react";
+import { Fragment, useState } from "react";
 
 const AIChatTab = ({ companyData }) => {
   const [input, setInput] = useState("");
@@ -75,31 +66,6 @@ const AIChatTab = ({ companyData }) => {
 
   return (
     <div className="flex flex-col h-[600px]">
-      {/* Company Context Header */}
-      {/* <Card className="mb-4">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">
-                Chat about {companyData.company_name}
-              </CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary" className="text-xs">
-                  {companyData.data.company_info.industry_sector}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  Context Loaded ✓
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-      </Card> */}
-
-      {/* Chat Interface */}
       <div className="flex-1 flex flex-col">
         <Conversation className="flex-1">
           <ConversationContent className="p-4">

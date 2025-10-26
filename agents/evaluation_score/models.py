@@ -30,8 +30,8 @@ class EvaluationScoreComplete(BaseModel):
         ...,
         description="Score based on founder background evaluation.",
     )
-    founder_background_score_rationale: str = Field(
-        ..., description="Rationale for the founder background score."
+    founder_data_summary: str = Field(
+        ..., description="Summary of the founder background data."
     )
 
 

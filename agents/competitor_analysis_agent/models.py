@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from evaluation_score.agent import EvaluationScoreComplete
 
 
-class CompetitorInfo(BaseModel):
-    competitor_name: str
+class CompanyDetails(BaseModel):
+    company_name: str
     last_funding: str
     stage: str
     total_funding: str
@@ -12,16 +12,8 @@ class CompetitorInfo(BaseModel):
 
 
 class CompetitorInfoWithScore(BaseModel):
-    competitor_name: str
-    last_funding: str
-    stage: str
-    total_funding: str
-    location: str
+    company_details: CompanyDetails
     evaluation_score: EvaluationScoreComplete
-
-
-class AllCompetitorsInfo(BaseModel):
-    competitors: list[CompetitorInfo]
 
 
 class AllCompetitorsInfoWithScore(BaseModel):

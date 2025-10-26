@@ -43,6 +43,7 @@ const InsightsTab = ({ company, competitors }) => {
               </thead>
               <tbody>
                 {competitorData.map((competitor, index) => {
+                  const companyDetails = { ...competitor.company_details };
                   const avgScore = Math.round(
                     (competitor.evaluation_score.revenue_growth_score +
                       competitor.evaluation_score.financial_strength_score +
@@ -55,20 +56,22 @@ const InsightsTab = ({ company, competitors }) => {
                     <tr key={index} className="border-b hover:bg-gray-50">
                       <td className="p-3">
                         <div className="font-semibold">
-                          {competitor.competitor_name}
+                          {companyDetails.company_name}
                         </div>
                       </td>
                       <td className="p-3 text-gray-600">
-                        {competitor.location}
+                        {companyDetails.location}
                       </td>
                       <td className="p-3">
-                        <Badge variant="secondary">{competitor.stage}</Badge>
+                        <Badge variant="secondary">
+                          {companyDetails.stage}
+                        </Badge>
                       </td>
                       <td className="p-3 font-medium">
-                        {competitor.total_funding}
+                        {companyDetails.total_funding}
                       </td>
                       <td className="p-3 text-gray-600">
-                        {competitor.last_funding}
+                        {companyDetails.last_funding}
                       </td>
                       <td className="p-3 text-center">
                         <span
@@ -183,49 +186,52 @@ const InsightsTab = ({ company, competitors }) => {
                 return { ...competitor, avgScore, originalIndex: index };
               })
               .sort((a, b) => b.avgScore - a.avgScore)
-              .map((competitor, rank) => (
-                <div
-                  key={competitor.originalIndex}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
-                        rank === 0
-                          ? "bg-yellow-500"
-                          : rank === 1
-                          ? "bg-gray-400"
-                          : rank === 2
-                          ? "bg-orange-600"
-                          : "bg-gray-300"
-                      }`}
-                    >
-                      {rank + 1}
+              .map((competitor, rank) => {
+                const companyDetails = { ...competitor.company_details };
+                return (
+                  <div
+                    key={competitor.originalIndex}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                          rank === 0
+                            ? "bg-yellow-500"
+                            : rank === 1
+                            ? "bg-gray-400"
+                            : rank === 2
+                            ? "bg-orange-600"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {rank + 1}
+                      </div>
+                      <div>
+                        <div className="font-semibold">
+                          {companyDetails.company_name}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {companyDetails.location}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-semibold">
-                        {competitor.competitor_name}
+
+                    <div className="text-right">
+                      <div
+                        className={`text-lg font-bold ${getScoreColor(
+                          competitor.avgScore
+                        )}`}
+                      >
+                        {competitor.avgScore}
                       </div>
                       <div className="text-sm text-gray-600">
-                        {competitor.location}
+                        {companyDetails.total_funding}
                       </div>
                     </div>
                   </div>
-
-                  <div className="text-right">
-                    <div
-                      className={`text-lg font-bold ${getScoreColor(
-                        competitor.avgScore
-                      )}`}
-                    >
-                      {competitor.avgScore}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {competitor.total_funding}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </CardContent>
       </Card>
@@ -282,7 +288,11 @@ const InsightsTab = ({ company, competitors }) => {
 
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-700">
-                {new Set(competitorData.map((comp) => comp.location)).size}
+                {
+                  new Set(
+                    competitorData.map((comp) => comp.company_details.location)
+                  ).size
+                }
               </div>
               <div className="text-blue-600">Markets</div>
             </div>

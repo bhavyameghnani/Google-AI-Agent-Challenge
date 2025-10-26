@@ -82,7 +82,6 @@ points_calculator_agent = SequentialAgent(
         """
     ),
     sub_agents=[points_attributer_agent, code_agent],
-    output_key="founder_background_score",
 )
 
 # ---- Is a sub-agent of `points_and_rationale_agent`
@@ -99,7 +98,7 @@ founder_data_summarizer = LlmAgent(
         Use the founder data gathered from 'founder_background_agent' to provide a concise summary of all the founders' background information.
         """
     ),
-    output_key="founder_background_rationale",
+    output_key="founder_data_summary",
     disallow_transfer_to_parent=True,
     disallow_transfer_to_peers=True,
 )
@@ -110,9 +109,9 @@ points_and_rationale_agent = ParallelAgent(
     description=(
         """
         This is an agent that runs two sub-agents in parallel:
-        1. 'points_calculator_agent' to calculate the overall founder background score.
-        2. 'founder_data_summarizer' makes a easy to read rationale summary of the founder background data. It doesn't need to include scores.
-        It returns both the score and the rationale in a structured format.
+        - 'founder_data_summarizer' summarizes the founder background data.
+        - 'points_calculator_agent' to calculate the overall founder background score.
+        It returns both the score and the founder data summary as rationale.
         """
     ),
     sub_agents=[points_calculator_agent, founder_data_summarizer],

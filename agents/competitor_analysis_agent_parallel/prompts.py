@@ -1,1 +1,0 @@
-FIND_COMPETITORS_PROMPT = """You are an expert market analyst. Your task is to find a list of top 5 competitors for a given company using google search. Provide a concise list of competitor names along with a brief description for each."""
