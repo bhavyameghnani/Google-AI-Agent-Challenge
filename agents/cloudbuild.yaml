@@ -29,10 +29,17 @@ steps:
       - "asia-south1"
       - "--set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=${_GOOGLE_GENAI_USE_VERTEXAI},GOOGLE_API_KEY=${_GOOGLE_API_KEY}"
       - "--allow-unauthenticated"
-      - "--min-instances=1"
-      - "--platform=managed"
-      - "--memory=2Gi"
-      
+      - "--min-instances"
+      - "1"
+      - "--max-instances"
+      - "3"
+      - "--platform"
+      - "managed"
+      - "--memory"
+      - "4Gi"
+      - "--cpu"
+      - "2"
+
 images:
   - "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/${_SERVICE_NAME}:$COMMIT_SHA"
 options:
