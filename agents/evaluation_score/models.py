@@ -11,15 +11,27 @@ class EvaluationScoreComplete(BaseModel):
     revenue_growth_score: int = Field(
         ..., description="Score based on revenue growth percentage."
     )
+    revenue_growth_score_rationale: str = Field(
+        ..., description="Rationale for the revenue growth score."
+    )
     financial_strength_score: int = Field(
         ..., description="Score based on financial strength metrics."
+    )
+    financial_strength_score_rationale: str = Field(
+        ..., description="Rationale for the financial strength score."
     )
     industry_health_score: int = Field(
         ..., description="Score based on industry health and market factors."
     )
+    industry_health_score_rationale: str = Field(
+        ..., description="Rationale for the industry health score."
+    )
     founder_background_score: int = Field(
         ...,
         description="Score based on founder background evaluation.",
+    )
+    founder_background_score_rationale: str = Field(
+        ..., description="Rationale for the founder background score."
     )
 
 

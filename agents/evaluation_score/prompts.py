@@ -115,6 +115,8 @@ Your task is to gather founder background details given a company name.
 
 Return data in key:value pairs.
 
+Also return a concise summary of your findings.
+
 """
 
 POINTS_ATTRIBUTER_PROMPT_V1 = """
@@ -143,5 +145,5 @@ Score for individual founder = Sum of (attribute score * attribute weight)
 
 Overall founder background score = Average of scores of all founders rounded to nearest hundred.
 
-Return only the final overall founder background score as plain text. Without markdown or code.
+Return only the final overall founder background score as plain text along with rationale.
 """
