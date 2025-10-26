@@ -1,23 +1,40 @@
-# Startup Evaluation Service
-This is a FastAPI application which uses Google ADK to run startup evaluation agents.
+# AI Startup Evaluation Service
 
+FastAPI server for Company Data Extraction with Citations and Competitor Analysis with Scoring using Google ADK
+
+## Development setup
+
+- `cd agents`
+- `pip install -r requirements.txt`
+- set the following env variables:
+  - `LOCAL_RUN=TRUE`
+  - `GOOGLE_GENAI_USE_VERTEXAI=FALSE`
+  - `GOOGLE_API_KEY=<api-key>`
+- `python main.py`
+- The service will run on `http://127.0.0.1:8080`
+
+NOTE: Set the `NEXT_PUBLIC_BACKEND_URL` for `ui` to this service url
 
 ## Playbook for deployment
 
 ### Set env variables to be used later in the commands
+
 export PROJECT_ID=""
 export REGION=""
 export REPOSITORY_NAME=""
 
 ### Set project ID
+
 gcloud config set project ${PROJECT_ID}
 
 ### Create repository
+
 gcloud artifacts repositories create ${REPOSITORY_NAME} \
     --repository-format=docker \
     --location=${REGION}
 
 ### Build
+
 gcloud builds submit --tag asia-south1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${SERVICE_NAME}
 
 gcloud run deploy $SERVICE_NAME \
