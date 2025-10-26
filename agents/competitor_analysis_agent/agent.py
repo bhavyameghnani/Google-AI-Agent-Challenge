@@ -107,3 +107,5 @@ competitor_analysis_agent = SequentialAgent(
         data_formatter_agent,
     ],
 )
+
+root_agent = competitor_analysis_agent

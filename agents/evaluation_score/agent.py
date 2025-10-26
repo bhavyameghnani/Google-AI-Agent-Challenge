@@ -46,7 +46,7 @@ points_attributer_agent = LlmAgent(
     model="gemini-2.0-flash",
     description=(
         """
-        This is an agent that attributes points based on the the rubric provided in the instruction. It also provides combined concise rationale for the points attributed.
+        This is an agent that attributes points based on the the rubric provided in the instruction.
         """
     ),
     instruction=(POINTS_ATTRIBUTER_PROMPT_V1),
@@ -96,6 +96,12 @@ founder_data_summarizer = LlmAgent(
     instruction=(
         """
         Use the founder data gathered from 'founder_background_agent' to provide a concise summary of all the founders' background information.
+        
+        The summary should highlight key strengths and weaknesses of the founding team based on their education, experience, domain expertise, leadership roles, network strength, and reputation signals.
+        1. Identify common strengths among the founders.
+        2. Identify any potential weaknesses or gaps in the founding team's background.
+        3. Provide an overall assessment of the founding team's capability to lead the startup to success.
+        Return the summary as html formatted text.
         """
     ),
     output_key="founder_data_summary",
@@ -141,7 +147,7 @@ startup_evaluation_agent = Agent(
     name="startup_evaluation_agent",
     model="gemini-2.5-pro",
     description=(
-        "Agent to calculate startup evaluation scores and gives rationale for each score."
+        """Agent to calculate startup evaluation scores and gives rationale for each score."""
     ),
     instruction=(
         REVENUE_GROWTH_SCORE_PROMPT
@@ -149,6 +155,11 @@ startup_evaluation_agent = Agent(
         + FINANCIAL_STRENGTH_SCORE_PROMPT
         + "\n"
         + INDUSTRY_HEALTH_SCORE_PROMPT
+        + "\n"
+        + """Your task is to provide evaluation scores along with rationale for each score based on the prompts provided above.
+        Return the scores along with rationale in a structured format as per the schema 'EvaluationScoreComplete'.
+        The rationale should be html formatted text.
+        """
     ),
     tools=[google_search],
 )
