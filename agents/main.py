@@ -45,14 +45,22 @@ from research_agent.models import (
 
 dotenv.load_dotenv()
 
-# Instantiates a client
-client = google.cloud.logging.Client()
+LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
-# Retrieves a Cloud Logging handler based on the environment
-# you're running in and integrates the handler with the
-# Python logging module. By default this captures all logs
-# at INFO level and higher
-client.setup_logging()
+if LOCAL_RUN:
+    # Initialize Firebase
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+        "ai-agent-company-data-firebase-adminsdk-creds.json"
+    )
+else:
+    # Instantiates a client
+    client = google.cloud.logging.Client()
+
+    # Retrieves a Cloud Logging handler based on the environment
+    # you're running in and integrates the handler with the
+    # Python logging module. By default this captures all logs
+    # at INFO level and higher
+    client.setup_logging()
 
 
 logger = logging.getLogger(__name__)
@@ -80,14 +88,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
-
-if LOCAL_RUN:
-    # Initialize Firebase
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-        "ai-agent-company-data-firebase-adminsdk-creds.json"
-    )
-    logger.info("⚠️ Running in LOCAL_RUN mode with local Firebase credentials")
 
 cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred)
