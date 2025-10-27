@@ -102,7 +102,7 @@ founder_data_summarizer = LlmAgent(
         2. Identify any potential weaknesses or gaps in the founding team's background.
         3. Provide an overall assessment of the founding team's capability to lead the startup to success.
         The summary should be under 200 words.
-        Return the summary as html formatted text.
+        Return the summary as html formatted text with important points in <strong> tags.
         """
     ),
     output_key="founder_data_summary",
@@ -160,7 +160,7 @@ startup_evaluation_agent = Agent(
         + """Your task is to provide evaluation scores along with rationale for each score based on the prompts provided above.
         Return the scores along with rationale in a structured format as per the schema 'EvaluationScoreComplete'.
         The rationale should be under 200 words for each score.
-        The rationale should be html formatted text.
+        The rationale should be html formatted text with important points in <strong> tags.
         """
     ),
     tools=[google_search],
