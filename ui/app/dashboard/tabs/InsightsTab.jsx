@@ -1,12 +1,56 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Target, Award } from "lucide-react";
 import ToolTip from "@/components/ui/tooltip";
-import { Tool } from "@/components/ai-elements/tool";
 
 const InsightsTab = ({ company, competitors }) => {
-  const competitorData = competitors.data.competitors;
+  const [competitorData, setCompetitorData] = useState([]);
+
+  useEffect(() => {
+    if (!company || !competitors) return null;
+
+    const currentCompany = company.company_name;
+
+    console.log("Current Company:", currentCompany);
+
+    const sourceCompetitors = competitors.data.competitors || [];
+    const filteredCompetitors = sourceCompetitors.filter(
+      (comp) =>
+        comp.company_details.company_name.toLowerCase() !==
+        currentCompany.toLowerCase()
+    );
+    const sortedCompetitors = filteredCompetitors.sort((a, b) => {
+      const avgScoreA =
+        (a.evaluation_score.revenue_growth_score +
+          a.evaluation_score.financial_strength_score +
+          a.evaluation_score.industry_health_score +
+          a.evaluation_score.founder_background_score) /
+        4;
+      const avgScoreB =
+        (b.evaluation_score.revenue_growth_score +
+          b.evaluation_score.financial_strength_score +
+          b.evaluation_score.industry_health_score +
+          b.evaluation_score.founder_background_score) /
+        4;
+      return avgScoreB - avgScoreA;
+    });
+    const currentCompanyData = sourceCompetitors.find(
+      (comp) =>
+        comp.company_details.company_name.toLowerCase() ===
+        currentCompany.toLowerCase()
+    );
+    console.log("Current Company Data:", currentCompanyData);
+
+    const finalCompetitorList = currentCompanyData
+      ? [currentCompanyData, ...sortedCompetitors]
+      : sourceCompetitors;
+
+    console.log("Competitor Data:", finalCompetitorList);
+    setCompetitorData(finalCompetitorList);
+  }, [company, competitors]);
 
   const getScoreColor = (score) => {
     if (score >= 900) return "text-green-600 bg-green-100";
@@ -64,7 +108,7 @@ const InsightsTab = ({ company, competitors }) => {
                       <td className="p-3 text-gray-600">
                         {companyDetails.location}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 ">
                         <Badge variant="secondary">
                           {companyDetails.stage}
                         </Badge>
@@ -248,9 +292,9 @@ const InsightsTab = ({ company, competitors }) => {
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-1">
                       <div
-                        className={`text-lg font-bold ${getScoreColor(
+                        className={`p-1 rounded-sm w-min text-lg font-bold ${getScoreColor(
                           competitor.avgScore
                         )}`}
                       >
@@ -284,18 +328,19 @@ const InsightsTab = ({ company, competitors }) => {
 
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-700">
-                {Math.round(
-                  competitorData.reduce(
-                    (sum, comp) =>
-                      sum +
-                      (comp.evaluation_score.revenue_growth_score +
-                        comp.evaluation_score.financial_strength_score +
-                        comp.evaluation_score.industry_health_score +
-                        comp.evaluation_score.founder_background_score) /
-                        4,
-                    0
-                  ) / competitorData.length
-                )}
+                {competitorData &&
+                  Math.round(
+                    competitorData.reduce(
+                      (sum, comp) =>
+                        sum +
+                        (comp.evaluation_score.revenue_growth_score +
+                          comp.evaluation_score.financial_strength_score +
+                          comp.evaluation_score.industry_health_score +
+                          comp.evaluation_score.founder_background_score) /
+                          4,
+                      0
+                    ) / competitorData.length
+                  )}
               </div>
               <div className="text-blue-600">Average Score</div>
             </div>
