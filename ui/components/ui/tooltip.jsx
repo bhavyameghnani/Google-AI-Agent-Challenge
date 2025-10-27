@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 /**
@@ -20,6 +20,13 @@ const ToolTip = ({
   align = "center",
   className = "",
 }) => {
+  const cleanedContent = useMemo(() => {
+    if (typeof content === "string") {
+      return content.replace(/\n/g, "<br />");
+    }
+    return content;
+  }, [content]);
+
   return (
     <TooltipPrimitive.Provider>
       <TooltipPrimitive.Root>
@@ -31,7 +38,7 @@ const ToolTip = ({
             align={align}
             className={`z-50 rounded-md bg-white px-2 py-1 text-sm text-gray-900 shadow ${className}`}
           >
-            {content}
+            <div dangerouslySetInnerHTML={{ __html: cleanedContent }}></div>
             <TooltipPrimitive.Arrow className="fill-white" />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
