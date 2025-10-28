@@ -77,45 +77,30 @@ Example output:
 
 # 3️⃣ Fact Comparison
 FACT_COMPARISON_PROMPT = """
-Compare each claim with its gathered evidence items.
-Determine whether the evidence supports, contradicts, or fails to verify the claim.
+For each claim, compare it with the gathered evidence items and return a JSON array of fact-check results.
 
-Return a JSON array like this:
+Each result must have:
+- statement_checked: The claim text being checked.
+- verdict: True, False, Partially True, or other appropriate label.
+- confidence_score: A number between 0 and 1.
+- reasoning: A brief explanation for the verdict.
+- evidence_sources: Array of {source_name, url} objects.
+- correction_if_false: If the claim is false, provide the correct statement; otherwise null.
+
+Output ONLY valid JSON. Do NOT include any markdown, explanations, or text outside the JSON.
+
+Example output:
 [
   {
-    "claim_id": "C1",
-    "verdict": "Supported",
-    "confidence": 0.92,
-    "supporting_evidence": [
-      "https://www.example.com/article"
+    "statement_checked": "Yulu was founded in 2017.",
+    "verdict": "True",
+    "confidence_score": 0.98,
+    "reasoning": "Multiple sources confirm the founding year.",
+    "evidence_sources": [
+      {"source_name": "Wikipedia", "url": "https://en.wikipedia.org/wiki/Yulu_(transportation_company)"},
+      {"source_name": "Tracxn", "url": "https://tracxn.com/d/companies/yulu/..."}
     ],
-    "corrected_claim": null
+    "correction_if_false": null
   }
 ]
-
-Allowed verdicts: Supported, Contradicted, Unsubstantiated.
-Output ONLY valid JSON. Do NOT include any markdown, explanations, or text outside the JSON. If you do not comply, your output will be discarded and ignored.
-Example output:
-{
-  "claims": [
-    {
-      "claim": {"id": "C1", "text": "The company reported a 50% growth in profits in Q2 2025."},
-      "verdict": "Supported",
-      "evidences": [
-        {"url": "https://www.example.com/article", "title": "Company X Q2 2025 financial report", "snippet": "Company X announced a 50% growth in Q2 2025 profits..."}
-      ],
-      "corrected_value": null,
-      "reasoning": "Evidence supports the claim."
-    },
-    {
-      "claim": {"id": "C2", "text": "Yulu was founded in 2017."},
-      "verdict": "Contradicted",
-      "evidences": [
-        {"url": "https://www.example.com/yulu-founding", "title": "Yulu founding year confirmed", "snippet": "Yulu was founded in 2017 according to filings..."}
-      ],
-      "corrected_value": "Yulu was founded in 2018.",
-      "reasoning": "Evidence contradicts the claim."
-    }
-  ]
-}
 """
