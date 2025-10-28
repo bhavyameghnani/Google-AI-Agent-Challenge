@@ -4,6 +4,9 @@
 
 import json
 import time
+import os
+import re
+from dotenv import load_dotenv
 
 from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import google_search
@@ -16,14 +19,24 @@ from .prompts import (
     FACT_COMPARISON_PROMPT,
 )
 
+# ------------------------------------------------
+# Load environment and initialize Gemini client
+# ------------------------------------------------
+load_dotenv()
+
+api_key = os.getenv("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError("❌ Missing GOOGLE_API_KEY in .env file")
+
+print("🔑 Loaded Google API key successfully...")  # Optional debug line
+
+client = Client(api_key=api_key)
+
 
 # ------------------------------------------------
 # Safe Execution with Retry & Fallback
 # ------------------------------------------------
 def safe_run_agent(agent, input_text):
-    # Initialize Gemini client
-    client = Client()
-
     """Safely run an agent with retries and Gemini fallback."""
     for attempt in range(3):  # retry up to 3 times
         try:
@@ -48,11 +61,6 @@ def safe_run_agent(agent, input_text):
 # ------------------------------------------------
 GEMINI_LARGE = "gemini-2.5-pro"
 GEMINI_SMALL = "gemini-2.0-flash"
-
-
-# ------------------------------------------------
-# Load Prompts Dynamically
-# ------------------------------------------------
 
 
 # ------------------------------------------------
@@ -123,18 +131,12 @@ def run_fact_check(article_text: str):
         if isinstance(result, dict) and "claims" in result:
             return result
         elif isinstance(result, list):
-            # Wrap legacy list format into expected dict
             return {"claims": result}
         else:
-            print(
-                "⚠️ Could not parse structured results. Attempting to parse Markdown/text output."
-            )
+            print("⚠️ Could not parse structured results. Attempting to parse Markdown/text output.")
             print(raw_result)
 
-            import re
-
             def parse_markdown_claims(text):
-                # First, try to parse claim blocks (old format)
                 claim_pattern = re.compile(
                     r"\*\*Claim (\d+):\*\* (.*?)\n\*\*Verdict: (.*?)\*\*\n\*\*Reasoning:\*\* (.*?)(?=\n\*\*Claim|$)",
                     re.DOTALL,
@@ -157,8 +159,6 @@ def run_fact_check(article_text: str):
                 return claims
 
             def parse_claim_evidence_verdict_blocks(text):
-                import re
-
                 block_pattern = re.compile(
                     r"\*\*Claim:\*\*\s*(.*?)\n\*\*Evidence:\*\*\s*(.*?)\n\*\*Verdict:\*\*\s*(.*?)(?=\n\*\*Claim:|$)",
                     re.DOTALL,
@@ -184,14 +184,10 @@ def run_fact_check(article_text: str):
                 parsed_claims = parse_claim_evidence_verdict_blocks(str(raw_result))
 
             if parsed_claims:
-                print(
-                    f"✅ Parsed {len(parsed_claims)} claims from Markdown/text/table/block output."
-                )
+                print(f"✅ Parsed {len(parsed_claims)} claims from Markdown/text output.")
                 return {"claims": parsed_claims}
             else:
-                print(
-                    "❌ Could not parse Markdown/text output. Returning empty claims array."
-                )
+                print("❌ Could not parse Markdown/text output. Returning empty claims array.")
                 return {"claims": []}
 
     except Exception as e:
@@ -200,7 +196,7 @@ def run_fact_check(article_text: str):
 
 
 # ------------------------------------------------
-#  Quick Test
+# Quick Test
 # ------------------------------------------------
 if __name__ == "__main__":
     sample_text = "Company X reported 50% growth in Q2 2025 profits."
