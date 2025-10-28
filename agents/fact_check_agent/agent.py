@@ -15,6 +15,7 @@ from .prompts import (
     EVIDENCE_SEARCH_PROMPT,
     FACT_COMPARISON_PROMPT,
 )
+from .models import FactCheckReport
 
 
 # ------------------------------------------------
@@ -80,14 +81,24 @@ fact_comparison_agent = LlmAgent(
     description="Compares each claim with evidence and outputs verdicts.",
 )
 
+data_format_agent = LlmAgent(
+    name="data_format_agent",
+    model=GEMINI_SMALL,
+    instruction="Format the input data into a structured JSON format.",
+    description="Formats data into JSON.",
+    output_schema=FactCheckReport,
+)
+
 
 # ------------------------------------------------
 # Create Sequential Pipeline
 # ------------------------------------------------
 fact_check_pipeline = SequentialAgent(
     name="fact_check_pipeline",
-    description="Extracts claims, finds evidence, and compares them using Gemini models.",
-    sub_agents=[claim_extractor, evidence_search_agent, fact_comparison_agent],
+    description="Extracts claims, finds evidence, and compares them using Gemini models"
+                " and formats into `FactCheckReport` schema"
+                ".",
+    sub_agents=[claim_extractor, evidence_search_agent, fact_comparison_agent, data_format_agent],
 )
 
 
