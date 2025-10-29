@@ -609,127 +609,7 @@ async def fact_check_pdf(file: UploadFile = File(...)):
             ):
                 # Expect agent to return JSON string representing the fact-check report
                 json_string = final_event.content.parts[0].text
-
-                if not json_string or not json_string.strip():
-                    # Agent returned an empty response (often due to LLM errors like rate limiting or overload)
-                    logger.info(
-                        "⚠️ Agent returned empty final content. Possible model error or overload."
-                    )
-                    # Try to extract any error text from the final_event
-                    try:
-                        logger.info("Final event object:", repr(final_event))
-                    except Exception:
-                        pass
-                    raise HTTPException(
-                        status_code=503,
-                        detail="Model did not return a response (possibly overloaded). Please retry later.",
-                    )
-
-                try:
-                    report_obj = json.loads(json_string)
-                except json.JSONDecodeError:
-                    # Log the invalid JSON for debugging and attempt to salvage a JSON substring
-                    logger.info(
-                        "⚠️ Agent returned non-JSON response (attempting to salvage JSON):"
-                    )
-                    logger.info(json_string[:2000])
-
-                    # Try to extract a JSON array or object substring from the returned text
-                    import re
-
-                    def try_extract_json(s: str):
-                        # Search for a JSON array first
-                        start = s.find("[")
-                        if start != -1:
-                            # Try progressively smaller end positions to find a valid JSON array
-                            for end in range(len(s) - 1, start - 1, -1):
-                                if s[end] == "]":
-                                    candidate = s[start : end + 1]
-                                    try:
-                                        return json.loads(candidate)
-                                    except Exception:
-                                        continue
-
-                        # Search for a JSON object as a fallback
-                        start = s.find("{")
-                        if start != -1:
-                            for end in range(len(s) - 1, start - 1, -1):
-                                if s[end] == "}":
-                                    candidate = s[start : end + 1]
-                                    try:
-                                        return json.loads(candidate)
-                                    except Exception:
-                                        continue
-
-                        return None
-
-                    salvaged = try_extract_json(json_string)
-                    if salvaged is not None:
-                        logger.info("✅ Successfully salvaged JSON from agent output")
-                        report_obj = salvaged
-                        # If agent returned a list of results (legacy format), convert it
-                        # to the expected FactCheckReport mapping: {"claims": [FactCheckResult,...]}
-                        if isinstance(report_obj, list):
-                            transformed = {"claims": []}
-                            for item in report_obj:
-                                # normalize fields
-                                claim_id = item.get("claim_id") or item.get("id")
-                                # Ensure id is a string for Pydantic
-                                if claim_id is not None:
-                                    claim_id = (
-                                        str(claim_id) if claim_id is not None else ""
-                                    )
-
-                                claim_text = (
-                                    item.get("claim_text")
-                                    or item.get("claim")
-                                    or item.get("text")
-                                    or ""
-                                )
-                                claim_text = (
-                                    str(claim_text) if claim_text is not None else ""
-                                )
-
-                                # map supporting evidence urls to EvidenceItem-like dicts
-                                supporting = (
-                                    item.get("supporting_evidence")
-                                    or item.get("supporting_evidences")
-                                    or []
-                                )
-                                evidences = []
-                                for ev in supporting:
-                                    if isinstance(ev, dict):
-                                        evidences.append(
-                                            {
-                                                "url": ev.get("url"),
-                                                "title": ev.get("title"),
-                                                "snippet": ev.get("snippet"),
-                                            }
-                                        )
-                                    else:
-                                        evidences.append({"url": ev})
-
-                                transformed["claims"].append(
-                                    {
-                                        "claim": {"id": claim_id, "text": claim_text},
-                                        "verdict": item.get("verdict")
-                                        or "Unsubstantiated",
-                                        "evidences": evidences,
-                                        "corrected_value": item.get("corrected_claim")
-                                        or item.get("corrected_value"),
-                                        "reasoning": item.get("reasoning"),
-                                    }
-                                )
-
-                            report_obj = transformed
-                    else:
-                        # Could not salvage JSON — fallback to empty claims array
-                        logger.info(
-                            "❌ Could not salvage JSON. Returning empty claims array."
-                        )
-                        return FactCheckReport(claims=[])
-
-                # Return using Pydantic model validation
+                report_obj = json.loads(json_string)
                 return FactCheckReport(**report_obj)
             else:
                 # Backend fallback: return empty claims array if agent output is not valid JSON
@@ -746,7 +626,7 @@ async def fact_check_pdf(file: UploadFile = File(...)):
             # Return a controlled error to the client (preserves CORS headers)
             raise HTTPException(
                 status_code=500, detail=f"Server error: {type(e).__name__}: {e}"
-            )
+            ) from e
 
     finally:
         if os.path.exists(tmp_path):
