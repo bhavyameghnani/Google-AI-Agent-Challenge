@@ -1,3 +1,19 @@
+
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+# --- New FactCheckV2 Models for statement_checked, verdict, etc. ---
+class EvidenceSource(BaseModel):
+    source_name: Optional[str] = Field(None, description="Name of the evidence source")
+    url: Optional[str] = Field(None, description="Source URL")
+
+class FactCheckV2(BaseModel):
+    statement_checked: str = Field(..., description="The statement that was fact-checked")
+    verdict: str = Field(..., description="True/False/Partially True/Other verdicts")
+    confidence_score: Optional[float] = Field(None, description="Confidence score (0-1)")
+    reasoning: Optional[str] = Field(None, description="Reasoning for the verdict")
+    evidence_sources: List[EvidenceSource] = Field(default_factory=list, description="List of evidence sources")
+    correction_if_false: Optional[str] = Field(None, description="Correction if the statement is false")
 from pydantic import BaseModel, Field
 from typing import List, Optional
 

@@ -19,6 +19,50 @@ import {
 } from "lucide-react";
 
 const PitchAnalysisResults = ({ result }) => {
+  // --- FactCheckV2 Results Rendering ---
+  const factCheckV2 = result?.fact_check;
+  const renderFactCheckV2 = () => {
+    if (!factCheckV2) return null;
+    return (
+      <div className="mb-8 p-6 bg-white rounded-lg border border-gray-200">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="font-bold text-lg">Fact Check</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${factCheckV2.verdict === 'True' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {factCheckV2.verdict}
+          </span>
+          {factCheckV2.confidence_score !== undefined && (
+            <span className="ml-2 text-xs text-gray-500">Confidence: {(factCheckV2.confidence_score * 100).toFixed(0)}%</span>
+          )}
+        </div>
+        <div className="mb-2">
+          <span className="font-medium">Statement Checked:</span> {factCheckV2.statement_checked}
+        </div>
+        <div className="mb-2">
+          <span className="font-medium">Reasoning:</span> {factCheckV2.reasoning}
+        </div>
+        {factCheckV2.correction_if_false && (
+          <div className="mb-2">
+            <span className="font-medium">Correction:</span> {factCheckV2.correction_if_false}
+          </div>
+        )}
+        {factCheckV2.evidence_sources && factCheckV2.evidence_sources.length > 0 && (
+          <div>
+            <div className="font-medium mb-1">Evidence Sources:</div>
+            <ul className="space-y-2">
+              {factCheckV2.evidence_sources.map((src, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-center">{idx + 1}</span>
+                  <a href={src.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{src.source_name || src.url}</a>
+                  <span className="text-xs text-gray-500">{src.url && (() => { try { return new URL(src.url).hostname; } catch { return ''; } })()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+// ...existing code continues...
   // Handle different response formats:
   // 1. Direct array from analyze-text/audio/file/video endpoints
   // 2. Nested analysis structure
@@ -56,8 +100,288 @@ const PitchAnalysisResults = ({ result }) => {
     );
   }
 
+  // --- Fact-check Results Rendering ---
+  const factCheckClaims = result?.claims;
+
+  const verdictColorMap = {
+    Supported: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    Contradicted: 'bg-red-50 text-red-700 border-red-200',
+    Unsubstantiated: 'bg-amber-50 text-amber-700 border-amber-200',
+    'Supported by evidence': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'Partially Supported': 'bg-blue-50 text-blue-700 border-blue-200',
+    default: 'bg-slate-50 text-slate-700 border-slate-200',
+  };
+
+  const verdictIconMap = {
+    Supported: '✓',
+    Contradicted: '✗',
+    Unsubstantiated: '?',
+    'Supported by evidence': '✓',
+    'Partially Supported': '~',
+    default: '•',
+  };
+
+  // Render fact-check claims if present
+  const renderFactCheck = () => {
+    if (!factCheckClaims || !Array.isArray(factCheckClaims) || factCheckClaims.length === 0) return null;
+    
+    // Count verdicts for summary
+    const verdictCounts = factCheckClaims.reduce((acc, item) => {
+      const verdict = item.verdict || 'Unsubstantiated';
+      acc[verdict] = (acc[verdict] || 0) + 1;
+      return acc;
+    }, {});
+
+    return (
+      <div className="mb-8">
+        {/* Summary Card */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <Info className="h-5 w-5 text-white" />
+              </div>
+              Fact-Check Results
+            </h3>
+            <Badge variant="secondary" className="text-base px-4 py-2">
+              {factCheckClaims.length} {factCheckClaims.length === 1 ? 'Claim' : 'Claims'} Verified
+            </Badge>
+          </div>
+          
+          {/* Verdict Summary */}
+          <div className="flex flex-wrap gap-4">
+            {Object.entries(verdictCounts).map(([verdict, count]) => {
+              const colorClass = verdictColorMap[verdict] || verdictColorMap.default;
+              const icon = verdictIconMap[verdict] || verdictIconMap.default;
+              return (
+                <div key={verdict} className={`flex items-center gap-2 px-4 py-2 rounded-full border ${colorClass}`}>
+                  <span className="font-bold text-lg">{icon}</span>
+                  <span className="font-semibold">{count}</span>
+                  <span className="text-sm">{verdict}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Individual Claims */}
+        <div className="space-y-4">
+          {factCheckClaims.map((item, idx) => {
+            const verdict = item.verdict || 'Unsubstantiated';
+            const verdictColor = verdictColorMap[verdict] || verdictColorMap.default;
+            const verdictIcon = verdictIconMap[verdict] || verdictIconMap.default;
+            
+            // Extract claim data from various possible structures
+            const claim = item.claim || {};
+            const claimText = claim.text || item.claim_text || item.text || `Claim ${claim.id || idx + 1}`;
+            const claimId = claim.id || item.claim_id || `C${idx + 1}`;
+            
+            // Additional claim metadata
+            const normalizedField = claim.normalized_field || item.normalized_field || null;
+            const extractedValue = claim.extracted_value || item.extracted_value || null;
+            const location = claim.location || item.location || null;
+            const context = item.context || claim.context || null;
+            const reasoning = item.reasoning || null;
+            const confidence = item.confidence || null;
+            
+            // Evidence handling - support multiple formats
+            const evidenceItems = Array.isArray(item.evidences) ? item.evidences : 
+                                 Array.isArray(item.evidence_items) ? item.evidence_items :
+                                 Array.isArray(item.supporting_evidence) ? item.supporting_evidence.map(url => ({url})) : [];
+            
+            // Corrected information
+            const correctedValue = item.corrected_value || item.corrected_claim || null;
+            
+            return (
+              <div key={idx} className="bg-white rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                {/* Claim Header */}
+                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs font-mono border-gray-300">
+                          {claimId}
+                        </Badge>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold border-2 ${verdictColor}`}>
+                          <span className="text-lg">{verdictIcon}</span>
+                          {verdict}
+                        </div>
+                        {normalizedField && (
+                          <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
+                            {normalizedField.replace(/_/g, ' ')}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-base font-semibold text-gray-900 leading-relaxed">
+                        {claimText}
+                      </div>
+                      
+                      {/* Metadata row */}
+                      <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600">
+                        {extractedValue && (
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Extracted:</span>
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-mono">
+                              {extractedValue}
+                            </span>
+                          </div>
+                        )}
+                        {location && (
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Source:</span>
+                            <span className="text-gray-700">{location}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {typeof confidence === 'number' && (
+                      <div className="flex-shrink-0 text-center">
+                        <div className="text-2xl font-bold text-gray-900">
+                          {Math.round(confidence * 100)}%
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">
+                          Confidence
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Claim Body */}
+                <div className="px-6 py-4 space-y-4">
+                  {/* Context */}
+                  {context && (
+                    <div className="bg-slate-50 border-l-4 border-slate-400 px-4 py-3 rounded-r">
+                      <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">
+                        Context
+                      </div>
+                      <div className="text-sm text-slate-800 leading-relaxed italic">
+                        "{context}"
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Reasoning */}
+                  {reasoning && (
+                    <div className="bg-blue-50 border-l-4 border-blue-400 px-4 py-3 rounded-r">
+                      <div className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">
+                        Analysis
+                      </div>
+                      <div className="text-sm text-blue-900 leading-relaxed">
+                        {reasoning}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Evidence Sources */}
+                  {evidenceItems.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-4 w-4 text-gray-600" />
+                        <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                          Evidence Sources ({evidenceItems.length})
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        {evidenceItems.map((ev, j) => {
+                          // Handle both object and string evidence formats
+                          const evidenceUrl = typeof ev === 'string' ? ev : (ev.url || null);
+                          const evidenceTitle = typeof ev === 'string' ? ev : (ev.title || evidenceUrl || 'Evidence');
+                          const evidenceSnippet = typeof ev === 'object' ? (ev.snippet || null) : null;
+                          
+                          // Extract domain safely
+                          let evidenceSource = '';
+                          if (typeof ev === 'object') {
+                            evidenceSource = ev.source || ev.domain || '';
+                          }
+                          if (!evidenceSource && evidenceUrl && typeof evidenceUrl === 'string') {
+                            try {
+                              evidenceSource = new URL(evidenceUrl).hostname.replace('www.', '');
+                            } catch (e) {
+                              evidenceSource = '';
+                            }
+                          }
+                          
+                          const publishedDate = typeof ev === 'object' && ev.published_date ? 
+                            new Date(ev.published_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : null;
+                          
+                          return (
+                            <div key={j} className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg border border-slate-200 p-4 hover:border-blue-300 transition-colors">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm">
+                                  {j + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  {evidenceUrl && typeof evidenceUrl === 'string' && evidenceUrl.startsWith('http') ? (
+                                    <a 
+                                      href={evidenceUrl} 
+                                      target="_blank" 
+                                      rel="noreferrer" 
+                                      className="text-sm font-semibold text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2 break-words"
+                                    >
+                                      {evidenceTitle}
+                                    </a>
+                                  ) : (
+                                    <span className="text-sm font-semibold text-gray-700 break-words">
+                                      {evidenceTitle}
+                                    </span>
+                                  )}
+                                  
+                                  {evidenceSnippet && (
+                                    <div className="text-sm text-gray-600 mt-2 leading-relaxed italic">
+                                      "{evidenceSnippet}"
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                    {evidenceSource && (
+                                      <span className="px-2 py-1 bg-white rounded border border-gray-200 font-medium">
+                                        {evidenceSource}
+                                      </span>
+                                    )}
+                                    {publishedDate && (
+                                      <span className="flex items-center gap-1">
+                                        <span>•</span>
+                                        <span>{publishedDate}</span>
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Corrected Value */}
+                  {correctedValue && (
+                    <div className="bg-amber-50 border-l-4 border-amber-400 px-4 py-3 rounded-r">
+                      <div className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">
+                        Corrected Information
+                      </div>
+                      <div className="text-sm font-medium text-amber-900">
+                        {correctedValue}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
+      {/* Render FactCheckV2 if present */}
+      {renderFactCheckV2()}
+      {/* Render classic fact-check claims if present */}
+      {renderFactCheck()}
       {/* Fact-check status */}
       {result?._fact_check ? (
         <div className="mb-2">
