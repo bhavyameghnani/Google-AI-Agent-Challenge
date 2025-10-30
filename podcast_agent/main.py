@@ -5,7 +5,6 @@ Powered by Let's Venture Platform
 Integrated with Firebase Storage & Firestore
 """
 
-import asyncio
 import dotenv
 import json
 import os
