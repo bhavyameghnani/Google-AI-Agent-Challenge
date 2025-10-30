@@ -78,10 +78,6 @@ else:
     STORAGE_BUCKET = "sense-ai-documents"
     
     try:
-        if not firebase_admin._apps:
-            firebase_admin.initialize_app({
-                "storageBucket": STORAGE_BUCKET
-            })
         db = firestore.client()
         bucket = storage.bucket()
         FIREBASE_ENABLED = True
