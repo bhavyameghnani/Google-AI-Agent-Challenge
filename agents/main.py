@@ -21,7 +21,7 @@ from evaluation_score.agent import final_evaluation_score_agent
 from evaluation_score.models import EvaluationScoreComplete
 from fact_check_agent.agent import root_agent as fact_check_root
 from fact_check_agent.models import FactCheckReport
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Body
 from fastapi.middleware.cors import CORSMiddleware
 from firebase_admin import credentials, firestore
 from google.adk.runners import Runner
@@ -96,6 +96,10 @@ db = firestore.client()
 companies_ref = db.collection("companies")
 competitors_ref = db.collection("company_competitors")
 logs_ref = db.collection("extraction_logs")
+
+#newly added for Human in the loop verification
+verified_company_ref = db.collection("verified_company_data")
+raw_companies_ref = db.collection("companies")  # existing
 
 # --- Pydantic Models ---
 
@@ -958,6 +962,40 @@ async def get_company(company_name: str):
         cache_age_days=cache_age,
         extraction_status=cached_data.get("extraction_status", "completed"),
     )
+
+
+@app.get("/raw_companies")
+async def get_raw_companies():
+    """
+    Fetch all companies from the Firestore 'companies' collection (raw extracted data).
+    """
+    try:
+        companies_ref = db.collection("companies")
+        docs = companies_ref.stream()
+        companies = []
+        for doc in docs:
+            data = doc.to_dict()
+            data["id"] = doc.id
+            companies.append(data)
+        return {"status": "success", "data": companies}
+    except Exception as e:
+        logger.error(f"❌ Error fetching companies: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/verified_company_data")
+async def save_verified_company(company: dict = Body(...)):
+    """
+    Save edited company data into 'verified_company_data' collection.
+    """
+    try:
+        collection_ref = db.collection("verified_company_data")
+        # Use company_name as document ID or let Firestore auto-generate an ID
+        doc_ref = collection_ref.document(company.get("company_name"))
+        doc_ref.set(company)
+        return {"status": "success", "message": "Company saved successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # --- Run Server ---
