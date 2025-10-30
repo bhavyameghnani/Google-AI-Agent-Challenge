@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { FileAudio, FileText, Save, PlusCircle, Trash2, CheckCircle } from "lucide-react";
+import {
+  FileAudio,
+  FileText,
+  Save,
+  PlusCircle,
+  Trash2,
+  CheckCircle,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +36,7 @@ const EditModal = ({ record, onSave, onCancel }) => {
   useEffect(() => {
     const fetchRecord = async () => {
       try {
-        const baseUrl = "http://localhost:8000";
+        const baseUrl = process.env.NEXT_PUBLIC_RECORDS_API;
         const res = await fetch(`${baseUrl}/records/${record.id}`);
         if (!res.ok) throw new Error("Failed to fetch record");
         const data = await res.json();
@@ -51,18 +58,17 @@ const EditModal = ({ record, onSave, onCancel }) => {
     setStatus("");
 
     try {
-      const baseUrl = "http://localhost:8000";
+      const baseUrl = process.env.NEXT_PUBLIC_RECORDS_API;
       const fd = new FormData();
       fd.append("title", title);
       fd.append("description", description);
       fd.append("theme", theme);
       if (speakers && speakers.length > 0)
         fd.append("speakers", JSON.stringify(speakers));
-      if (englishFile) fd.append("english_audio", englishFile, englishFile.name);
-      if (hindiFile)
-        fd.append("hindi_audio", hindiFile, hindiFile.name);
-      if (reportMdFile)
-        fd.append("report_md", reportMdFile, reportMdFile.name);
+      if (englishFile)
+        fd.append("english_audio", englishFile, englishFile.name);
+      if (hindiFile) fd.append("hindi_audio", hindiFile, hindiFile.name);
+      if (reportMdFile) fd.append("report_md", reportMdFile, reportMdFile.name);
       if (reportPdfFile)
         fd.append("report_pdf", reportPdfFile, reportPdfFile.name);
 
@@ -194,7 +200,10 @@ const EditModal = ({ record, onSave, onCancel }) => {
               <Label className="flex items-center gap-2 mb-1">
                 <FileText className="h-4 w-4 text-accent" />
                 PDF Report (current:{" "}
-                {currentFiles?.report_pdf?.filename || record.reportPdf || "N/A"})
+                {currentFiles?.report_pdf?.filename ||
+                  record.reportPdf ||
+                  "N/A"}
+                )
               </Label>
               <Input
                 type="file"

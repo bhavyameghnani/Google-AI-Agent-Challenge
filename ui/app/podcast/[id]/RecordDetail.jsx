@@ -21,7 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_RECORDS_API;
 
 const RecordDetail = ({ id }) => {
   console.log("Received ID:", id);
