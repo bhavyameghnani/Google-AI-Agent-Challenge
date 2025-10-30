@@ -8,7 +8,7 @@ steps:
         "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/${_SERVICE_NAME}:$COMMIT_SHA",
         ".",
       ]
-    dir: "agents"
+    dir: "${_ROOT_DIR}"
   # Push the image to Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args:
