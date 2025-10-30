@@ -16,7 +16,7 @@ const Index = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/records");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_RECORDS_API}/records`);
       if (!res.ok) throw new Error("Failed to fetch records");
       const data = await res.json();
       setRecords(data);

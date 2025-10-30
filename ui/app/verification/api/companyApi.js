@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080"; // Change if backend is hosted elsewhere
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // Change if backend is hosted elsewhere
 
 export const fetchCompanies = async () => {
   try {

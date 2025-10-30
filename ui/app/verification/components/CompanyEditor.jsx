@@ -1,30 +1,33 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, Info } from 'lucide-react';
-import { CompanyInfoSection } from './editor/CompanyInfoSection';
-import { FinancialDataSection } from './editor/FinancialDataSection';
-import { PeopleDataSection } from './editor/PeopleDataSection';
-import { MarketDataSection } from './editor/MarketDataSection';
-import { ReputationDataSection } from './editor/ReputationDataSection';
+import React, { useState } from "react";
+import { ArrowLeft, Save, Info } from "lucide-react";
+import { CompanyInfoSection } from "./editor/CompanyInfoSection";
+import { FinancialDataSection } from "./editor/FinancialDataSection";
+import { PeopleDataSection } from "./editor/PeopleDataSection";
+import { MarketDataSection } from "./editor/MarketDataSection";
+import { ReputationDataSection } from "./editor/ReputationDataSection";
 
 export function CompanyEditor({ company, onBack, onSave }) {
   const [editedCompany, setEditedCompany] = useState(company);
-  const [activeTab, setActiveTab] = useState('company');
+  const [activeTab, setActiveTab] = useState("company");
 
   const tabs = [
-    { id: 'company', label: 'Company Info' },
-    { id: 'financial', label: 'Financial' },
-    { id: 'people', label: 'People' },
-    { id: 'market', label: 'Market' },
-    { id: 'reputation', label: 'Reputation' },
+    { id: "company", label: "Company Info" },
+    { id: "financial", label: "Financial" },
+    { id: "people", label: "People" },
+    { id: "market", label: "Market" },
+    { id: "reputation", label: "Reputation" },
   ];
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://localhost:8080/verified_company_data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editedCompany),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/verified_company_data`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editedCompany),
+        }
+      );
 
       const data = await response.json();
       if (data.status === "success") {
@@ -56,7 +59,8 @@ export function CompanyEditor({ company, onBack, onSave }) {
                   {editedCompany.data.company_info.company_name}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  Last updated: {new Date(editedCompany.last_updated).toLocaleDateString()}
+                  Last updated:{" "}
+                  {new Date(editedCompany.last_updated).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -76,8 +80,8 @@ export function CompanyEditor({ company, onBack, onSave }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {tab.label}
@@ -93,13 +97,14 @@ export function CompanyEditor({ company, onBack, onSave }) {
           <div className="text-sm text-blue-900">
             <p className="font-medium mb-1">Human-in-the-Loop Review</p>
             <p className="text-blue-700">
-              Review and modify the extracted data. Add notes or reference URLs where needed to support your analysis.
+              Review and modify the extracted data. Add notes or reference URLs
+              where needed to support your analysis.
             </p>
           </div>
         </div>
 
         <div className="space-y-6">
-          {activeTab === 'company' && (
+          {activeTab === "company" && (
             <CompanyInfoSection
               data={editedCompany.data.company_info}
               onChange={(companyInfo) =>
@@ -111,19 +116,22 @@ export function CompanyEditor({ company, onBack, onSave }) {
             />
           )}
 
-          {activeTab === 'financial' && (
+          {activeTab === "financial" && (
             <FinancialDataSection
               data={editedCompany.data.financial_data}
               onChange={(financialData) =>
                 setEditedCompany({
                   ...editedCompany,
-                  data: { ...editedCompany.data, financial_data: financialData },
+                  data: {
+                    ...editedCompany.data,
+                    financial_data: financialData,
+                  },
                 })
               }
             />
           )}
 
-          {activeTab === 'people' && (
+          {activeTab === "people" && (
             <PeopleDataSection
               data={editedCompany.data.people_data}
               onChange={(peopleData) =>
@@ -135,7 +143,7 @@ export function CompanyEditor({ company, onBack, onSave }) {
             />
           )}
 
-          {activeTab === 'market' && (
+          {activeTab === "market" && (
             <MarketDataSection
               data={editedCompany.data.market_data}
               onChange={(marketData) =>
@@ -147,13 +155,16 @@ export function CompanyEditor({ company, onBack, onSave }) {
             />
           )}
 
-          {activeTab === 'reputation' && (
+          {activeTab === "reputation" && (
             <ReputationDataSection
               data={editedCompany.data.reputation_data}
               onChange={(reputationData) =>
                 setEditedCompany({
                   ...editedCompany,
-                  data: { ...editedCompany.data, reputation_data: reputationData },
+                  data: {
+                    ...editedCompany.data,
+                    reputation_data: reputationData,
+                  },
                 })
               }
             />
