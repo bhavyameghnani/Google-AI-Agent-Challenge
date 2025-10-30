@@ -21,8 +21,6 @@ Supported Sectors:
 from typing import Dict, List
 import pathlib
 import wave
-import base64
-from datetime import datetime, timezone
 
 from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import google_search, ToolContext
