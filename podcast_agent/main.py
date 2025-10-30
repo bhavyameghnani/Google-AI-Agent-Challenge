@@ -39,24 +39,48 @@ from newsletter_agent import (
 
 dotenv.load_dotenv()
 
+LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
+
+
 if not os.getenv('GOOGLE_API_KEY'):
     print("WARNING: GOOGLE_API_KEY not found in environment variables")
     print("Please add GOOGLE_API_KEY to your .env file")
 
 # --- Firebase Initialization ---
-SERVICE_ACCOUNT_FILE = "serviceAccountKey.json"
 
-if not os.path.exists(SERVICE_ACCOUNT_FILE):
-    print("WARNING: serviceAccountKey.json not found. Firebase features will be disabled.")
-    FIREBASE_ENABLED = False
-    db = None
-    bucket = None
+if LOCAL_RUN:
+    SERVICE_ACCOUNT_FILE = "serviceAccountKey.json"
+    STORAGE_BUCKET = "senseai-podcast.firebasestorage.app"
+
+    if not os.path.exists(SERVICE_ACCOUNT_FILE):
+        print("WARNING: serviceAccountKey.json not found. Firebase features will be disabled.")
+        FIREBASE_ENABLED = False
+        db = None
+        bucket = None
+    else:
+        try:
+            cred = credentials.Certificate(SERVICE_ACCOUNT_FILE)
+            if not firebase_admin._apps:
+                firebase_admin.initialize_app(cred, {
+                    "storageBucket": STORAGE_BUCKET
+                })
+            db = firestore.client()
+            bucket = storage.bucket()
+            FIREBASE_ENABLED = True
+            print("✅ Firebase initialized successfully")
+        except Exception as e:
+            print(f"WARNING: Firebase initialization failed: {e}")
+            FIREBASE_ENABLED = False
+            db = None
+            bucket = None
 else:
+    # ---- GCP Environment ----
+    STORAGE_BUCKET = "sense-ai-documents"
+    
     try:
-        cred = credentials.Certificate(SERVICE_ACCOUNT_FILE)
         if not firebase_admin._apps:
-            firebase_admin.initialize_app(cred, {
-                "storageBucket": "senseai-podcast.firebasestorage.app"
+            firebase_admin.initialize_app({
+                "storageBucket": STORAGE_BUCKET
             })
         db = firestore.client()
         bucket = storage.bucket()
@@ -1072,7 +1096,6 @@ async def detailed_health():
         "platform": "Let's Venture",
         "description": "Generate investment-grade content for Indian startups and sectors",
         "firebase_enabled": FIREBASE_ENABLED,
-        "firebase_bucket": "financepodcast-a5c7f.firebasestorage.app" if FIREBASE_ENABLED else None,
         "endpoints": {
             "health_check": "GET /",
             "analyze_startup": "POST /analyze-startup",
@@ -1138,4 +1161,9 @@ if __name__ == "__main__":
     for sector in VALID_SECTORS:
         print(f"  • {sector}")
     print("="*70 + "\n")
-    uvicorn.run(app, host="0.0.0.0", port=5007)
+    if LOCAL_RUN:
+        host =  "127.0.0.1"
+    else:
+        host = "0.0.0.0"
+    port = os.getenv("PORT", "8080")
+    uvicorn.run(app, host=host, port=port)
