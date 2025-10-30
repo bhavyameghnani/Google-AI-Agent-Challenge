@@ -1143,8 +1143,6 @@ if __name__ == "__main__":
     print("\n" + "="*70)
     print("🚀 LVX STARTUP ANALYSIS & NEWSLETTER GENERATOR v2.0")
     print("="*70)
-    print(f"📡 Server: http://localhost:5007")
-    print(f"📚 Docs: http://localhost:5007/docs")
     print(f"📁 Startup Podcasts: {PODCASTS_FOLDER.absolute()}")
     print(f"📰 Newsletters: {NEWSLETTERS_FOLDER.absolute()}")
     print(f"🔥 Firebase: {'Enabled ✅' if FIREBASE_ENABLED else 'Disabled ❌'}")
