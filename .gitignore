@@ -6,3 +6,8 @@ node_modules
 *.local
 .venv
 .venv11
+serviceAccountKey.json
+
+startup_podcasts
+sector_newsletters
+.DS_Store
