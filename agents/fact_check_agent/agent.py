@@ -50,7 +50,7 @@ claim_extractor = LlmAgent(
 
 evidence_search_agent = LlmAgent(
     name="evidence_search_agent",
-    model=GEMINI_LARGE,
+    model=GEMINI_SMALL,
     tools=[google_search],
     instruction=EVIDENCE_SEARCH_PROMPT,
     description="Searches for evidence supporting or refuting claims.",
@@ -58,7 +58,7 @@ evidence_search_agent = LlmAgent(
 
 fact_comparison_agent = LlmAgent(
     name="fact_comparison_agent",
-    model=GEMINI_LARGE,
+    model=GEMINI_SMALL,
     instruction=FACT_COMPARISON_PROMPT,
     description="Compares each claim with evidence and outputs verdicts.",
 )

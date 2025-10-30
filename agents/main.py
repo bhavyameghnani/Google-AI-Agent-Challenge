@@ -840,6 +840,142 @@ async def get_company(company_name: str):
     )
 
 
+@app.post("/fact-check-text", response_model=FactCheckReport)
+async def fact_check_text(payload: Dict[str, str]):
+    """
+    Accept JSON payload with a `text` field, run the fact-check agent pipeline, and return a structured report.
+    """
+    text = payload.get("text", "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Text input cannot be empty.")
+
+    logger.info("Running fact-check agent pipeline for text input...")
+
+    try:
+        # Run the ADK agent pipeline
+        session_service = InMemorySessionService()
+        runner = Runner(
+            agent=fact_check_root,
+            app_name="fact_check",
+            session_service=session_service,
+        )
+        session_id = f"factcheck_{uuid.uuid4().hex[:8]}"
+
+        await session_service.create_session(
+            app_name="fact_check", user_id="api_user", session_id=session_id
+        )
+
+        content = types.Content(role="user", parts=[types.Part(text=text)])
+
+        # Collect events
+        events = [
+            event
+            for event in runner.run(
+                user_id="api_user", session_id=session_id, new_message=content
+            )
+        ]
+        final_event = events[-1] if events else None
+
+        if (
+            final_event
+            and final_event.is_final_response()
+            and final_event.content
+            and final_event.content.parts
+        ):
+            # Expect agent to return JSON string representing the fact-check report
+            json_string = final_event.content.parts[0].text
+            report_obj = json.loads(json_string)
+            return FactCheckReport(**report_obj)
+        else:
+            # Backend fallback: return empty claims array if agent output is not valid JSON
+            logger.info(
+                "❌ Agent did not produce a valid final response. Returning empty claims array."
+            )
+            return FactCheckReport(claims=[])
+
+    except Exception as e:
+        logger.error(f"Fact-checking pipeline error: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Server error: {type(e).__name__}: {e}"
+        )
+
+
+@app.post("/fact-check-txt-file", response_model=FactCheckReport)
+async def fact_check_txt(file: UploadFile = File(...)):
+    """Accept a TXT file upload, extract text, run the fact-check agent pipeline, and return a structured report."""
+    if not file.filename.lower().endswith(".txt"):
+        raise HTTPException(status_code=400, detail="Only TXT files are supported.")
+
+    # Save uploaded file temporarily
+    tmp_path = f"temp_{uuid.uuid4().hex}.txt"
+    logger.info(f"Saving uploaded file to temporary path: {tmp_path}")
+    with open(tmp_path, "wb") as f:
+        f.write(await file.read())
+    logger.info(f"File saved: {tmp_path}")
+
+    try:
+        with open(tmp_path, "r", encoding="utf-8") as f:
+            combined_text = f.read()
+
+        logger.info(f"Extracted text length: {len(combined_text)} characters")
+        logger.info("Text extraction completed. Running fact-check agent pipeline...")
+
+        # Run the ADK agent pipeline (reuse Runner pattern used elsewhere)
+        session_service = InMemorySessionService()
+        runner = Runner(
+            agent=fact_check_root,
+            app_name="fact_check",
+            session_service=session_service,
+        )
+        session_id = f"factcheck_{uuid.uuid4().hex[:8]}"
+
+        await session_service.create_session(
+            app_name="fact_check", user_id="api_user", session_id=session_id
+        )
+
+        content = types.Content(role="user", parts=[types.Part(text=combined_text)])
+
+        # Collect events
+        events = [
+            event
+            for event in runner.run(
+                user_id="api_user", session_id=session_id, new_message=content
+            )
+        ]
+        final_event = events[-1] if events else None
+
+        if (
+            final_event
+            and final_event.is_final_response()
+            and final_event.content
+            and final_event.content.parts
+        ):
+            # Expect agent to return JSON string representing the fact-check report
+            json_string = final_event.content.parts[0].text
+            report_obj = json.loads(json_string)
+            return FactCheckReport(**report_obj)
+        else:
+            # Backend fallback: return empty claims array if agent output is not valid JSON
+            logger.info(
+                "❌ Agent did not produce a valid final response. Returning empty claims array."
+            )
+            return FactCheckReport(claims=[])
+
+    except Exception as e:
+        # Print full traceback to server console for debugging
+        import traceback
+
+        traceback.print_exc()
+        # Return a controlled error to the client (preserves CORS headers)
+        raise HTTPException(
+            status_code=500, detail=f"Server error: {type(e).__name__}: {e}"
+        ) from e
+
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
 # --- Run Server ---
 if __name__ == "__main__":
     import uvicorn

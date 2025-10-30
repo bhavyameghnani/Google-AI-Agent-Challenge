@@ -144,6 +144,7 @@ export default function StartupPitchAnalyzer() {
     }
   };
 
+  // Fact-check handlers for all modalities
   const factCheckPdfFile = async () => {
     setError("");
     if (!pdfFile) {
@@ -164,7 +165,6 @@ export default function StartupPitchAnalyzer() {
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Server error");
-      // attach fact-check report into result so PitchAnalysisResults can render it
       setResult({ ...data, _fact_check: true });
     } catch (err) {
       setError(String(err));
@@ -173,34 +173,93 @@ export default function StartupPitchAnalyzer() {
     }
   };
 
-  const uploadVideo = async () => {
+  const factCheckText = async () => {
     setError("");
-    if (!videoFile && !youtubeUrl.trim()) {
-      setError("Provide a video file or YouTube link.");
+    if (!transcriptText.trim()) {
+      setError("Provide transcript text for fact-checking.");
       return;
     }
-    setLoadingVideo(true);
+    setLoadingFactCheck(true);
+    setResult(null);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "")}/fact-check-text`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: transcriptText }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Server error");
+      setResult({ ...data, _fact_check: true });
+    } catch (err) {
+        console.error("Fact-check error:", err);
+        if (err instanceof Error) {
+          setError(err.message);
+      } else if (typeof err === "object") {
+          setError(JSON.stringify(err));
+      } else {
+          setError(String(err));
+      }
+  } finally {
+      setLoadingFactCheck(false);
+    }
+  };
+
+  const factCheckTxtFile = async () => {
+    setError("");
+    if (!txtFile) {
+      setError("Select a .txt file to upload for fact-checking.");
+      return;
+    }
+    setLoadingFactCheck(true);
     setResult(null);
     try {
       const form = new FormData();
-      if (videoFile) form.append("file", videoFile);
-      if (youtubeUrl) form.append("youtube_url", youtubeUrl);
-
-      const res = await fetch(`${API_BASE}/analyze-video/`, {
-        method: "POST",
-        body: form,
-      });
+      form.append("file", txtFile);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "")}/fact-check-txt-file`,
+        {
+          method: "POST",
+          body: form,
+        }
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Server error");
-      setResult(data);
-
-      // reset video inputs
-      setVideoFile(null);
-      setYoutubeUrl("");
+      setResult({ ...data, _fact_check: true });
     } catch (err) {
       setError(String(err));
     } finally {
-      setLoadingVideo(false);
+      setLoadingFactCheck(false);
+    }
+  };
+
+  const factCheckAudioFile = async () => {
+    setError("");
+    if (!audioFile) {
+      setError("Select an audio file to upload for fact-checking.");
+      return;
+    }
+    setLoadingFactCheck(true);
+    setResult(null);
+    try {
+      const form = new FormData();
+      form.append("file", audioFile);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "")}/fact-check`,
+        {
+          method: "POST",
+          body: form,
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Server error");
+      setResult({ ...data, _fact_check: true });
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoadingFactCheck(false);
     }
   };
 
@@ -322,31 +381,50 @@ export default function StartupPitchAnalyzer() {
                         className="min-h-[200px] resize-none"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={fetchAnalyzeText}
-                        disabled={loading || !transcriptText.trim()}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Brain className="mr-2 h-4 w-4" />
-                            Analyze Text
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setTranscriptText("")}
-                        disabled={!transcriptText.trim()}
-                      >
-                        Clear
-                      </Button>
+                    <div className="flex flex-wrap gap-2 w-full">
+                      <div className="flex flex-row gap-3 w-full items-center mt-2">
+                        <Button
+                          onClick={fetchAnalyzeText}
+                          disabled={loading || !transcriptText.trim()}
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              <Brain className="mr-2 h-4 w-4" />
+                              Analyze Text
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={factCheckText}
+                          disabled={loadingFactCheck || !transcriptText.trim()}
+                          className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 text-white font-semibold shadow-md rounded-lg px-6 py-2 flex items-center gap-2 hover:from-green-500 hover:to-purple-600 transition-all border-0 min-w-[180px] justify-center"
+                        >
+                          {loadingFactCheck ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Fact-checking...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Fact-check Text
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setTranscriptText("")}
+                          disabled={!transcriptText.trim()}
+                        >
+                          Clear
+                        </Button>
+                      </div>
                     </div>
                   </TabsContent>
 
@@ -373,23 +451,42 @@ export default function StartupPitchAnalyzer() {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={uploadAudioFile}
-                      disabled={loading || !audioFile}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Transcribing...
-                        </>
-                      ) : (
-                        <>
-                          <FileAudio className="mr-2 h-4 w-4" />
-                          Transcribe & Analyze Audio
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex flex-wrap gap-2 w-full">
+                      <Button
+                        onClick={uploadAudioFile}
+                        disabled={loading || !audioFile}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Transcribing...
+                          </>
+                        ) : (
+                          <>
+                            <FileAudio className="mr-2 h-4 w-4" />
+                            Transcribe & Analyze Audio
+                          </>
+                        )}
+                      </Button>
+                        <Button
+                          onClick={factCheckAudioFile}
+                          disabled={loadingFactCheck || !audioFile}
+                          className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 text-white font-semibold shadow-md rounded-lg px-6 py-2 flex items-center gap-2 hover:from-green-500 hover:to-purple-600 transition-all border-0 w-full justify-center"
+                        >
+                          {loadingFactCheck ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Fact-checking...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Fact-check Audio
+                            </>
+                          )}
+                        </Button>
+                      </div>
                   </TabsContent>
 
                   <TabsContent value="txt" className="space-y-4">
@@ -415,23 +512,42 @@ export default function StartupPitchAnalyzer() {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={uploadTxtFile}
-                      disabled={loading || !txtFile}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="mr-2 h-4 w-4" />
-                          Upload & Analyze TXT
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex flex-wrap gap-2 w-full">
+                      <Button
+                        onClick={uploadTxtFile}
+                        disabled={loading || !txtFile}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Upload & Analyze TXT
+                          </>
+                        )}
+                      </Button>
+                        <Button
+                          onClick={factCheckTxtFile}
+                          disabled={loadingFactCheck || !txtFile}
+                          className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 text-white font-semibold shadow-md rounded-lg px-6 py-2 flex items-center gap-2 hover:from-green-500 hover:to-purple-600 transition-all border-0 w-full justify-center"
+                        >
+                          {loadingFactCheck ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Fact-checking...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Fact-check TXT
+                            </>
+                          )}
+                        </Button>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="pdf" className="space-y-4">
@@ -456,43 +572,43 @@ export default function StartupPitchAnalyzer() {
                         )}
                       </div>
                     </div>
-
-                    <Button
-                      onClick={uploadPdfFile}
-                      disabled={loading || loadingFactCheck || !pdfFile}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="mr-2 h-4 w-4" />
-                          Upload & Analyze PDF
-                        </>
-                      )}
-                    </Button>
                     <div className="mt-2">
-                      <Button
-                        onClick={factCheckPdfFile}
-                        disabled={loadingFactCheck || !pdfFile}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        {loadingFactCheck ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Fact-checking...
-                          </>
-                        ) : (
-                          <>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Fact-check Pitch Deck (PDF)
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex flex-col gap-1 w-full">
+                        <Button
+                          onClick={uploadPdfFile}
+                          disabled={loading || loadingFactCheck || !pdfFile}
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="mr-2 h-4 w-4" />
+                              Upload & Analyze PDF
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={factCheckPdfFile}
+                          disabled={loadingFactCheck || !pdfFile}
+                          className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 text-white font-semibold shadow-md rounded-lg px-6 py-2 flex items-center gap-2 hover:from-green-500 hover:to-purple-600 transition-all border-0 w-full justify-center"
+                        >
+                          {loadingFactCheck ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Fact-checking...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Fact-check Pitch Deck (PDF)
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </TabsContent>
 
@@ -548,25 +664,44 @@ export default function StartupPitchAnalyzer() {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={uploadVideo}
-                      disabled={
-                        loadingVideo || (!videoFile && !youtubeUrl.trim())
-                      }
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
-                    >
-                      {loadingVideo ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing Video...
-                        </>
-                      ) : (
-                        <>
-                          <Video className="mr-2 h-4 w-4" />
-                          Transcribe & Analyze Video
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2 mt-2">
+                      <div className="flex flex-col gap-2 w-full mt-2">
+                        <Button
+                          disabled={
+                            loadingVideo || (!videoFile && !youtubeUrl.trim())
+                          }
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                        >
+                          {loadingVideo ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Processing Video...
+                            </>
+                          ) : (
+                            <>
+                              <Video className="mr-2 h-4 w-4" />
+                              Transcribe & Analyze Video
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          disabled={loadingFactCheck || (!videoFile && !youtubeUrl.trim())}
+                          className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 text-white font-semibold shadow-md rounded-lg px-6 py-2 flex items-center gap-2 hover:from-green-500 hover:to-purple-600 transition-all border-0 w-full justify-center"
+                        >
+                          {loadingFactCheck ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Fact-checking...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Fact-check Video
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </TabsContent>
                 </Tabs>
 

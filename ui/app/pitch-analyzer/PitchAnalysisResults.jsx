@@ -103,20 +103,26 @@ const PitchAnalysisResults = ({ result }) => {
   // --- Fact-check Results Rendering ---
   const factCheckClaims = result?.claims;
 
+  // Map verdicts to True/False for display
+  const verdictDisplayMap = {
+    Supported: 'True',
+    Contradicted: 'False',
+    'Supported by evidence': 'True',
+    'Partially Supported': 'Partially Supported',
+    Unsubstantiated: 'Unsubstantiated',
+    default: '',
+  };
   const verdictColorMap = {
-    Supported: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    Contradicted: 'bg-red-50 text-red-700 border-red-200',
+    True: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    False: 'bg-red-50 text-red-700 border-red-200',
     Unsubstantiated: 'bg-amber-50 text-amber-700 border-amber-200',
-    'Supported by evidence': 'bg-emerald-50 text-emerald-700 border-emerald-200',
     'Partially Supported': 'bg-blue-50 text-blue-700 border-blue-200',
     default: 'bg-slate-50 text-slate-700 border-slate-200',
   };
-
   const verdictIconMap = {
-    Supported: '✓',
-    Contradicted: '✗',
+    True: '✓',
+    False: '✗',
     Unsubstantiated: '?',
-    'Supported by evidence': '✓',
     'Partially Supported': '~',
     default: '•',
   };
@@ -127,7 +133,8 @@ const PitchAnalysisResults = ({ result }) => {
     
     // Count verdicts for summary
     const verdictCounts = factCheckClaims.reduce((acc, item) => {
-      const verdict = item.verdict || 'Unsubstantiated';
+      const verdictRaw = item.verdict || 'Unsubstantiated';
+      const verdict = verdictDisplayMap[verdictRaw] || verdictRaw;
       acc[verdict] = (acc[verdict] || 0) + 1;
       return acc;
     }, {});
@@ -167,7 +174,8 @@ const PitchAnalysisResults = ({ result }) => {
         {/* Individual Claims */}
         <div className="space-y-4">
           {factCheckClaims.map((item, idx) => {
-            const verdict = item.verdict || 'Unsubstantiated';
+            const verdictRaw = item.verdict || 'Unsubstantiated';
+            const verdict = verdictDisplayMap[verdictRaw] || verdictRaw;
             const verdictColor = verdictColorMap[verdict] || verdictColorMap.default;
             const verdictIcon = verdictIconMap[verdict] || verdictIconMap.default;
             
