@@ -79,7 +79,7 @@ else:
     
     try:
         db = firestore.client()
-        bucket = storage.bucket()
+        bucket = storage.bucket(STORAGE_BUCKET)
         FIREBASE_ENABLED = True
         print("✅ Firebase initialized successfully")
     except Exception as e:

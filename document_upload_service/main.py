@@ -47,7 +47,7 @@ else:
 
     try:
         db = firestore.client()
-        bucket = storage.bucket()
+        bucket = storage.bucket(STORAGE_BUCKET)
         print("✅ Firebase initialized successfully")
     except Exception as e:
         print(f"WARNING: Firebase initialization failed: {e}")
