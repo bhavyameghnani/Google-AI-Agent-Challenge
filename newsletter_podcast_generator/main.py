@@ -78,6 +78,8 @@ else:
     STORAGE_BUCKET = "sense-ai-documents"
     
     try:
+        cred = credentials.ApplicationDefault()
+        firebase_admin.initialize_app(cred)
         db = firestore.client()
         bucket = storage.bucket(STORAGE_BUCKET)
         FIREBASE_ENABLED = True
