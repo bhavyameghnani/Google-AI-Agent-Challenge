@@ -3,12 +3,14 @@ Firebase Upload API using FastAPI
 """
 
 import io
+import logging
 import os
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
 import firebase_admin
+import google.cloud.logging
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, StreamingResponse
@@ -17,6 +19,19 @@ from pydantic import BaseModel
 
 LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
+if not LOCAL_RUN:
+    # Instantiates a client
+    client = google.cloud.logging.Client()
+
+    # Retrieves a Cloud Logging handler based on the environment
+    # you're running in and integrates the handler with the
+    # Python logging module. By default this captures all logs
+    # at INFO level and higher
+    client.setup_logging()
+
+
+logger = logging.getLogger(__name__)
+
 # --- Firebase Initialization ---
 
 if LOCAL_RUN:
@@ -24,7 +39,7 @@ if LOCAL_RUN:
     STORAGE_BUCKET = "senseai-podcast.firebasestorage.app"
 
     if not os.path.exists(SERVICE_ACCOUNT_FILE):
-        print(
+        logger.info(
             "WARNING: serviceAccountKey.json not found. Firebase features will be disabled."
         )
         db = None
@@ -36,9 +51,9 @@ if LOCAL_RUN:
                 firebase_admin.initialize_app(cred, {"storageBucket": STORAGE_BUCKET})
             db = firestore.client()
             bucket = storage.bucket()
-            print("✅ Firebase initialized successfully")
+            logger.info("✅ Firebase initialized successfully")
         except Exception as e:
-            print(f"WARNING: Firebase initialization failed: {e}")
+            logger.info(f"WARNING: Firebase initialization failed: {e}")
             db = None
             bucket = None
 else:
@@ -48,12 +63,12 @@ else:
     try:
         cred = credentials.ApplicationDefault()
         firebase_admin.initialize_app(cred)
-        
+
         db = firestore.client()
         bucket = storage.bucket(STORAGE_BUCKET)
-        print("✅ Firebase initialized successfully")
+        logger.info("✅ Firebase initialized successfully")
     except Exception as e:
-        print(f"WARNING: Firebase initialization failed: {e}")
+        logger.info(f"WARNING: Firebase initialization failed: {e}")
         db = None
         bucket = None
 
@@ -134,7 +149,8 @@ async def create_record(
             if contents is None:
                 # Nothing to upload
                 return None
-
+            
+            logger.info(f"Uploading file to {blob_path}")
             blob.upload_from_string(contents, content_type=file_obj.content_type)
             try:
                 blob.make_public()
@@ -178,10 +194,12 @@ async def create_record(
             "created_at": datetime.utcnow().isoformat() + "Z",
         }
 
+        logger.info(f"Storing record metadata in Firestore with ID: {record_id}")
         db.collection("records").document(record_id).set(record_data)
         return record_data
 
     except Exception as e:
+        logger.error(f"Error storing record metadata in Firestore: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -191,10 +209,13 @@ async def create_record(
 @app.get("/records", response_model=List[RecordAllFiles])
 def list_records():
     try:
+        logger.info("Fetching all records from Firestore")
         docs = db.collection("records").stream()
         records = [doc.to_dict() for doc in docs]
+        logger.info(f"Fetched {len(records)} records from Firestore")
         return records
     except Exception as e:
+        logger.error(f"Error fetching records from Firestore: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -203,8 +224,10 @@ def list_records():
 # -------------------------------------------
 @app.get("/records/{record_id}", response_model=RecordAllFiles)
 def get_record(record_id: str):
+    logger.info(f"Fetching record with ID: {record_id}")
     doc = db.collection("records").document(record_id).get()
     if not doc.exists:
+        logger.warning(f"Record not found: {record_id}")
         raise HTTPException(status_code=404, detail="Record not found")
     return doc.to_dict()
 
@@ -224,6 +247,8 @@ async def update_record(
     report_md: Optional[UploadFile] = File(None),
     report_pdf: Optional[UploadFile] = File(None),
 ):
+    """Update record metadata and optionally upload new files."""
+    logger.info(f"Updating record with ID: {record_id}")
     doc_ref = db.collection("records").document(record_id)
     doc = doc_ref.get()
     if not doc.exists:
@@ -298,9 +323,12 @@ async def update_record(
 # -------------------------------------------
 @app.delete("/records/{record_id}")
 def delete_record(record_id: str):
+    """Delete record from Firestore and associated files from Storage."""
+    logger.info(f"Deleting record with ID: {record_id}")
     doc_ref = db.collection("records").document(record_id)
     doc = doc_ref.get()
     if not doc.exists:
+        logger.warning(f"Record not found: {record_id}")
         raise HTTPException(status_code=404, detail="Record not found")
     data = doc.to_dict() or {}
     # delete nested files if they exist
@@ -333,17 +361,21 @@ def download_file(record_id: str, key: str):
 
     key must be one of: english, hindi, report_md, report_pdf
     """
+    logger.info(f"Fetching download URL for record {record_id}, key: {key}")
     allowed = ("english", "hindi", "report_md", "report_pdf")
     if key not in allowed:
         raise HTTPException(status_code=400, detail="Invalid file key")
 
     doc = db.collection("records").document(record_id).get()
+    
     if not doc.exists:
+        logger.warning(f"Record not found: {record_id}")
         raise HTTPException(status_code=404, detail="Record not found")
 
     data = doc.to_dict() or {}
     info = data.get(key)
     if not info or not isinstance(info, dict):
+        logger.warning(f"File not found for key: {key}")
         raise HTTPException(status_code=404, detail="File not found for key")
 
     public_url = info.get("public_url")
@@ -353,11 +385,14 @@ def download_file(record_id: str, key: str):
         return RedirectResponse(public_url)
 
     if storage_path:
+        
         blob = bucket.blob(storage_path)
+        logger.info(f"Generating signed URL for storage path: {storage_path}")
         try:
             signed_url = blob.generate_signed_url(expiration=timedelta(minutes=15))
             return RedirectResponse(signed_url)
         except Exception as e:
+            logger.error(f"Error generating signed URL: {e}")
             raise HTTPException(
                 status_code=500, detail=f"Failed to generate signed URL: {e}"
             )
@@ -376,6 +411,7 @@ def stream_file(record_id: str, key: str, request: Request):
 
     key: english | hindi | report_md | report_pdf
     """
+    logger.info(f"Streaming file for record {record_id}, key: {key}")
     allowed_keys = ("english", "hindi", "report_md", "report_pdf")
     if key not in allowed_keys:
         raise HTTPException(status_code=400, detail="Invalid file key")
