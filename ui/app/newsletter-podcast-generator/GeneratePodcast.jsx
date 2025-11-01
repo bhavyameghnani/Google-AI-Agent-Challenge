@@ -2,7 +2,13 @@
 
 import React, { useState, useRef } from "react";
 import { FilePlus, Play, Loader2, Download, Mail } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -200,7 +206,8 @@ export default function GeneratePodcast() {
       <CardHeader>
         <CardTitle>Generate Podcast & Newsletter</CardTitle>
         <CardDescription>
-          Create startup analysis podcasts or newsletters by providing relevant inputs.
+          Create startup analysis podcasts or newsletters by providing relevant
+          inputs.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -219,7 +226,8 @@ export default function GeneratePodcast() {
               <Button onClick={handleGenerateByName} disabled={loading}>
                 {loading ? (
                   <>
-                    <Loader2 className="animate-spin h-4 w-4 mr-2" /> Generating...
+                    <Loader2 className="animate-spin h-4 w-4 mr-2" />{" "}
+                    Generating...
                   </>
                 ) : (
                   <>
@@ -252,10 +260,14 @@ export default function GeneratePodcast() {
             />
 
             <div className="flex items-center gap-2">
-              <Button onClick={handleGenerateFromPdf} disabled={loading || !pdfFile}>
+              <Button
+                onClick={handleGenerateFromPdf}
+                disabled={loading || !pdfFile}
+              >
                 {loading ? (
                   <>
-                    <Loader2 className="animate-spin h-4 w-4 mr-2" /> Processing...
+                    <Loader2 className="animate-spin h-4 w-4 mr-2" />{" "}
+                    Processing...
                   </>
                 ) : (
                   <>
@@ -320,13 +332,15 @@ export default function GeneratePodcast() {
               disabled={newsletterLoading}
             />
 
-            
-
             <div className="flex items-center gap-2">
-              <Button onClick={handleGenerateNewsletter} disabled={newsletterLoading}>
+              <Button
+                onClick={handleGenerateNewsletter}
+                disabled={newsletterLoading}
+              >
                 {newsletterLoading ? (
                   <>
-                    <Loader2 className="animate-spin h-4 w-4 mr-2" /> Generating...
+                    <Loader2 className="animate-spin h-4 w-4 mr-2" />{" "}
+                    Generating...
                   </>
                 ) : (
                   <>
@@ -356,7 +370,9 @@ export default function GeneratePodcast() {
             )}
             {newsletterResult && (
               <div className="p-3 rounded-md bg-success/10 text-success-foreground text-sm space-y-2">
-                <div className="font-medium">Newsletter Generated Successfully</div>
+                <div className="font-medium">
+                  Newsletter Generated Successfully
+                </div>
                 {newsletterResult.download_url ? (
                   <a
                     href={newsletterResult.download_url}

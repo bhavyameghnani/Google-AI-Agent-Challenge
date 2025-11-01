@@ -25,6 +25,7 @@ import {
   Video,
   Youtube,
   Play,
+  Search,
 } from "lucide-react";
 import { Navbar } from "../dashboard/CompanyDashboard";
 import PitchAnalysisResults from "./PitchAnalysisResults";
@@ -43,7 +44,7 @@ export default function StartupPitchAnalyzer() {
   const [loadingVideo, setLoadingVideo] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeTab, setActiveTab] = useState("pdf");
 
   const uploadAudioFile = async () => {
     setError("");
@@ -226,11 +227,11 @@ export default function StartupPitchAnalyzer() {
           <div className="flex items-center gap-3 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Startup Pitch Analyzer
+                Founder Data Analyzer
               </h1>
               <p className="text-muted-foreground">
-                AI-powered analysis for pitch decks, audio, video and
-                presentations
+                AI-powered analysis for pitch decks, founder call transcripts,
+                video and presentations
               </p>
             </div>
           </div>
@@ -267,12 +268,19 @@ export default function StartupPitchAnalyzer() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5 text-blue-600" />
-                  Upload & Analyze
+                  Analyze Pitch Deck
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger
+                      value="pdf"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </TabsTrigger>
                     <TabsTrigger
                       value="text"
                       className="flex items-center gap-2"
@@ -294,13 +302,7 @@ export default function StartupPitchAnalyzer() {
                       <FileText className="h-4 w-4" />
                       TXT File
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="pdf"
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      PDF
-                    </TabsTrigger>
+
                     <TabsTrigger
                       value="video"
                       className="flex items-center gap-2"
@@ -468,10 +470,7 @@ export default function StartupPitchAnalyzer() {
                           Analyzing...
                         </>
                       ) : (
-                        <>
-                          <Download className="mr-2 h-4 w-4" />
-                          Upload & Analyze PDF
-                        </>
+                        <>Analyze Pitch Deck</>
                       )}
                     </Button>
                     <div className="mt-2">
@@ -489,7 +488,7 @@ export default function StartupPitchAnalyzer() {
                         ) : (
                           <>
                             <FileText className="mr-2 h-4 w-4" />
-                            Fact-check Pitch Deck (PDF)
+                            Fact-check Pitch Deck
                           </>
                         )}
                       </Button>

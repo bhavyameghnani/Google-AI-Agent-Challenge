@@ -22,7 +22,7 @@ const ToolTip = ({
 }) => {
   const cleanedContent = useMemo(() => {
     if (typeof content === "string") {
-      return content.replace(/\n/g, "<br />");
+      return content.replace(/\n/g, "");
     }
     return content;
   }, [content]);

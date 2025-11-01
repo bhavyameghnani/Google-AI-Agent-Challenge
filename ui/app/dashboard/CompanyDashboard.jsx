@@ -1,4 +1,3 @@
-// ui/components/CompanyDashboard.tsx (Client Component)
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -72,10 +71,10 @@ export const Navbar = () => {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => router.push("/pitch-analyzer")}
+                onClick={() => router.push("/founder-data-analyzer")}
                 className="text-gray-600 hover:text-gray-900"
               >
-                ⚡ Analyze Pitchdeck
+                ⚡ Analyze Founder Data
               </Button>
             </div>
           </div>
@@ -118,10 +117,10 @@ export const Navbar = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => router.push("/pitch-analyzer")}
+                onClick={() => router.push("/founder-data-analyzer")}
                 className="w-full justify-start text-gray-600"
               >
-                ⚡ Analyze Pitchdeck
+                ⚡ Analyze Founder Data
               </Button>
             </div>
           </div>
@@ -454,7 +453,7 @@ const CompanyDashboard = () => {
       )}
 
       <div className="container mx-auto px-4 py-8">
-        <InfoBanner />
+        {(loadingCompanies || !companyData) && <InfoBanner />}
 
         {/* Show companies list when not analyzing */}
         {!loadingExtract && !companyData && (

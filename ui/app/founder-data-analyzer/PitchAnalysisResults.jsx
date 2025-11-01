@@ -27,42 +27,72 @@ const PitchAnalysisResults = ({ result }) => {
       <div className="mb-8 p-6 bg-white rounded-lg border border-gray-200">
         <div className="flex items-center gap-3 mb-2">
           <span className="font-bold text-lg">Fact Check</span>
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${factCheckV2.verdict === 'True' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              factCheckV2.verdict === "True"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
             {factCheckV2.verdict}
           </span>
           {factCheckV2.confidence_score !== undefined && (
-            <span className="ml-2 text-xs text-gray-500">Confidence: {(factCheckV2.confidence_score * 100).toFixed(0)}%</span>
+            <span className="ml-2 text-xs text-gray-500">
+              Confidence: {(factCheckV2.confidence_score * 100).toFixed(0)}%
+            </span>
           )}
         </div>
         <div className="mb-2">
-          <span className="font-medium">Statement Checked:</span> {factCheckV2.statement_checked}
+          <span className="font-medium">Statement Checked:</span>{" "}
+          {factCheckV2.statement_checked}
         </div>
         <div className="mb-2">
-          <span className="font-medium">Reasoning:</span> {factCheckV2.reasoning}
+          <span className="font-medium">Reasoning:</span>{" "}
+          {factCheckV2.reasoning}
         </div>
         {factCheckV2.correction_if_false && (
           <div className="mb-2">
-            <span className="font-medium">Correction:</span> {factCheckV2.correction_if_false}
+            <span className="font-medium">Correction:</span>{" "}
+            {factCheckV2.correction_if_false}
           </div>
         )}
-        {factCheckV2.evidence_sources && factCheckV2.evidence_sources.length > 0 && (
-          <div>
-            <div className="font-medium mb-1">Evidence Sources:</div>
-            <ul className="space-y-2">
-              {factCheckV2.evidence_sources.map((src, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-center">{idx + 1}</span>
-                  <a href={src.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{src.source_name || src.url}</a>
-                  <span className="text-xs text-gray-500">{src.url && (() => { try { return new URL(src.url).hostname; } catch { return ''; } })()}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {factCheckV2.evidence_sources &&
+          factCheckV2.evidence_sources.length > 0 && (
+            <div>
+              <div className="font-medium mb-1">Evidence Sources:</div>
+              <ul className="space-y-2">
+                {factCheckV2.evidence_sources.map((src, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-center">
+                      {idx + 1}
+                    </span>
+                    <a
+                      href={src.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      {src.source_name || src.url}
+                    </a>
+                    <span className="text-xs text-gray-500">
+                      {src.url &&
+                        (() => {
+                          try {
+                            return new URL(src.url).hostname;
+                          } catch {
+                            return "";
+                          }
+                        })()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
       </div>
     );
   };
-// ...existing code continues...
+  // ...existing code continues...
   // Handle different response formats:
   // 1. Direct array from analyze-text/audio/file/video endpoints
   // 2. Nested analysis structure
@@ -104,30 +134,36 @@ const PitchAnalysisResults = ({ result }) => {
   const factCheckClaims = result?.claims;
 
   const verdictColorMap = {
-    Supported: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    Contradicted: 'bg-red-50 text-red-700 border-red-200',
-    Unsubstantiated: 'bg-amber-50 text-amber-700 border-amber-200',
-    'Supported by evidence': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    'Partially Supported': 'bg-blue-50 text-blue-700 border-blue-200',
-    default: 'bg-slate-50 text-slate-700 border-slate-200',
+    Supported: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Contradicted: "bg-red-50 text-red-700 border-red-200",
+    Unsubstantiated: "bg-amber-50 text-amber-700 border-amber-200",
+    "Supported by evidence":
+      "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "Partially Supported": "bg-blue-50 text-blue-700 border-blue-200",
+    default: "bg-slate-50 text-slate-700 border-slate-200",
   };
 
   const verdictIconMap = {
-    Supported: '✓',
-    Contradicted: '✗',
-    Unsubstantiated: '?',
-    'Supported by evidence': '✓',
-    'Partially Supported': '~',
-    default: '•',
+    Supported: "✓",
+    Contradicted: "✗",
+    Unsubstantiated: "?",
+    "Supported by evidence": "✓",
+    "Partially Supported": "~",
+    default: "•",
   };
 
   // Render fact-check claims if present
   const renderFactCheck = () => {
-    if (!factCheckClaims || !Array.isArray(factCheckClaims) || factCheckClaims.length === 0) return null;
-    
+    if (
+      !factCheckClaims ||
+      !Array.isArray(factCheckClaims) ||
+      factCheckClaims.length === 0
+    )
+      return null;
+
     // Count verdicts for summary
     const verdictCounts = factCheckClaims.reduce((acc, item) => {
-      const verdict = item.verdict || 'Unsubstantiated';
+      const verdict = item.verdict || "Unsubstantiated";
       acc[verdict] = (acc[verdict] || 0) + 1;
       return acc;
     }, {});
@@ -144,17 +180,22 @@ const PitchAnalysisResults = ({ result }) => {
               Fact-Check Results
             </h3>
             <Badge variant="secondary" className="text-base px-4 py-2">
-              {factCheckClaims.length} {factCheckClaims.length === 1 ? 'Claim' : 'Claims'} Verified
+              {factCheckClaims.length}{" "}
+              {factCheckClaims.length === 1 ? "Claim" : "Claims"} Verified
             </Badge>
           </div>
-          
+
           {/* Verdict Summary */}
           <div className="flex flex-wrap gap-4">
             {Object.entries(verdictCounts).map(([verdict, count]) => {
-              const colorClass = verdictColorMap[verdict] || verdictColorMap.default;
+              const colorClass =
+                verdictColorMap[verdict] || verdictColorMap.default;
               const icon = verdictIconMap[verdict] || verdictIconMap.default;
               return (
-                <div key={verdict} className={`flex items-center gap-2 px-4 py-2 rounded-full border ${colorClass}`}>
+                <div
+                  key={verdict}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border ${colorClass}`}
+                >
                   <span className="font-bold text-lg">{icon}</span>
                   <span className="font-semibold">{count}</span>
                   <span className="text-sm">{verdict}</span>
@@ -167,55 +208,79 @@ const PitchAnalysisResults = ({ result }) => {
         {/* Individual Claims */}
         <div className="space-y-4">
           {factCheckClaims.map((item, idx) => {
-            const verdict = item.verdict || 'Unsubstantiated';
-            const verdictColor = verdictColorMap[verdict] || verdictColorMap.default;
-            const verdictIcon = verdictIconMap[verdict] || verdictIconMap.default;
-            
+            const verdict = item.verdict || "Unsubstantiated";
+            const verdictColor =
+              verdictColorMap[verdict] || verdictColorMap.default;
+            const verdictIcon =
+              verdictIconMap[verdict] || verdictIconMap.default;
+
             // Extract claim data from various possible structures
             const claim = item.claim || {};
-            const claimText = claim.text || item.claim_text || item.text || `Claim ${claim.id || idx + 1}`;
+            const claimText =
+              claim.text ||
+              item.claim_text ||
+              item.text ||
+              `Claim ${claim.id || idx + 1}`;
             const claimId = claim.id || item.claim_id || `C${idx + 1}`;
-            
+
             // Additional claim metadata
-            const normalizedField = claim.normalized_field || item.normalized_field || null;
-            const extractedValue = claim.extracted_value || item.extracted_value || null;
+            const normalizedField =
+              claim.normalized_field || item.normalized_field || null;
+            const extractedValue =
+              claim.extracted_value || item.extracted_value || null;
             const location = claim.location || item.location || null;
             const context = item.context || claim.context || null;
             const reasoning = item.reasoning || null;
             const confidence = item.confidence || null;
-            
+
             // Evidence handling - support multiple formats
-            const evidenceItems = Array.isArray(item.evidences) ? item.evidences : 
-                                 Array.isArray(item.evidence_items) ? item.evidence_items :
-                                 Array.isArray(item.supporting_evidence) ? item.supporting_evidence.map(url => ({url})) : [];
-            
+            const evidenceItems = Array.isArray(item.evidences)
+              ? item.evidences
+              : Array.isArray(item.evidence_items)
+              ? item.evidence_items
+              : Array.isArray(item.supporting_evidence)
+              ? item.supporting_evidence.map((url) => ({ url }))
+              : [];
+
             // Corrected information
-            const correctedValue = item.corrected_value || item.corrected_claim || null;
-            
+            const correctedValue =
+              item.corrected_value || item.corrected_claim || null;
+
             return (
-              <div key={idx} className="bg-white rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div
+                key={idx}
+                className="bg-white rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+              >
                 {/* Claim Header */}
                 <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs font-mono border-gray-300">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-mono border-gray-300"
+                        >
                           {claimId}
                         </Badge>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold border-2 ${verdictColor}`}>
+                        <div
+                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold border-2 ${verdictColor}`}
+                        >
                           <span className="text-lg">{verdictIcon}</span>
                           {verdict}
                         </div>
                         {normalizedField && (
-                          <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
-                            {normalizedField.replace(/_/g, ' ')}
+                          <Badge
+                            variant="secondary"
+                            className="text-xs bg-purple-100 text-purple-700 border-purple-300"
+                          >
+                            {normalizedField.replace(/_/g, " ")}
                           </Badge>
                         )}
                       </div>
                       <div className="text-base font-semibold text-gray-900 leading-relaxed">
                         {claimText}
                       </div>
-                      
+
                       {/* Metadata row */}
                       <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600">
                         {extractedValue && (
@@ -234,8 +299,8 @@ const PitchAnalysisResults = ({ result }) => {
                         )}
                       </div>
                     </div>
-                    
-                    {typeof confidence === 'number' && (
+
+                    {typeof confidence === "number" && (
                       <div className="flex-shrink-0 text-center">
                         <div className="text-2xl font-bold text-gray-900">
                           {Math.round(confidence * 100)}%
@@ -261,7 +326,7 @@ const PitchAnalysisResults = ({ result }) => {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Reasoning */}
                   {reasoning && (
                     <div className="bg-blue-50 border-l-4 border-blue-400 px-4 py-3 rounded-r">
@@ -286,38 +351,63 @@ const PitchAnalysisResults = ({ result }) => {
                       <div className="space-y-3">
                         {evidenceItems.map((ev, j) => {
                           // Handle both object and string evidence formats
-                          const evidenceUrl = typeof ev === 'string' ? ev : (ev.url || null);
-                          const evidenceTitle = typeof ev === 'string' ? ev : (ev.title || evidenceUrl || 'Evidence');
-                          const evidenceSnippet = typeof ev === 'object' ? (ev.snippet || null) : null;
-                          
+                          const evidenceUrl =
+                            typeof ev === "string" ? ev : ev.url || null;
+                          const evidenceTitle =
+                            typeof ev === "string"
+                              ? ev
+                              : ev.title || evidenceUrl || "Evidence";
+                          const evidenceSnippet =
+                            typeof ev === "object" ? ev.snippet || null : null;
+
                           // Extract domain safely
-                          let evidenceSource = '';
-                          if (typeof ev === 'object') {
-                            evidenceSource = ev.source || ev.domain || '';
+                          let evidenceSource = "";
+                          if (typeof ev === "object") {
+                            evidenceSource = ev.source || ev.domain || "";
                           }
-                          if (!evidenceSource && evidenceUrl && typeof evidenceUrl === 'string') {
+                          if (
+                            !evidenceSource &&
+                            evidenceUrl &&
+                            typeof evidenceUrl === "string"
+                          ) {
                             try {
-                              evidenceSource = new URL(evidenceUrl).hostname.replace('www.', '');
+                              evidenceSource = new URL(
+                                evidenceUrl
+                              ).hostname.replace("www.", "");
                             } catch (e) {
-                              evidenceSource = '';
+                              evidenceSource = "";
                             }
                           }
-                          
-                          const publishedDate = typeof ev === 'object' && ev.published_date ? 
-                            new Date(ev.published_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : null;
-                          
+
+                          const publishedDate =
+                            typeof ev === "object" && ev.published_date
+                              ? new Date(ev.published_date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  }
+                                )
+                              : null;
+
                           return (
-                            <div key={j} className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg border border-slate-200 p-4 hover:border-blue-300 transition-colors">
+                            <div
+                              key={j}
+                              className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg border border-slate-200 p-4 hover:border-blue-300 transition-colors"
+                            >
                               <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm">
                                   {j + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  {evidenceUrl && typeof evidenceUrl === 'string' && evidenceUrl.startsWith('http') ? (
-                                    <a 
-                                      href={evidenceUrl} 
-                                      target="_blank" 
-                                      rel="noreferrer" 
+                                  {evidenceUrl &&
+                                  typeof evidenceUrl === "string" &&
+                                  evidenceUrl.startsWith("http") ? (
+                                    <a
+                                      href={evidenceUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
                                       className="text-sm font-semibold text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2 break-words"
                                     >
                                       {evidenceTitle}
@@ -327,13 +417,13 @@ const PitchAnalysisResults = ({ result }) => {
                                       {evidenceTitle}
                                     </span>
                                   )}
-                                  
+
                                   {evidenceSnippet && (
                                     <div className="text-sm text-gray-600 mt-2 leading-relaxed italic">
                                       "{evidenceSnippet}"
                                     </div>
                                   )}
-                                  
+
                                   <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
                                     {evidenceSource && (
                                       <span className="px-2 py-1 bg-white rounded border border-gray-200 font-medium">
@@ -385,85 +475,137 @@ const PitchAnalysisResults = ({ result }) => {
       {/* Fact-check status */}
       {result?._fact_check ? (
         <div className="mb-2">
-          <span className="text-green-700 font-semibold">Fact-check successful</span>
+          <span className="text-green-700 font-semibold">
+            Fact-check successful
+          </span>
         </div>
-      ) : (
-        <div className="mb-2">
-          <span className="text-red-700 font-semibold">Fact-check failed or no claims found</span>
-        </div>
-      )}
+      ) : null
+      // <div className="mb-2">
+      //   <span className="text-red-700 font-semibold">Fact-check failed or no claims found</span>
+      // </div>
+      }
 
       {/* Fact-check results (if any) */}
-      {result?._fact_check && result.results && Array.isArray(result.results) && (
-        <div>
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Info className="h-4 w-4 text-slate-600" /> Fact-check Results
-          </h3>
-          <div className="space-y-4">
-            {result.results.map((r, i) => {
-              // support variations in shape: r.evidence_items (objects) or r.supporting_evidence (urls)
-              const evidenceItems = Array.isArray(r.evidence_items)
-                ? r.evidence_items
-                : Array.isArray(r.supporting_evidence)
-                ? r.supporting_evidence.map((u) => ({ url: u, title: u }))
-                : [];
+      {result?._fact_check &&
+        result.results &&
+        Array.isArray(result.results) && (
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Info className="h-4 w-4 text-slate-600" /> Fact-check Results
+            </h3>
+            <div className="space-y-4">
+              {result.results.map((r, i) => {
+                // support variations in shape: r.evidence_items (objects) or r.supporting_evidence (urls)
+                const evidenceItems = Array.isArray(r.evidence_items)
+                  ? r.evidence_items
+                  : Array.isArray(r.supporting_evidence)
+                  ? r.supporting_evidence.map((u) => ({ url: u, title: u }))
+                  : [];
 
-              // friendly verdict label and color
-              const verdict = r.verdict || "Unsubstantiated";
-              const verdictColor =
-                verdict === "Supported"
-                  ? "text-emerald-700 bg-emerald-50"
-                  : verdict === "Contradicted"
-                  ? "text-red-700 bg-red-50"
-                  : "text-amber-700 bg-amber-50";
+                // friendly verdict label and color
+                const verdict = r.verdict || "Unsubstantiated";
+                const verdictColor =
+                  verdict === "Supported"
+                    ? "text-emerald-700 bg-emerald-50"
+                    : verdict === "Contradicted"
+                    ? "text-red-700 bg-red-50"
+                    : "text-amber-700 bg-amber-50";
 
-              const confidence = typeof r.confidence === "number" ? Math.round(r.confidence * 100) : (r.confidence ? r.confidence : "-");
+                const confidence =
+                  typeof r.confidence === "number"
+                    ? Math.round(r.confidence * 100)
+                    : r.confidence
+                    ? r.confidence
+                    : "-";
 
-              return (
-                <div key={i} className="p-4 bg-white rounded-lg border border-gray-200">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="text-sm text-muted-foreground mb-1">Claim</div>
-                      <div className="text-base font-medium text-foreground">{r.claim_text || `Claim ${r.claim_id}`}</div>
-                      {r.context && (
-                        <div className="text-sm text-muted-foreground mt-2">{r.context}</div>
-                      )}
-                    </div>
-
-                    <div className="flex-shrink-0 text-right">
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${verdictColor}`}>
-                        {verdict}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-2">Confidence: {typeof confidence === 'number' ? `${confidence}%` : confidence}</div>
-                    </div>
-                  </div>
-
-                  {evidenceItems.length > 0 && (
-                    <div className="mt-3">
-                      <div className="text-xs text-muted-foreground mb-2">Evidence</div>
-                      <div className="space-y-2">
-                        {evidenceItems.map((ev, j) => (
-                          <div key={j} className="p-3 bg-slate-50 rounded-md border border-slate-100">
-                            <a href={ev.url || ev} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 underline">
-                              {ev.title || ev.url || ev}
-                            </a>
-                            {ev.snippet && <div className="text-sm text-muted-foreground mt-1">{ev.snippet}</div>}
-                            <div className="text-xs text-muted-foreground mt-1">{ev.source || ev.domain || (ev.url && new URL(ev.url).hostname) || ""} {ev.published_date ? ` • ${new Date(ev.published_date).toLocaleDateString()}` : ""}</div>
+                return (
+                  <div
+                    key={i}
+                    className="p-4 bg-white rounded-lg border border-gray-200"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="text-sm text-muted-foreground mb-1">
+                          Claim
+                        </div>
+                        <div className="text-base font-medium text-foreground">
+                          {r.claim_text || `Claim ${r.claim_id}`}
+                        </div>
+                        {r.context && (
+                          <div className="text-sm text-muted-foreground mt-2">
+                            {r.context}
                           </div>
-                        ))}
+                        )}
+                      </div>
+
+                      <div className="flex-shrink-0 text-right">
+                        <div
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${verdictColor}`}
+                        >
+                          {verdict}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-2">
+                          Confidence:{" "}
+                          {typeof confidence === "number"
+                            ? `${confidence}%`
+                            : confidence}
+                        </div>
                       </div>
                     </div>
-                  )}
 
-                  {r.corrected_claim && (
-                    <div className="mt-3 text-sm text-slate-700">Corrected: <span className="font-medium">{r.corrected_claim}</span></div>
-                  )}
-                </div>
-              );
-            })}
+                    {evidenceItems.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-xs text-muted-foreground mb-2">
+                          Evidence
+                        </div>
+                        <div className="space-y-2">
+                          {evidenceItems.map((ev, j) => (
+                            <div
+                              key={j}
+                              className="p-3 bg-slate-50 rounded-md border border-slate-100"
+                            >
+                              <a
+                                href={ev.url || ev}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm font-medium text-blue-600 underline"
+                              >
+                                {ev.title || ev.url || ev}
+                              </a>
+                              {ev.snippet && (
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  {ev.snippet}
+                                </div>
+                              )}
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {ev.source ||
+                                  ev.domain ||
+                                  (ev.url && new URL(ev.url).hostname) ||
+                                  ""}{" "}
+                                {ev.published_date
+                                  ? ` • ${new Date(
+                                      ev.published_date
+                                    ).toLocaleDateString()}`
+                                  : ""}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {r.corrected_claim && (
+                      <div className="mt-3 text-sm text-slate-700">
+                        Corrected:{" "}
+                        <span className="font-medium">{r.corrected_claim}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       {/* Analysis Header */}
       <div className="flex items-center gap-2 text-green-600 mb-6">
         <Star className="h-5 w-5" />
