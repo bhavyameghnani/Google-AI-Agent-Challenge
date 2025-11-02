@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import TimeSaved from "@/components/TimeSaved";
 
 export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,13 +119,13 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto">
             <Badge
               variant="secondary"
-              className="mb-6 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0"
+              className="mb-3 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               AI-Powered Startup Insights
             </Badge>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold mb-3 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent leading-tight">
               Investment ready insights in
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {" "}
@@ -135,7 +136,7 @@ export default function LandingPage() {
               </mark>
             </h1>
 
-            <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-slate-600 mb-2 max-w-3xl mx-auto leading-relaxed">
               Get comprehensive insights on any startup.
               <br />
               From financials to leadership, market position to growth metrics -
@@ -143,7 +144,7 @@ export default function LandingPage() {
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-4xl mx-auto mb-16">
+            <div className="max-w-4xl mx-auto mb-8">
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
                 <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200/50 p-2 flex items-center">
@@ -175,7 +176,7 @@ export default function LandingPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-8">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
@@ -203,6 +204,11 @@ export default function LandingPage() {
               >
                 ⚡ Analyze Pitchdeck
               </Button>
+            </div>
+
+            {/* Time saved card (from slides) */}
+            <div className="mb-8 mt-8">
+              <TimeSaved />
             </div>
           </div>
         </div>

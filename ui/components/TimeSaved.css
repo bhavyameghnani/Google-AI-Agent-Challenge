@@ -1,0 +1,64 @@
+.ts-card {
+  background: linear-gradient(180deg, #3b2b22 0%, #3b2b22 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 520px;
+  margin: 20px auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+}
+.ts-inner {
+  text-align: left;
+}
+.ts-title {
+  margin: 0 0 12px 0;
+  color: #ffd2cf;
+  font-size: 18px;
+  font-weight: 600;
+}
+.ts-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 16px 0;
+}
+.ts-item {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+}
+.ts-plus {
+  color: #ff6b6b;
+  font-weight: 700;
+  min-width: 66px;
+  display: inline-block;
+  text-align: right;
+  font-size: 20px;
+}
+.ts-text {
+  color: #fff;
+  opacity: 0.95;
+}
+.ts-total {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
+  color: #fff;
+  font-weight: 600;
+}
+.ts-total-hours {
+  color: #ff6b6b;
+  font-size: 20px;
+}
+
+@media (max-width: 640px) {
+  .ts-card {
+    padding: 16px;
+    margin: 12px;
+  }
+  .ts-plus {
+    min-width: 52px;
+    font-size: 18px;
+  }
+}
