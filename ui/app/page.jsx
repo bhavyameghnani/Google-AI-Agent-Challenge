@@ -114,7 +114,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16">
+      <section className="pt-[1rem] pb-16">
         <div className="container mx-auto px-6 text-center">
           <div className="max-w-4xl mx-auto">
             <Badge
