@@ -121,21 +121,25 @@ export default function LandingPage() {
               className="mb-6 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              AI-Powered Company Intelligence
+              AI-Powered Startup Insights
             </Badge>
 
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent leading-tight">
-              X-Ray Vision for
+              Investment ready insights in
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {" "}
-                Startups
+                minutes,{""}
               </span>
+              <mark className="bg-yellow-200 rounded-md px-2 ml-2 text-slate-900 font-semibold shadow-lg max-h-0">
+                not hours
+              </mark>
             </h1>
 
             <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Get comprehensive insights on any company. From financials to
-              leadership, market position to growth metrics - all powered by
-              SenseAI.
+              Get comprehensive insights on any startup.
+              <br />
+              From financials to leadership, market position to growth metrics -
+              all powered by SenseAI.
             </p>
 
             {/* Search Bar */}
