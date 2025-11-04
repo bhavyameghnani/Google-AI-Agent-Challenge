@@ -76,6 +76,13 @@ export const Navbar = () => {
               >
                 ⚡ Analyze Founder Data
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/podcast")}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                🎙️ Generate Startup Podcast
+              </Button>
             </div>
           </div>
 
