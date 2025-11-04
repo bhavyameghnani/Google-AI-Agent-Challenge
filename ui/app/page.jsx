@@ -97,9 +97,9 @@ export default function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
-                onClick={() => router.push("/pitch-analyzer")}
+                onClick={() => router.push("/founder-data-analyzer")}
               >
-                ⚡ Analyze Pitchdeck
+                ⚡ Analyze Founder Data
               </Button>
               <Button
                 onClick={() => router.push("/dashboard")}
@@ -199,10 +199,10 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => router.push("/pitch-analyzer")}
+                onClick={() => router.push("/founder-data-analyzer")}
                 className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px] bg-white"
               >
-                ⚡ Analyze Pitchdeck
+                ⚡ Analyze Founder Data
               </Button>
             </div>
 
