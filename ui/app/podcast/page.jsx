@@ -5,12 +5,15 @@ import { Search, TrendingUp } from "lucide-react";
 import RecordCard from "./RecordCard";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "../dashboard/CompanyDashboard";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const Index = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const fetchRecords = async () => {
     setLoading(true);
@@ -27,11 +30,11 @@ const Index = () => {
     }
   };
 
-  useEffect(() => { 
-    fetchRecords(); 
+  useEffect(() => {
+    fetchRecords();
   }, []);
 
-  const filteredRecords = records.filter((r) => 
+  const filteredRecords = records.filter((r) =>
     (r.title || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -44,17 +47,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-    
-          {/* Fixed Navbar */}
-          <div className="fixed top-0 left-0 w-full z-20 bg-white/70 backdrop-blur-md shadow-sm">
-            <Navbar />
-          </div>
-      
+      {/* Fixed Navbar */}
+      <div className="fixed top-0 left-0 w-full z-20 bg-white/70 backdrop-blur-md shadow-sm">
+        <Navbar />
+      </div>
+
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src={"/images/podcast-hero.jpg"} 
-            alt="Finance Podcast Platform" 
+          <img
+            src={"/images/podcast-hero.jpg"}
+            alt="Finance Podcast Platform"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/85 to-accent/90" />
@@ -68,14 +70,15 @@ const Index = () => {
                 Premium Financial Content
               </span>
             </div>
-            
+
             <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6">
               SenseAI: Financial Insights Podcast
             </h1>
-            
+
             <p className="text-lg md:text-xl text-primary-foreground/90 mb-8">
-              The beat of the financial world. Bilingual financial analysis and expert interviews. 
-              Available in both English and Hindi with comprehensive reports.
+              The beat of the financial world. Bilingual financial analysis and
+              expert interviews. Available in both English and Hindi with
+              comprehensive reports.
             </p>
 
             <div className="relative max-w-xl mx-auto">
@@ -92,9 +95,13 @@ const Index = () => {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full">
-            <path 
-              fill="hsl(var(--background))" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 120"
+            className="w-full"
+          >
+            <path
+              fill="hsl(var(--background))"
               d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
             />
           </svg>
@@ -115,11 +122,21 @@ const Index = () => {
         ) : (
           Object.entries(recordsByTheme).map(([theme, records]) => (
             <div key={theme} className="mb-12 animate-fade-in">
-              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-[#A50034]">
-                {theme}
-              </h2>
+              <div className="flex gap-8 justify-start items-center mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold  text-[#1A224E]">
+                  {theme}
+                </h2>{" "}
+                <Button
+                  size="lg"
+                  onClick={() => router.push("/newsletter-podcast-generator")}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px]"
+                >
+                  🎙️ Generate New Podcast
+                </Button>
+              </div>
               <p className="text-muted-foreground mb-6">
-                {records.length} episode{records.length !== 1 ? "s" : ""} under this theme
+                {records.length} episode{records.length !== 1 ? "s" : ""} under
+                this theme
               </p>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
