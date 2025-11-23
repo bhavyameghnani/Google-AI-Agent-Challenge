@@ -34,7 +34,7 @@
 
        export REGION="asia-south1"
 
-       gcloud beta run services add-iam-policy-binding --region=${REGION} --member=allUsers --role=roles/run. invoker ${SERVICE_NAME}
+       gcloud beta run services add-iam-policy-binding --region=${REGION} --member=allUsers --role=roles/run.invoker ${SERVICE_NAME}
      ```
 
 #### Create Cloud Build trigger
