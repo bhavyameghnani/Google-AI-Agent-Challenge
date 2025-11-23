@@ -1,3 +1,6 @@
+# Pre-requisites
+- Enable Gemini API
+
 # Firestore Database Setup Guide
 
 - Pre-requisite: Enable Firestore API
@@ -5,6 +8,7 @@
   export REGION="asia-south1"
   gcloud firestore databases create --location=${REGION}
   ```
+- Change security rules
 
 # Storage Bucket Creation Guide
 
