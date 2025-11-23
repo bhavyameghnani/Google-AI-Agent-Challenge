@@ -1,3 +1,18 @@
+# Firestore Database Setup Guide
+
+- Pre-requisite: Enable Firestore API
+- ```bash
+  export REGION="asia-south1"
+  gcloud firestore databases create --location=${REGION}
+  ```
+
+# Storage Bucket Creation Guide
+
+- ```bash
+  export STORAGE_BUCKET="sense-ai-podcasts"
+  gcloud storage buckets create gs://${STORAGE_BUCKET} --no-public-access-prevention
+  ```
+
 # Deployment Guide
 
 ## CI/CD using Cloud Build trigger
