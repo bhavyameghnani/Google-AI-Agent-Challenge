@@ -54,10 +54,6 @@ const models = [
     name: "Gemini 2.5 Pro",
     value: "google/gemini-2.5-pro",
   },
-  {
-    name: "Gemini 3 Pro",
-    value: "google/gemini-3-pro-preview",
-  }
 ];
 
 // Helper function from your working example - converts FileList to proper format
