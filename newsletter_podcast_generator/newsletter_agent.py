@@ -28,7 +28,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
-from .gemini_model_config import GEMINI_SMALL, TTS_MODEL
+from gemini_model_config import GEMINI_SMALL, TTS_MODEL
 
 
 # --- Configuration ---
