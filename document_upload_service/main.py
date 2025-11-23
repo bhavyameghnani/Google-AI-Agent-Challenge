@@ -58,7 +58,7 @@ if LOCAL_RUN:
             bucket = None
 else:
     # ---- GCP Environment ----
-    STORAGE_BUCKET = "sense-ai-documents"
+    STORAGE_BUCKET = os.getenv("STORAGE_BUCKET", "sense-ai-podcasts")
 
     try:
         cred = credentials.ApplicationDefault()
