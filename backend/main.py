@@ -21,6 +21,8 @@ from modules.transcript_analysis import analyze_transcript_with_ai
 from modules.pitch_deck_analysis import process_pitch_deck
 from modules.transcribe_generator import transcribe_audio_with_gemini
 from modules.video_transcribe import transcribe_video, SUPPORTED_VIDEO_EXTENSIONS
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 
 # ===============================
@@ -57,11 +59,6 @@ app = FastAPI(
     version="2.0.0",
 )
 
-# after creating `app = FastAPI(...)`
-# origins = [
-#     "http://localhost:3000",  # Next dev server
-#     "http://127.0.0.1:3000"
-# ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,6 +67,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def generic_handler(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 @app.get("/")

@@ -45,6 +45,13 @@ const Index = () => {
     return acc;
   }, {});
 
+  const generatePodcastButton = <Button
+    size="lg"
+    onClick={() => router.push("/newsletter-podcast-generator")}
+    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px]"
+  >
+    🎙️ Generate New Podcast
+  </Button>;
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Fixed Navbar */}
@@ -118,6 +125,7 @@ const Index = () => {
             <p className="text-muted-foreground text-lg">
               No episodes found matching "{searchQuery}"
             </p>
+            {generatePodcastButton}
           </div>
         ) : (
           Object.entries(recordsByTheme).map(([theme, records]) => (
@@ -126,13 +134,7 @@ const Index = () => {
                 <h2 className="text-2xl md:text-3xl font-bold  text-[#1A224E]">
                   {theme}
                 </h2>{" "}
-                <Button
-                  size="lg"
-                  onClick={() => router.push("/newsletter-podcast-generator")}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px]"
-                >
-                  🎙️ Generate New Podcast
-                </Button>
+                {generatePodcastButton}
               </div>
               <p className="text-muted-foreground mb-6">
                 {records.length} episode{records.length !== 1 ? "s" : ""} under

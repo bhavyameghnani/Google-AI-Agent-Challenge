@@ -32,12 +32,12 @@ from startup_agent import (
     root_agent,
     pdf_analysis_agent,
 )
-from newsletter_agent import (
-    newsletter_agent,
-    VALID_SECTORS
-)
+from newsletter_agent import newsletter_agent, VALID_SECTORS
 
-from gemini_model_config import  GEMINI_SMALL
+from gemini_model_config import GEMINI_SMALL
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 
 dotenv.load_dotenv()
@@ -45,7 +45,7 @@ dotenv.load_dotenv()
 LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
 
-if not os.getenv('GOOGLE_API_KEY'):
+if not os.getenv("GOOGLE_API_KEY"):
     print("WARNING: GOOGLE_API_KEY not found in environment variables")
     print("Please add GOOGLE_API_KEY to your .env file")
 
@@ -56,7 +56,9 @@ if LOCAL_RUN:
     STORAGE_BUCKET = "senseai-podcast.firebasestorage.app"
 
     if not os.path.exists(SERVICE_ACCOUNT_FILE):
-        print("WARNING: serviceAccountKey.json not found. Firebase features will be disabled.")
+        print(
+            "WARNING: serviceAccountKey.json not found. Firebase features will be disabled."
+        )
         FIREBASE_ENABLED = False
         db = None
         bucket = None
@@ -64,9 +66,7 @@ if LOCAL_RUN:
         try:
             cred = credentials.Certificate(SERVICE_ACCOUNT_FILE)
             if not firebase_admin._apps:
-                firebase_admin.initialize_app(cred, {
-                    "storageBucket": STORAGE_BUCKET
-                })
+                firebase_admin.initialize_app(cred, {"storageBucket": STORAGE_BUCKET})
             db = firestore.client()
             bucket = storage.bucket()
             FIREBASE_ENABLED = True
@@ -79,7 +79,7 @@ if LOCAL_RUN:
 else:
     # ---- GCP Environment ----
     STORAGE_BUCKET = os.getenv("STORAGE_BUCKET", "sense-ai-podcasts")
-    
+
     try:
         cred = credentials.ApplicationDefault()
         firebase_admin.initialize_app(cred)
@@ -103,7 +103,7 @@ NEWSLETTERS_FOLDER.mkdir(exist_ok=True)
 app = FastAPI(
     title="LVX Startup Analysis & Newsletter Generator",
     description="Generate investment-grade startup analysis and sector newsletters for Let's Venture Platform",
-    version="2.0.0"
+    version="2.0.0",
 )
 
 # CORS middleware
@@ -115,19 +115,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(Exception)
+async def generic_handler(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+
 # --- Pydantic Models ---
 class StartupAnalysisRequest(BaseModel):
     """Request to generate startup analysis podcast."""
+
     startup_name: str = Field(..., description="Indian startup name to analyze")
 
 
 class SectorNewsletterRequest(BaseModel):
     """Request to generate sector newsletter and podcast."""
-    sector: str = Field(..., description=f"Sector name. Valid options: {', '.join(VALID_SECTORS)}")
+
+    sector: str = Field(
+        ..., description=f"Sector name. Valid options: {', '.join(VALID_SECTORS)}"
+    )
 
 
 class PodcastResponse(BaseModel):
     """Response with podcast files and metadata."""
+
     status: str
     message: str
     session_id: str
@@ -140,6 +151,7 @@ class PodcastResponse(BaseModel):
 
 class NewsletterResponse(BaseModel):
     """Response for sector newsletter generation."""
+
     status: str
     message: str
     session_id: str
@@ -152,6 +164,7 @@ class NewsletterResponse(BaseModel):
 
 class PDFAnalysisResponse(BaseModel):
     """Response for PDF-based startup analysis."""
+
     status: str
     message: str
     session_id: str
@@ -164,6 +177,7 @@ class PDFAnalysisResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     """Health check response."""
+
     status: str
     message: str
     version: str
@@ -179,15 +193,15 @@ async def upload_to_firebase(
     title: str,
     description: str,
     theme: str,
-    content_type: str  # "startup_analysis" or "sector_newsletter"
+    content_type: str,  # "startup_analysis" or "sector_newsletter"
 ) -> Tuple[bool, Optional[str]]:
     """Upload generated files to Firebase Storage and create Firestore record."""
     if not FIREBASE_ENABLED:
         return False, None
-    
+
     try:
         record_id = str(uuid.uuid4())
-        
+
         # Define file mappings based on content type
         if content_type == "startup_analysis":
             english_audio = session_folder / f"{session_id}_podcast_english.wav"
@@ -199,29 +213,31 @@ async def upload_to_firebase(
             hindi_audio = session_folder / f"{session_id}_newsletter_hindi.wav"
             report_md = session_folder / "sector_newsletter.md"
             summary_md = None
-        
+
         async def _upload_file(local_path: Path, firebase_filename: str):
             if not local_path or not local_path.exists():
                 return None
-            
+
             blob_path = f"records/{record_id}/{firebase_filename}"
             blob = bucket.blob(blob_path)
-            
+
             with open(local_path, "rb") as f:
-                blob.upload_from_file(f, content_type=_get_content_type(firebase_filename))
-            
+                blob.upload_from_file(
+                    f, content_type=_get_content_type(firebase_filename)
+                )
+
             try:
                 blob.make_public()
             except Exception:
                 pass
-            
+
             return {
                 "filename": firebase_filename,
                 "storage_path": blob_path,
                 "content_type": _get_content_type(firebase_filename),
-                "public_url": blob.public_url
+                "public_url": blob.public_url,
             }
-        
+
         def _get_content_type(filename: str) -> str:
             if filename.endswith(".wav"):
                 return "audio/wav"
@@ -230,13 +246,15 @@ async def upload_to_firebase(
             elif filename.endswith(".pdf"):
                 return "application/pdf"
             return "application/octet-stream"
-        
+
         # Upload files
         english_info = await _upload_file(english_audio, "audio_english.wav")
         hindi_info = await _upload_file(hindi_audio, "audio_hindi.wav")
         report_info = await _upload_file(report_md, "report.md")
-        summary_info = await _upload_file(summary_md, "summary.md") if summary_md else None
-        
+        summary_info = (
+            await _upload_file(summary_md, "summary.md") if summary_md else None
+        )
+
         # Create Firestore record
         record_data = {
             "id": record_id,
@@ -246,21 +264,31 @@ async def upload_to_firebase(
             "content_type": content_type,
             "session_id": session_id,
             "speakers": [
-                {"title": "Avantika" if content_type == "startup_analysis" else "Priya", "description": "Investment Analyst"},
-                {"title": "Hrishikesh" if content_type == "startup_analysis" else "Arjun", "description": "Research Specialist"}
+                {
+                    "title": (
+                        "Avantika" if content_type == "startup_analysis" else "Priya"
+                    ),
+                    "description": "Investment Analyst",
+                },
+                {
+                    "title": (
+                        "Hrishikesh" if content_type == "startup_analysis" else "Arjun"
+                    ),
+                    "description": "Research Specialist",
+                },
             ],
             "english": english_info,
             "hindi": hindi_info,  # Using 'hindi' field for Hindi (maintaining schema compatibility)
             "report_md": report_info,
             "report_pdf": summary_info,  # Using 'report_pdf' for summary (maintaining schema compatibility)
-            "created_at": datetime.utcnow().isoformat() + "Z"
+            "created_at": datetime.utcnow().isoformat() + "Z",
         }
-        
+
         db.collection("records").document(record_id).set(record_data)
         print(f"✅ Firebase upload complete. Record ID: {record_id}")
-        
+
         return True, record_id
-        
+
     except Exception as e:
         print(f"❌ Firebase upload failed: {e}")
         return False, None
@@ -270,7 +298,7 @@ async def upload_to_firebase(
 async def validate_startup_name(startup_name: str) -> Tuple[bool, str]:
     """Validate if this is a legitimate Indian startup using Gemini."""
     try:
-        client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
+        client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
         prompt = f"""Determine if "{startup_name}" is a legitimate Indian startup or company.
 
@@ -283,10 +311,7 @@ Consider:
 Respond with ONLY JSON:
 {{"is_valid_startup": true/false, "reason": "brief explanation", "sector": "industry sector if valid"}}"""
 
-        response = client.models.generate_content(
-            model=GEMINI_SMALL,
-            contents=prompt
-        )
+        response = client.models.generate_content(model=GEMINI_SMALL, contents=prompt)
 
         response_text = response.text.strip()
 
@@ -311,20 +336,18 @@ def validate_sector(sector: str) -> Tuple[bool, str]:
     """Validate if sector is in allowed list."""
     if sector in VALID_SECTORS:
         return True, f"Valid sector: {sector}"
-    
+
     # Try fuzzy matching
     sector_lower = sector.lower()
     for valid_sector in VALID_SECTORS:
         if sector_lower in valid_sector.lower() or valid_sector.lower() in sector_lower:
             return True, f"Matched to sector: {valid_sector}"
-    
+
     return False, f"Invalid sector. Must be one of: {', '.join(VALID_SECTORS)}"
 
 
 async def generate_podcast_with_adk(
-    session_id: str,
-    startup_name: str,
-    session_folder: Path
+    session_id: str, startup_name: str, session_folder: Path
 ) -> dict:
     """Generate startup analysis podcast using ADK agent pipeline."""
 
@@ -334,18 +357,22 @@ async def generate_podcast_with_adk(
     runner = Runner(
         agent=root_agent,
         app_name="startup_analysis_podcast",
-        session_service=session_service
+        session_service=session_service,
     )
 
     await session_service.create_session(
         app_name="startup_analysis_podcast",
         user_id="lvx_investor",
-        session_id=session_id
+        session_id=session_id,
     )
 
     content = types.Content(
         role="user",
-        parts=[types.Part(text=f"Create investment analysis podcast for Indian startup: {startup_name}\nSession ID: {session_id}")]
+        parts=[
+            types.Part(
+                text=f"Create investment analysis podcast for Indian startup: {startup_name}\nSession ID: {session_id}"
+            )
+        ],
     )
 
     print(f"🚀 Starting startup analysis for: {startup_name}")
@@ -353,7 +380,8 @@ async def generate_podcast_with_adk(
 
     try:
         events = [
-            event for event in runner.run(
+            event
+            for event in runner.run(
                 user_id="lvx_investor",
                 session_id=session_id,
                 new_message=content,
@@ -366,7 +394,11 @@ async def generate_podcast_with_adk(
         final_event = None
         for event in reversed(events):
             try:
-                if getattr(event, 'is_final_response', None) and callable(event.is_final_response) and event.is_final_response():
+                if (
+                    getattr(event, "is_final_response", None)
+                    and callable(event.is_final_response)
+                    and event.is_final_response()
+                ):
                     final_event = event
                     break
             except Exception:
@@ -374,11 +406,13 @@ async def generate_podcast_with_adk(
 
         if not final_event:
             for event in reversed(events):
-                if getattr(event, 'content', None) and getattr(event.content, 'parts', None):
+                if getattr(event, "content", None) and getattr(
+                    event.content, "parts", None
+                ):
                     final_event = event
                     break
 
-        if final_event and getattr(final_event, 'content', None):
+        if final_event and getattr(final_event, "content", None):
             print("✅ Final response received")
 
             duration = (datetime.now(timezone.utc) - start_time).total_seconds()
@@ -387,11 +421,7 @@ async def generate_podcast_with_adk(
             # Move generated files
             files_created = organize_output_files(session_id, session_folder, "startup")
 
-            return {
-                "status": "success",
-                "files": files_created,
-                "duration": duration
-            }
+            return {"status": "success", "files": files_created, "duration": duration}
         else:
             raise Exception("No valid final response from agent")
 
@@ -404,9 +434,7 @@ async def generate_podcast_with_adk(
 
 
 async def generate_newsletter_with_adk(
-    session_id: str,
-    sector: str,
-    session_folder: Path
+    session_id: str, sector: str, session_folder: Path
 ) -> dict:
     """Generate sector newsletter using ADK agent pipeline."""
 
@@ -416,18 +444,20 @@ async def generate_newsletter_with_adk(
     runner = Runner(
         agent=newsletter_agent,
         app_name="sector_newsletter",
-        session_service=session_service
+        session_service=session_service,
     )
 
     await session_service.create_session(
-        app_name="sector_newsletter",
-        user_id="lvx_investor",
-        session_id=session_id
+        app_name="sector_newsletter", user_id="lvx_investor", session_id=session_id
     )
 
     content = types.Content(
         role="user",
-        parts=[types.Part(text=f"Create sector newsletter and podcast for: {sector}\nSession ID: {session_id}")]
+        parts=[
+            types.Part(
+                text=f"Create sector newsletter and podcast for: {sector}\nSession ID: {session_id}"
+            )
+        ],
     )
 
     print(f"📰 Starting newsletter generation for sector: {sector}")
@@ -435,7 +465,8 @@ async def generate_newsletter_with_adk(
 
     try:
         events = [
-            event for event in runner.run(
+            event
+            for event in runner.run(
                 user_id="lvx_investor",
                 session_id=session_id,
                 new_message=content,
@@ -448,7 +479,11 @@ async def generate_newsletter_with_adk(
         final_event = None
         for event in reversed(events):
             try:
-                if getattr(event, 'is_final_response', None) and callable(event.is_final_response) and event.is_final_response():
+                if (
+                    getattr(event, "is_final_response", None)
+                    and callable(event.is_final_response)
+                    and event.is_final_response()
+                ):
                     final_event = event
                     break
             except Exception:
@@ -456,36 +491,40 @@ async def generate_newsletter_with_adk(
 
         if not final_event:
             for event in reversed(events):
-                if getattr(event, 'content', None) and getattr(event.content, 'parts', None):
+                if getattr(event, "content", None) and getattr(
+                    event.content, "parts", None
+                ):
                     final_event = event
                     break
 
-        if final_event and getattr(final_event, 'content', None):
+        if final_event and getattr(final_event, "content", None):
             print("✅ Newsletter generation complete")
 
             duration = (datetime.now(timezone.utc) - start_time).total_seconds()
             print(f"⏱️  Newsletter completed in {duration:.1f}s")
 
             # Move generated files
-            files_created = organize_output_files(session_id, session_folder, "newsletter")
+            files_created = organize_output_files(
+                session_id, session_folder, "newsletter"
+            )
 
-            return {
-                "status": "success",
-                "files": files_created,
-                "duration": duration
-            }
+            return {"status": "success", "files": files_created, "duration": duration}
         else:
             raise Exception("No valid final response from newsletter agent")
 
     except Exception as e:
         duration = (datetime.now(timezone.utc) - start_time).total_seconds()
         print(f"❌ Newsletter generation failed after {duration:.1f}s: {e}")
-        raise HTTPException(status_code=500, detail=f"Newsletter generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Newsletter generation failed: {str(e)}"
+        )
     finally:
         session_service = None
 
 
-def organize_output_files(session_id: str, session_folder: Path, content_type: str) -> dict:
+def organize_output_files(
+    session_id: str, session_folder: Path, content_type: str
+) -> dict:
     """Move generated files from root to session folder with proper naming."""
 
     files_created = {
@@ -493,7 +532,7 @@ def organize_output_files(session_id: str, session_folder: Path, content_type: s
         "audio_hindi": None,
         "analysis_report": None,
         "summary_markdown": None,
-        "script": None
+        "script": None,
     }
 
     if content_type == "startup":
@@ -503,7 +542,7 @@ def organize_output_files(session_id: str, session_folder: Path, content_type: s
             "audio_hindi": f"{session_id}_podcast_hindi.wav",
             "analysis_report": f"{session_id}_analysis.md",
             "summary_markdown": f"{session_id}_summary.md",
-            "script": f"{session_id}_script.txt"
+            "script": f"{session_id}_script.txt",
         }
 
         # Check root directory for generated files
@@ -511,28 +550,24 @@ def organize_output_files(session_id: str, session_folder: Path, content_type: s
             "audio_english": [
                 f"{session_id}_podcast_english.wav",
                 "startup_analysis_english.wav",
-                "podcast_english.wav"
+                "podcast_english.wav",
             ],
             "audio_hindi": [
                 f"{session_id}_podcast_hindi.wav",
                 "startup_analysis_hindi.wav",
-                "podcast_hindi.wav"
+                "podcast_hindi.wav",
             ],
             "analysis_report": [
                 "startup_analysis_report.md",
                 "analysis_report.md",
-                "report.md"
+                "report.md",
             ],
             "summary_markdown": [
                 "podcast_summary.md",
                 "summary.md",
-                f"{session_id}_summary.md"
+                f"{session_id}_summary.md",
             ],
-            "script": [
-                f"{session_id}_script.txt",
-                "script.txt",
-                "podcast_script.txt"
-            ]
+            "script": [f"{session_id}_script.txt", "script.txt", "podcast_script.txt"],
         }
     else:  # newsletter
         patterns = {
@@ -540,27 +575,21 @@ def organize_output_files(session_id: str, session_folder: Path, content_type: s
             "audio_hindi": f"{session_id}_newsletter_hindi.wav",
             "analysis_report": "sector_newsletter.md",
             "summary_markdown": None,
-            "script": f"{session_id}_script.txt"
+            "script": f"{session_id}_script.txt",
         }
 
         root_files = {
             "audio_english": [
                 f"{session_id}_newsletter_english.wav",
-                "newsletter_english.wav"
+                "newsletter_english.wav",
             ],
             "audio_hindi": [
                 f"{session_id}_newsletter_hindi.wav",
-                "newsletter_hindi.wav"
+                "newsletter_hindi.wav",
             ],
-            "analysis_report": [
-                "sector_newsletter.md",
-                "newsletter.md"
-            ],
+            "analysis_report": ["sector_newsletter.md", "newsletter.md"],
             "summary_markdown": [],
-            "script": [
-                "podcast_script.txt",
-                "script.txt"
-            ]
+            "script": ["podcast_script.txt", "script.txt"],
         }
 
     # Move files to session folder
@@ -580,9 +609,7 @@ def organize_output_files(session_id: str, session_folder: Path, content_type: s
 
 
 async def generate_podcast_from_pdf(
-    session_id: str,
-    pdf_path: Path,
-    session_folder: Path
+    session_id: str, pdf_path: Path, session_folder: Path
 ) -> dict:
     """Generate startup analysis from PDF using ADK agent pipeline."""
 
@@ -592,18 +619,20 @@ async def generate_podcast_from_pdf(
     runner = Runner(
         agent=pdf_analysis_agent,
         app_name="pdf_startup_analysis",
-        session_service=session_service
+        session_service=session_service,
     )
 
     await session_service.create_session(
-        app_name="pdf_startup_analysis",
-        user_id="lvx_investor",
-        session_id=session_id
+        app_name="pdf_startup_analysis", user_id="lvx_investor", session_id=session_id
     )
 
     content = types.Content(
         role="user",
-        parts=[types.Part(text=f"Analyze startup document and create investment podcast: {pdf_path}\nSession ID: {session_id}")]
+        parts=[
+            types.Part(
+                text=f"Analyze startup document and create investment podcast: {pdf_path}\nSession ID: {session_id}"
+            )
+        ],
     )
 
     print(f"📄 Starting PDF startup analysis")
@@ -611,7 +640,8 @@ async def generate_podcast_from_pdf(
 
     try:
         events = [
-            event for event in runner.run(
+            event
+            for event in runner.run(
                 user_id="lvx_investor",
                 session_id=session_id,
                 new_message=content,
@@ -623,7 +653,11 @@ async def generate_podcast_from_pdf(
         final_event = None
         for event in reversed(events):
             try:
-                if getattr(event, 'is_final_response', None) and callable(event.is_final_response) and event.is_final_response():
+                if (
+                    getattr(event, "is_final_response", None)
+                    and callable(event.is_final_response)
+                    and event.is_final_response()
+                ):
                     final_event = event
                     break
             except Exception:
@@ -631,11 +665,13 @@ async def generate_podcast_from_pdf(
 
         if not final_event:
             for event in reversed(events):
-                if getattr(event, 'content', None) and getattr(event.content, 'parts', None):
+                if getattr(event, "content", None) and getattr(
+                    event.content, "parts", None
+                ):
                     final_event = event
                     break
 
-        if final_event and getattr(final_event, 'content', None):
+        if final_event and getattr(final_event, "content", None):
             print("✅ Final response received (PDF agent)")
 
             duration = (datetime.now(timezone.utc) - start_time).total_seconds()
@@ -643,11 +679,7 @@ async def generate_podcast_from_pdf(
 
             files_created = organize_output_files(session_id, session_folder, "startup")
 
-            return {
-                "status": "success",
-                "files": files_created,
-                "duration": duration
-            }
+            return {"status": "success", "files": files_created, "duration": duration}
         else:
             raise Exception("No valid final response from PDF agent")
 
@@ -669,7 +701,7 @@ async def health_check():
         version="2.0.0",
         platform="Let's Venture",
         firebase_enabled=FIREBASE_ENABLED,
-        timestamp=datetime.now(timezone.utc).isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat(),
     )
 
 
@@ -677,44 +709,45 @@ async def health_check():
 async def analyze_startup(request: StartupAnalysisRequest):
     """
     Generate investment-grade startup analysis podcast.
-    
+
     Automatically uploads to Firebase if enabled.
     """
-    
+
     session_id = f"lvx_{uuid.uuid4().hex[:8]}"
     session_folder = PODCASTS_FOLDER / session_id
     session_folder.mkdir(exist_ok=True)
-    
+
     print(f"\n{'='*70}")
     print(f"🚀 NEW STARTUP ANALYSIS REQUEST")
     print(f"Session ID: {session_id}")
     print(f"Startup: {request.startup_name}")
     print(f"{'='*70}\n")
-    
+
     try:
         # Validate startup
         print("[1/6] Validating startup name...")
         is_valid, reason = await validate_startup_name(request.startup_name)
-        
+
         if not is_valid:
             raise HTTPException(
-                status_code=400,
-                detail=f"Invalid startup name: {reason}"
+                status_code=400, detail=f"Invalid startup name: {reason}"
             )
-        
+
         print(f"✅ Startup validated: {request.startup_name}\n")
-        
+
         # Generate analysis podcast
         print("[2/6] Generating analysis...")
-        result = await generate_podcast_with_adk(session_id, request.startup_name, session_folder)
-        
+        result = await generate_podcast_with_adk(
+            session_id, request.startup_name, session_folder
+        )
+
         print("[3/6] Analysis complete")
         print("[4/6] Audio files generated")
-        
+
         # Upload to Firebase
         firebase_uploaded = False
         firebase_record_id = None
-        
+
         if FIREBASE_ENABLED:
             print("[5/6] Uploading to Firebase...")
             firebase_uploaded, firebase_record_id = await upload_to_firebase(
@@ -723,15 +756,15 @@ async def analyze_startup(request: StartupAnalysisRequest):
                 title=f"Startup Analysis: {request.startup_name}",
                 description=f"Investment analysis podcast for {request.startup_name}",
                 theme="Startup Analysis",
-                content_type="startup_analysis"
+                content_type="startup_analysis",
             )
             if firebase_uploaded:
                 print(f"✅ Firebase upload complete. Record ID: {firebase_record_id}")
         else:
             print("[5/6] Firebase disabled - skipping upload")
-        
+
         print("[6/6] Complete!\n")
-        
+
         response = PodcastResponse(
             status="completed",
             message=f"Successfully generated investment analysis for: {request.startup_name}",
@@ -743,20 +776,21 @@ async def analyze_startup(request: StartupAnalysisRequest):
                 "analysis_report": result["files"].get("analysis_report"),
                 "summary_markdown": result["files"].get("summary_markdown"),
                 "script": result["files"].get("script"),
-                "folder": str(session_folder)
+                "folder": str(session_folder),
             },
             generated_at=datetime.now(timezone.utc).isoformat(),
             firebase_uploaded=firebase_uploaded,
-            firebase_record_id=firebase_record_id
+            firebase_record_id=firebase_record_id,
         )
-        
+
         return response
-        
+
     except HTTPException:
         raise
     except Exception as e:
         print(f"❌ ERROR: {str(e)}\n")
         import traceback
+
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -765,41 +799,43 @@ async def analyze_startup(request: StartupAnalysisRequest):
 async def generate_newsletter(request: SectorNewsletterRequest):
     """
     Generate sector newsletter and 2-3 minute podcast.
-    
+
     Automatically uploads to Firebase if enabled.
     """
-    
+
     session_id = f"lvx_news_{uuid.uuid4().hex[:8]}"
     session_folder = NEWSLETTERS_FOLDER / session_id
     session_folder.mkdir(exist_ok=True)
-    
+
     print(f"\n{'='*70}")
     print(f"📰 NEW NEWSLETTER REQUEST")
     print(f"Session ID: {session_id}")
     print(f"Sector: {request.sector}")
     print(f"{'='*70}\n")
-    
+
     try:
         # Validate sector
         print("[1/6] Validating sector...")
         is_valid, message = validate_sector(request.sector)
-        
+
         if not is_valid:
             raise HTTPException(status_code=400, detail=message)
-        
+
         print(f"✅ {message}\n")
-        
+
         # Generate newsletter
         print("[2/6] Researching sector updates...")
-        result = await generate_newsletter_with_adk(session_id, request.sector, session_folder)
-        
+        result = await generate_newsletter_with_adk(
+            session_id, request.sector, session_folder
+        )
+
         print("[3/6] Newsletter written")
         print("[4/6] Podcast audio generated")
-        
+
         # Upload to Firebase
         firebase_uploaded = False
         firebase_record_id = None
-        
+
         if FIREBASE_ENABLED:
             print("[5/6] Uploading to Firebase...")
             firebase_uploaded, firebase_record_id = await upload_to_firebase(
@@ -808,15 +844,15 @@ async def generate_newsletter(request: SectorNewsletterRequest):
                 title=f"Sector Newsletter: {request.sector}",
                 description=f"Weekly investment insights for {request.sector} sector",
                 theme=request.sector,
-                content_type="sector_newsletter"
+                content_type="sector_newsletter",
             )
             if firebase_uploaded:
                 print(f"✅ Firebase upload complete. Record ID: {firebase_record_id}")
         else:
             print("[5/6] Firebase disabled - skipping upload")
-        
+
         print("[6/6] Complete!\n")
-        
+
         response = NewsletterResponse(
             status="completed",
             message=f"Successfully generated newsletter for: {request.sector}",
@@ -827,20 +863,21 @@ async def generate_newsletter(request: SectorNewsletterRequest):
                 "audio_hindi": result["files"].get("audio_hindi"),
                 "newsletter": result["files"].get("analysis_report"),
                 "script": result["files"].get("script"),
-                "folder": str(session_folder)
+                "folder": str(session_folder),
             },
             generated_at=datetime.now(timezone.utc).isoformat(),
             firebase_uploaded=firebase_uploaded,
-            firebase_record_id=firebase_record_id
+            firebase_record_id=firebase_record_id,
         )
-        
+
         return response
-        
+
     except HTTPException:
         raise
     except Exception as e:
         print(f"❌ ERROR: {str(e)}\n")
         import traceback
+
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -849,20 +886,20 @@ async def generate_newsletter(request: SectorNewsletterRequest):
 async def analyze_from_pdf(file: UploadFile = File(...)):
     """
     Generate startup analysis from PDF document.
-    
+
     Automatically uploads to Firebase if enabled.
     """
-    
+
     session_id = f"lvx_pdf_{uuid.uuid4().hex[:8]}"
     session_folder = PODCASTS_FOLDER / session_id
     session_folder.mkdir(exist_ok=True)
-    
+
     print(f"\n{'='*70}")
     print(f"📄 NEW PDF ANALYSIS REQUEST")
     print(f"Session ID: {session_id}")
     print(f"PDF: {file.filename}")
     print(f"{'='*70}\n")
-    
+
     try:
         # Save PDF
         print("[1/6] Saving uploaded PDF...")
@@ -871,18 +908,18 @@ async def analyze_from_pdf(file: UploadFile = File(...)):
             content = await file.read()
             f.write(content)
         print(f"✅ PDF saved\n")
-        
+
         # Generate analysis
         print("[2/6] Analyzing PDF...")
         result = await generate_podcast_from_pdf(session_id, pdf_path, session_folder)
-        
+
         print("[3/6] Analysis complete")
         print("[4/6] Audio files generated")
-        
+
         # Upload to Firebase
         firebase_uploaded = False
         firebase_record_id = None
-        
+
         if FIREBASE_ENABLED:
             print("[5/6] Uploading to Firebase...")
             firebase_uploaded, firebase_record_id = await upload_to_firebase(
@@ -891,15 +928,15 @@ async def analyze_from_pdf(file: UploadFile = File(...)):
                 title=f"PDF Analysis: {file.filename}",
                 description=f"Startup analysis from document: {file.filename}",
                 theme="PDF Analysis",
-                content_type="startup_analysis"
+                content_type="startup_analysis",
             )
             if firebase_uploaded:
                 print(f"✅ Firebase upload complete. Record ID: {firebase_record_id}")
         else:
             print("[5/6] Firebase disabled - skipping upload")
-        
+
         print("[6/6] Complete!\n")
-        
+
         response = PDFAnalysisResponse(
             status="completed",
             message=f"Successfully analyzed PDF: {file.filename}",
@@ -912,18 +949,19 @@ async def analyze_from_pdf(file: UploadFile = File(...)):
                 "analysis_report": result["files"].get("analysis_report"),
                 "summary_markdown": result["files"].get("summary_markdown"),
                 "script": result["files"].get("script"),
-                "folder": str(session_folder)
+                "folder": str(session_folder),
             },
             generated_at=datetime.now(timezone.utc).isoformat(),
             firebase_uploaded=firebase_uploaded,
-            firebase_record_id=firebase_record_id
+            firebase_record_id=firebase_record_id,
         )
-        
+
         return response
-        
+
     except Exception as e:
         print(f"❌ ERROR: {str(e)}\n")
         import traceback
+
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -932,20 +970,18 @@ async def analyze_from_pdf(file: UploadFile = File(...)):
 async def download_file(session_id: str, filename: str):
     """Download generated analysis files."""
     file_path = PODCASTS_FOLDER / session_id / filename
-    
+
     if not file_path.exists():
         file_path = NEWSLETTERS_FOLDER / session_id / filename
-    
+
     if not file_path.exists():
         raise HTTPException(
             status_code=404,
-            detail=f"File not found: {filename} in session {session_id}"
+            detail=f"File not found: {filename} in session {session_id}",
         )
-    
+
     return FileResponse(
-        path=file_path,
-        media_type="application/octet-stream",
-        filename=filename
+        path=file_path, media_type="application/octet-stream", filename=filename
     )
 
 
@@ -953,7 +989,7 @@ async def download_file(session_id: str, filename: str):
 async def list_analyses():
     """List all startup analysis sessions."""
     sessions = {}
-    
+
     # List startup podcasts
     if PODCASTS_FOLDER.exists():
         for session_dir in PODCASTS_FOLDER.iterdir():
@@ -962,21 +998,20 @@ async def list_analyses():
                     "audio_files": sorted([f.name for f in session_dir.glob("*.wav")]),
                     "reports": sorted([f.name for f in session_dir.glob("*.md")]),
                     "pdfs": sorted([f.name for f in session_dir.glob("*.pdf")]),
-                    "scripts": sorted([f.name for f in session_dir.glob("*.txt")])
+                    "scripts": sorted([f.name for f in session_dir.glob("*.txt")]),
                 }
-                
+
                 creation_time = datetime.fromtimestamp(
-                    session_dir.stat().st_ctime,
-                    tz=timezone.utc
+                    session_dir.stat().st_ctime, tz=timezone.utc
                 ).isoformat()
-                
+
                 sessions[session_dir.name] = {
                     "type": "startup_analysis",
                     "files": files,
                     "created_at": creation_time,
-                    "total_files": sum(len(v) for v in files.values())
+                    "total_files": sum(len(v) for v in files.values()),
                 }
-    
+
     # List newsletters
     if NEWSLETTERS_FOLDER.exists():
         for session_dir in NEWSLETTERS_FOLDER.iterdir():
@@ -984,28 +1019,27 @@ async def list_analyses():
                 files = {
                     "audio_files": sorted([f.name for f in session_dir.glob("*.wav")]),
                     "reports": sorted([f.name for f in session_dir.glob("*.md")]),
-                    "scripts": sorted([f.name for f in session_dir.glob("*.txt")])
+                    "scripts": sorted([f.name for f in session_dir.glob("*.txt")]),
                 }
-                
+
                 creation_time = datetime.fromtimestamp(
-                    session_dir.stat().st_ctime,
-                    tz=timezone.utc
+                    session_dir.stat().st_ctime, tz=timezone.utc
                 ).isoformat()
-                
+
                 sessions[session_dir.name] = {
                     "type": "sector_newsletter",
                     "files": files,
                     "created_at": creation_time,
-                    "total_files": sum(len(v) for v in files.values())
+                    "total_files": sum(len(v) for v in files.values()),
                 }
-    
+
     return {
         "status": "success",
         "platform": "Let's Venture",
         "podcasts_folder": str(PODCASTS_FOLDER.absolute()),
         "newsletters_folder": str(NEWSLETTERS_FOLDER.absolute()),
         "total_sessions": len(sessions),
-        "sessions": sessions
+        "sessions": sessions,
     }
 
 
@@ -1013,27 +1047,23 @@ async def list_analyses():
 async def delete_analysis(session_id: str):
     """Delete an analysis session."""
     session_folder = PODCASTS_FOLDER / session_id
-    
+
     if not session_folder.exists():
         session_folder = NEWSLETTERS_FOLDER / session_id
-    
+
     if not session_folder.exists():
-        raise HTTPException(
-            status_code=404,
-            detail=f"Session not found: {session_id}"
-        )
-    
+        raise HTTPException(status_code=404, detail=f"Session not found: {session_id}")
+
     try:
         shutil.rmtree(session_folder)
         return {
             "status": "success",
             "message": f"Deleted session: {session_id}",
-            "deleted_at": datetime.now(timezone.utc).isoformat()
+            "deleted_at": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to delete session: {str(e)}"
+            status_code=500, detail=f"Failed to delete session: {str(e)}"
         )
 
 
@@ -1044,7 +1074,7 @@ async def list_sectors():
         "status": "success",
         "total_sectors": len(VALID_SECTORS),
         "sectors": VALID_SECTORS,
-        "description": "Valid sectors for newsletter generation"
+        "description": "Valid sectors for newsletter generation",
     }
 
 
@@ -1052,38 +1082,32 @@ async def list_sectors():
 async def list_firebase_records():
     """List all records in Firebase."""
     if not FIREBASE_ENABLED:
-        raise HTTPException(
-            status_code=503,
-            detail="Firebase is not enabled"
-        )
-    
+        raise HTTPException(status_code=503, detail="Firebase is not enabled")
+
     try:
         docs = db.collection("records").stream()
         records = []
-        
+
         for doc in docs:
             record_data = doc.to_dict()
-            records.append({
-                "id": record_data.get("id"),
-                "title": record_data.get("title"),
-                "theme": record_data.get("theme"),
-                "content_type": record_data.get("content_type"),
-                "session_id": record_data.get("session_id"),
-                "created_at": record_data.get("created_at"),
-                "has_english_audio": record_data.get("english") is not None,
-                "has_hindi_audio": record_data.get("hindi") is not None,
-                "has_report": record_data.get("report_md") is not None
-            })
-        
-        return {
-            "status": "success",
-            "total_records": len(records),
-            "records": records
-        }
+            records.append(
+                {
+                    "id": record_data.get("id"),
+                    "title": record_data.get("title"),
+                    "theme": record_data.get("theme"),
+                    "content_type": record_data.get("content_type"),
+                    "session_id": record_data.get("session_id"),
+                    "created_at": record_data.get("created_at"),
+                    "has_english_audio": record_data.get("english") is not None,
+                    "has_hindi_audio": record_data.get("hindi") is not None,
+                    "has_report": record_data.get("report_md") is not None,
+                }
+            )
+
+        return {"status": "success", "total_records": len(records), "records": records}
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch Firebase records: {str(e)}"
+            status_code=500, detail=f"Failed to fetch Firebase records: {str(e)}"
         )
 
 
@@ -1107,7 +1131,7 @@ async def detailed_health():
             "list_sectors": "GET /sectors",
             "list_firebase_records": "GET /firebase-records",
             "delete_analysis": "DELETE /analysis/{session_id}",
-            "detailed_health": "GET /health"
+            "detailed_health": "GET /health",
         },
         "features": {
             "startup_analysis": [
@@ -1118,7 +1142,7 @@ async def detailed_health():
                 "Competitive landscape analysis",
                 "Investment-grade reports",
                 "Multi-language audio (English + Hindi)",
-                "PDF document analysis"
+                "PDF document analysis",
             ],
             "sector_newsletters": [
                 "13 sector coverage",
@@ -1127,28 +1151,29 @@ async def detailed_health():
                 "Top stories and funding highlights",
                 "Startup spotlight",
                 "Sector outlook and trends",
-                "Bilingual audio (English + Hindi)"
-            ]
+                "Bilingual audio (English + Hindi)",
+            ],
         },
         "supported_sectors": VALID_SECTORS,
         "focus": "Investment decision support for Let's Venture investors",
         "target_audience": "Venture capital investors and startup ecosystem stakeholders",
         "podcasts_folder": str(PODCASTS_FOLDER.absolute()),
         "newsletters_folder": str(NEWSLETTERS_FOLDER.absolute()),
-        "timestamp": datetime.now(timezone.utc).isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
 if __name__ == "__main__":
     import uvicorn
-    print("\n" + "="*70)
+
+    print("\n" + "=" * 70)
     print("🚀 LVX STARTUP ANALYSIS & NEWSLETTER GENERATOR v2.0")
-    print("="*70)
+    print("=" * 70)
     print(f"📁 Startup Podcasts: {PODCASTS_FOLDER.absolute()}")
     print(f"📰 Newsletters: {NEWSLETTERS_FOLDER.absolute()}")
     print(f"🔥 Firebase: {'Enabled ✅' if FIREBASE_ENABLED else 'Disabled ❌'}")
     print("🎯 Platform: Let's Venture")
-    print("="*70)
+    print("=" * 70)
     print("\n📋 Available Endpoints:")
     print("  • POST /analyze-startup - Generate startup analysis")
     print("  • POST /generate-newsletter - Generate sector newsletter")
@@ -1159,9 +1184,9 @@ if __name__ == "__main__":
     print("\n🌐 Supported Sectors:")
     for sector in VALID_SECTORS:
         print(f"  • {sector}")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
     if LOCAL_RUN:
-        host =  "127.0.0.1"
+        host = "127.0.0.1"
     else:
         host = "0.0.0.0"
     port = os.getenv("PORT", "8080")

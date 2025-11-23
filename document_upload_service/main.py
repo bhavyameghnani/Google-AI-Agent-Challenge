@@ -16,6 +16,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, StreamingResponse
 from firebase_admin import credentials, firestore, storage
 from pydantic import BaseModel
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
@@ -87,6 +89,12 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(Exception)
+async def generic_handler(request: Request, exc: Exception):
+    logger.error("Unhandled error", exc_info=exc)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+
 # -------------------------------------------
 # ✅ Pydantic Model
 # -------------------------------------------
@@ -149,7 +157,7 @@ async def create_record(
             if contents is None:
                 # Nothing to upload
                 return None
-            
+
             logger.info(f"Uploading file to {blob_path}")
             blob.upload_from_string(contents, content_type=file_obj.content_type)
             try:
@@ -367,7 +375,7 @@ def download_file(record_id: str, key: str):
         raise HTTPException(status_code=400, detail="Invalid file key")
 
     doc = db.collection("records").document(record_id).get()
-    
+
     if not doc.exists:
         logger.warning(f"Record not found: {record_id}")
         raise HTTPException(status_code=404, detail="Record not found")
@@ -385,7 +393,7 @@ def download_file(record_id: str, key: str):
         return RedirectResponse(public_url)
 
     if storage_path:
-        
+
         blob = bucket.blob(storage_path)
         logger.info(f"Generating signed URL for storage path: {storage_path}")
         try:

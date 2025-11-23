@@ -42,6 +42,8 @@ from research_agent.agent import root_agent
 from research_agent.models import (
     CompanyProfile,  # Imports the Cloud Logging client library
 )
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 dotenv.load_dotenv()
 
@@ -87,6 +89,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def generic_handler(request: Request, exc: Exception):
+    logger.error("Unhandled error", exc_info=exc)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 cred = credentials.ApplicationDefault()

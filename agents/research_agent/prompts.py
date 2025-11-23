@@ -27,7 +27,7 @@ LEADERSHIP_PROFILE_EXTRACTION_INSTRUCTIONS = """You are an AI Research Assistant
 
 MARKET_DATA_EXTRACTION_INSTRUCTIONS = """You are an AI Research Assistant for market analysis with source citations.
         Extract these market metrics with MANDATORY citations:
-        - Market Size/TAM (cite specific market research report)
+        - Market Size/TAM (cite specific market research report and return result under 200 words)
         - Competitive Landscape analysis (cite industry report or analysis)
         - Competitive Advantages (cite sources that mention these advantages)
         REQUIRED FORMAT:
