@@ -37,6 +37,9 @@ from newsletter_agent import (
     VALID_SECTORS
 )
 
+from gemini_model_config import  GEMINI_SMALL
+
+
 dotenv.load_dotenv()
 
 LOCAL_RUN = os.getenv("LOCAL_RUN", "false").lower() == "true"
@@ -281,7 +284,7 @@ Respond with ONLY JSON:
 {{"is_valid_startup": true/false, "reason": "brief explanation", "sector": "industry sector if valid"}}"""
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_SMALL,
             contents=prompt
         )
 

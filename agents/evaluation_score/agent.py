@@ -11,11 +11,12 @@ from .prompts import (
     POINTS_ATTRIBUTER_PROMPT_V1,
     REVENUE_GROWTH_SCORE_PROMPT,
 )
+from gemini_model_config import GEMINI_LARGE, GEMINI_SMALL
 
 # ---- Is a sub-agent of `founder_background_score`
 founder_background_agent = Agent(
     name="founder_background_agent",
-    model="gemini-2.5-pro",
+    model=GEMINI_LARGE,
     description=("Agent to gather founder background details."),
     instruction=(FOUNDER_BACKGROUND_RESEARCH_PROMPT),
     tools=[google_search],
@@ -24,7 +25,7 @@ founder_background_agent = Agent(
 # ---- Is a sub-agent of `founder_background_score`
 format_agent = LlmAgent(
     name="format_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=(
         """
         This is an agent that formats the answers from the agent 'founder_background_agent'.
@@ -43,7 +44,7 @@ format_agent = LlmAgent(
 # ---- Is a sub-agent of `points_calculator_agent`
 points_attributer_agent = LlmAgent(
     name="points_attributer_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=(
         """
         This is an agent that attributes points based on the the rubric provided in the instruction.
@@ -59,7 +60,7 @@ AGENT_NAME = "calculator_agent"
 APP_NAME = "calculator"
 USER_ID = "user1234"
 SESSION_ID = "session_code_exec_async"
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = GEMINI_SMALL
 
 # ---- Is a sub-agent of `points_calculator_agent`
 code_agent = LlmAgent(
@@ -87,7 +88,7 @@ points_calculator_agent = SequentialAgent(
 # ---- Is a sub-agent of `points_and_rationale_agent`
 founder_data_summarizer = LlmAgent(
     name="founder_data_summarizer",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=(
         """
         This agent generates a combined summary using multiple founders' background data.
@@ -146,7 +147,7 @@ founder_background_score = SequentialAgent(
 # ---- Is a sub-agent of `data_fetcher_agent`
 startup_evaluation_agent = Agent(
     name="startup_evaluation_agent",
-    model="gemini-2.5-pro",
+    model=GEMINI_LARGE,
     description=(
         """Agent to calculate startup evaluation scores and gives rationale for each score."""
     ),
@@ -184,7 +185,7 @@ data_fetcher_agent = ParallelAgent(
 # ---- Is a sub-agent of `final_evaluation_score_agent`
 data_combiner_agent = LlmAgent(
     name="data_combiner_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=(
         """
         This is an agent that combines the founder background score with the evaluation scores.

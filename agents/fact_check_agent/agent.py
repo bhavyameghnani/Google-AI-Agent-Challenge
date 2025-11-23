@@ -30,12 +30,7 @@ from .prompts import (
     EVIDENCE_SEARCH_PROMPT,
     FACT_COMPARISON_PROMPT,
 )
-
-# ------------------------------------------------
-# Model Configuration
-# ------------------------------------------------
-GEMINI_LARGE = "gemini-2.5-pro"
-GEMINI_SMALL = "gemini-2.0-flash"
+from gemini_model_config import GEMINI_LARGE, GEMINI_SMALL
 
 
 # ------------------------------------------------

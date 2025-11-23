@@ -28,52 +28,83 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
-# --- Configuration ---
-GEMINI_MODEL = "gemini-2.5-flash"
-TTS_MODEL = "gemini-2.5-flash-preview-tts"
+from .gemini_model_config import GEMINI_SMALL, TTS_MODEL
 
+
+# --- Configuration ---
 WHITELIST_DOMAINS = [
-    "economictimes.indiatimes.com", "yourstory.com", "inc42.com",
-    "techcrunch.com", "vccircle.com", "entrackr.com",
-    "moneycontrol.com", "livemint.com", "business-standard.com",
-    "crunchbase.com", "linkedin.com", "medianama.com", "thehindubusinessline.com"
+    "economictimes.indiatimes.com",
+    "yourstory.com",
+    "inc42.com",
+    "techcrunch.com",
+    "vccircle.com",
+    "entrackr.com",
+    "moneycontrol.com",
+    "livemint.com",
+    "business-standard.com",
+    "crunchbase.com",
+    "linkedin.com",
+    "medianama.com",
+    "thehindubusinessline.com",
 ]
 
 VALID_SECTORS = [
-    "Artificial Intelligence", "EdTech", "Retail Tech & FMCG",
-    "Technology & Software", "Consumer Tech & D2C", "Deep Tech",
-    "Emerging Technologies", "PropTech", "Media & Entertainment",
-    "Travel Tech & Hospitality", "AgriTech", "Fintech", "Health Tech & BioTech"
+    "Artificial Intelligence",
+    "EdTech",
+    "Retail Tech & FMCG",
+    "Technology & Software",
+    "Consumer Tech & D2C",
+    "Deep Tech",
+    "Emerging Technologies",
+    "PropTech",
+    "Media & Entertainment",
+    "Travel Tech & Hospitality",
+    "AgriTech",
+    "Fintech",
+    "Health Tech & BioTech",
 ]
+
 
 # --- Pydantic Models ---
 class SectorNewsItem(BaseModel):
     """A news item from the sector."""
+
     title: str = Field(description="News headline")
     summary: str = Field(description="Brief summary of the news")
     significance: str = Field(description="Why this matters for investors")
     source_domain: str = Field(description="Source domain")
     date: str = Field(default="", description="Publication date if available")
-    category: str = Field(description="Category: Funding, Product Launch, M&A, Policy, Innovation, etc.")
+    category: str = Field(
+        description="Category: Funding, Product Launch, M&A, Policy, Innovation, etc."
+    )
+
 
 class SectorInsight(BaseModel):
     """Key insight about the sector."""
+
     insight_type: str = Field(description="Type: Trend, Opportunity, Risk, Innovation")
     title: str = Field(description="Insight title")
     description: str = Field(description="Detailed description")
     investment_angle: str = Field(description="Investment perspective")
 
+
 class SectorNewsletter(BaseModel):
     """Newsletter for a specific sector."""
+
     sector_name: str = Field(description="Sector name")
     edition_date: str = Field(description="Newsletter date")
     executive_summary: str = Field(description="High-level sector overview")
-    top_stories: List[SectorNewsItem] = Field(description="Top 5-7 news items", default=[])
+    top_stories: List[SectorNewsItem] = Field(
+        description="Top 5-7 news items", default=[]
+    )
     sector_insights: List[SectorInsight] = Field(description="Key insights", default=[])
-    funding_highlights: List[str] = Field(description="Recent funding rounds", default=[])
+    funding_highlights: List[str] = Field(
+        description="Recent funding rounds", default=[]
+    )
     startup_spotlight: str = Field(description="Featured startup of the week")
     outlook: str = Field(description="Sector outlook for investors")
     data_sources: List[str] = Field(description="Research sources", default=[])
+
 
 # --- Helper Functions ---
 def wave_file(filename, pcm, channels=1, rate=24000, sample_width=2):
@@ -84,78 +115,77 @@ def wave_file(filename, pcm, channels=1, rate=24000, sample_width=2):
         wf.setframerate(rate)
         wf.writeframes(pcm)
 
-async def save_newsletter_content(filename: str, content: str, tool_context: ToolContext) -> Dict:
+
+async def save_newsletter_content(
+    filename: str, content: str, tool_context: ToolContext
+) -> Dict:
     """Save newsletter content to markdown file."""
     try:
         if not filename.endswith(".md"):
             filename += ".md"
-        
+
         file_path = pathlib.Path(filename)
         file_path.write_text(content, encoding="utf-8")
-        
+
         return {
             "status": "success",
             "message": f"Newsletter saved to {file_path.resolve()}",
-            "file_path": str(file_path.resolve())
+            "file_path": str(file_path.resolve()),
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Failed to save newsletter: {str(e)}"
-        }
+        return {"status": "error", "message": f"Failed to save newsletter: {str(e)}"}
+
 
 async def generate_newsletter_audio(
-    script: str, 
-    session_id: str,
-    tool_context: ToolContext
+    script: str, session_id: str, tool_context: ToolContext
 ) -> Dict:
     """Generate newsletter podcast audio in English and Hindi."""
     try:
         import re
-        
+
         # Clean script
-        clean_script = re.sub(r'\*[^*]+\*', '', script)
-        clean_script = re.sub(r'\s+', ' ', clean_script)
-        clean_script = re.sub(r' +\n', '\n', clean_script)
+        clean_script = re.sub(r"\*[^*]+\*", "", script)
+        clean_script = re.sub(r"\s+", " ", clean_script)
+        clean_script = re.sub(r" +\n", "\n", clean_script)
         clean_script = clean_script.strip()
-        
+
         def chunk_script(text: str, max_chars: int = 1800) -> List[str]:
             """Split script into chunks at natural boundaries."""
-            lines = text.split('\n')
+            lines = text.split("\n")
             chunks = []
             current_chunk = []
             current_length = 0
-            
+
             for line in lines:
                 line = line.strip()
                 if not line:
                     continue
-                    
+
                 line_length = len(line)
-                
+
                 if current_length + line_length > max_chars and current_chunk:
-                    chunks.append('\n'.join(current_chunk))
+                    chunks.append("\n".join(current_chunk))
                     current_chunk = [line]
                     current_length = line_length
                 else:
                     current_chunk.append(line)
                     current_length += line_length + 1
-            
+
             if current_chunk:
-                chunks.append('\n'.join(current_chunk))
-            
+                chunks.append("\n".join(current_chunk))
+
             return chunks
-        
+
         script_chunks = chunk_script(clean_script)
         print(f"Split newsletter script into {len(script_chunks)} chunks")
-        
+
         client = genai.Client()
-        
+
         # Generate English audio
         english_audio_chunks = []
         for i, chunk in enumerate(script_chunks):
             print(f"Processing English chunk {i+1}/{len(script_chunks)}...")
-            
+
             english_response = client.models.generate_content(
                 model=TTS_MODEL,
                 contents=f"TTS the following sector newsletter conversation between Priya and Arjun:\n\n{chunk}",
@@ -165,61 +195,63 @@ async def generate_newsletter_audio(
                         multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
                             speaker_voice_configs=[
                                 types.SpeakerVoiceConfig(
-                                    speaker='Priya',
+                                    speaker="Priya",
                                     voice_config=types.VoiceConfig(
                                         prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                            voice_name='Puck'
+                                            voice_name="Puck"
                                         )
-                                    )
+                                    ),
                                 ),
                                 types.SpeakerVoiceConfig(
-                                    speaker='Arjun',
+                                    speaker="Arjun",
                                     voice_config=types.VoiceConfig(
                                         prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                            voice_name='Kore'
+                                            voice_name="Kore"
                                         )
-                                    )
-                                )
+                                    ),
+                                ),
                             ]
                         )
-                    )
-                )
+                    ),
+                ),
             )
-            
-            chunk_data = english_response.candidates[0].content.parts[0].inline_data.data
+
+            chunk_data = (
+                english_response.candidates[0].content.parts[0].inline_data.data
+            )
             english_audio_chunks.append(chunk_data)
-        
+
         # Combine English chunks
-        english_data = b''.join(english_audio_chunks)
+        english_data = b"".join(english_audio_chunks)
         english_filename = f"{session_id}_newsletter_english.wav"
         wave_file(english_filename, english_data)
         print(f"English newsletter audio saved: {len(english_data)} bytes")
-        
+
         # Translate to Hindi
         translation_response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model=GEMINI_SMALL,
             contents=f"""Translate this English sector newsletter podcast to natural Hindi.
 Keep speaker labels (Priya: and Arjun:) and maintain conversational tone.
 Use appropriate Hindi business/tech terminology.
 
 {clean_script}
 
-Return ONLY the translated conversation with labels."""
+Return ONLY the translated conversation with labels.""",
         )
-        
+
         hindi_script = translation_response.text.strip()
-        hindi_script = re.sub(r'\*[^*]+\*', '', hindi_script)
-        hindi_script = re.sub(r'\s+', ' ', hindi_script)
+        hindi_script = re.sub(r"\*[^*]+\*", "", hindi_script)
+        hindi_script = re.sub(r"\s+", " ", hindi_script)
         hindi_script = hindi_script.strip()
-        
+
         # Generate Hindi audio
         hindi_chunks = chunk_script(hindi_script)
         print(f"Split Hindi script into {len(hindi_chunks)} chunks")
-        
+
         hindi_audio_chunks = []
         for i, chunk in enumerate(hindi_chunks):
             print(f"Processing Hindi chunk {i+1}/{len(hindi_chunks)}...")
-            
+
             hindi_response = client.models.generate_content(
                 model=TTS_MODEL,
                 contents=f"TTS the following sector newsletter conversation between Priya and Arjun:\n\n{chunk}",
@@ -229,36 +261,36 @@ Return ONLY the translated conversation with labels."""
                         multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
                             speaker_voice_configs=[
                                 types.SpeakerVoiceConfig(
-                                    speaker='Priya',
+                                    speaker="Priya",
                                     voice_config=types.VoiceConfig(
                                         prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                            voice_name='Charon'
+                                            voice_name="Charon"
                                         )
-                                    )
+                                    ),
                                 ),
                                 types.SpeakerVoiceConfig(
-                                    speaker='Arjun',
+                                    speaker="Arjun",
                                     voice_config=types.VoiceConfig(
                                         prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                            voice_name='Aoede'
+                                            voice_name="Aoede"
                                         )
-                                    )
-                                )
+                                    ),
+                                ),
                             ]
                         )
-                    )
-                )
+                    ),
+                ),
             )
-            
+
             chunk_data = hindi_response.candidates[0].content.parts[0].inline_data.data
             hindi_audio_chunks.append(chunk_data)
-        
+
         # Combine Hindi chunks
-        hindi_data = b''.join(hindi_audio_chunks)
+        hindi_data = b"".join(hindi_audio_chunks)
         hindi_filename = f"{session_id}_newsletter_hindi.wav"
         wave_file(hindi_filename, hindi_data)
         print(f"Hindi newsletter audio saved: {len(hindi_data)} bytes")
-        
+
         return {
             "status": "success",
             "message": f"Successfully generated English and Hindi newsletter audio ({len(script_chunks)} chunks)",
@@ -266,13 +298,13 @@ Return ONLY the translated conversation with labels."""
             "hindi_file": hindi_filename,
             "english_size": len(english_data),
             "hindi_size": len(hindi_data),
-            "chunks_processed": len(script_chunks)
+            "chunks_processed": len(script_chunks),
         }
-        
+
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Newsletter audio generation failed: {str(e)[:200]}"
+            "message": f"Newsletter audio generation failed: {str(e)[:200]}",
         }
 
 
@@ -281,7 +313,7 @@ Return ONLY the translated conversation with labels."""
 # Agent 1: Sector Research Agent
 sector_research_agent = LlmAgent(
     name="SectorResearchAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=f"""You are a Sector Research Analyst for Let's Venture Platform.
 
 Your task: Research comprehensive sector updates for investor newsletter.
@@ -336,13 +368,13 @@ CRITICAL RULES:
 - Use google_search tool extensively (10-15 searches)""",
     description="Researches sector news and trends for newsletter.",
     tools=[google_search],
-    output_key="sector_research_data"
+    output_key="sector_research_data",
 )
 
 # Agent 2: Newsletter Writing Agent
 newsletter_writing_agent = LlmAgent(
     name="NewsletterWritingAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction="""You are a Newsletter Editor for Let's Venture Platform.
 
 Your task: Transform sector research into a compelling investor newsletter.
@@ -458,13 +490,13 @@ CRITICAL: After creating newsletter, call save_newsletter_content with:
 - content: [complete markdown newsletter]""",
     description="Creates formatted sector newsletter.",
     tools=[save_newsletter_content],
-    output_key="newsletter_content"
+    output_key="newsletter_content",
 )
 
 # Agent 3: Podcast Script Agent
 podcast_script_agent = LlmAgent(
     name="PodcastScriptAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction="""You are a Podcast Script Writer for Let's Venture Platform.
 
 Your task: Convert newsletter into a 2-3 minute conversational podcast.
@@ -527,13 +559,13 @@ RULES:
 - Use speaker labels: "Priya:" and "Arjun:"
 - Natural speech patterns""",
     description="Creates podcast script from newsletter.",
-    output_key="podcast_script"
+    output_key="podcast_script",
 )
 
 # Agent 4: Audio Generation Agent
 newsletter_audio_agent = LlmAgent(
     name="NewsletterAudioAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction="""You are an Audio Production Specialist for sector newsletters.
 
 Your task: Generate English and Hindi audio from podcast script.
@@ -552,7 +584,7 @@ RULES:
 - Report file sizes and paths""",
     description="Generates bilingual newsletter audio.",
     tools=[generate_newsletter_audio],
-    output_key="newsletter_audio_files"
+    output_key="newsletter_audio_files",
 )
 
 # --- Sequential Pipeline ---
@@ -562,9 +594,9 @@ newsletter_generation_pipeline = SequentialAgent(
         sector_research_agent,
         newsletter_writing_agent,
         podcast_script_agent,
-        newsletter_audio_agent
+        newsletter_audio_agent,
     ],
-    description="Complete pipeline for sector newsletter and podcast generation."
+    description="Complete pipeline for sector newsletter and podcast generation.",
 )
 
 # Root agent export

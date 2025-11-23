@@ -5,9 +5,11 @@ import fitz  # PyMuPDF
 from PIL import Image
 import google.generativeai as genai
 from dotenv import load_dotenv
-from typing import List, Dict
+from gemini_model_config import GEMINI_SMALL
+
 
 load_dotenv()
+
 
 def configure_gemini():
     """Configures the Gemini API with the key from environment variables."""
@@ -16,8 +18,10 @@ def configure_gemini():
         raise ValueError("GOOGLE_API_KEY not found. Please set it in a .env file.")
     genai.configure(api_key=api_key)
 
+
 # Initialize Gemini at startup
 configure_gemini()
+
 
 # ===============================
 # Pitch Deck PDF Processing
@@ -38,7 +42,7 @@ def pdf_to_images(pdf_path: str):
 
 def generate_table_of_contents(page_images: list):
     """Stage 1: Use Gemini to generate TOC."""
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel(GEMINI_SMALL)
     prompt = """
     You are a document analysis expert. Your task is to create a table of contents for this pitch deck.
     Analyze all the pages provided and identify the main sections.
@@ -48,13 +52,15 @@ def generate_table_of_contents(page_images: list):
     """
     content = [prompt] + page_images
     response = model.generate_content(content)
-    cleaned_response = response.text.strip().replace("```json", "").replace("```", "").strip()
+    cleaned_response = (
+        response.text.strip().replace("```json", "").replace("```", "").strip()
+    )
     return json.loads(cleaned_response)
 
 
 def extract_topic_data(topic: str, page_images: list):
     """Stage 2: Extract topic-specific data."""
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel(GEMINI_SMALL)
     prompt = f"""
     You are a startup analyst. Analyze the following pages which are known to be about the topic: '{topic}'.
     Synthesize all information from these pages to provide a complete and detailed summary for this section.
@@ -73,12 +79,14 @@ def generate_embeddings(text: str, task_type: str = "RETRIEVAL_DOCUMENT"):
     embedding = genai.embed_content(model=model, content=text, task_type=task_type)
     return embedding["embedding"]
 
+
 def json_to_markdown(data: dict) -> str:
     """Convert dict to markdown string."""
     markdown_string = ""
     for key, value in data.items():
         markdown_string += f"## {key.replace('_', ' ').title()}\n\n{value}\n\n"
     return markdown_string
+
 
 def process_pitch_deck(pdf_path: str):
     """Pipeline for PDF pitch deck analysis."""
@@ -89,7 +97,9 @@ def process_pitch_deck(pdf_path: str):
 
     final_structured_data = {}
     for topic, page_nums in toc.items():
-        topic_images = [all_page_images[p - 1] for p in page_nums if 0 < p <= len(all_page_images)]
+        topic_images = [
+            all_page_images[p - 1] for p in page_nums if 0 < p <= len(all_page_images)
+        ]
         if not topic_images:
             continue
         extracted_data = extract_topic_data(topic, topic_images)
@@ -110,5 +120,5 @@ def process_pitch_deck(pdf_path: str):
     return {
         "toc": toc,
         "analysis": final_structured_data,
-        "embedding_dimension": len(embeddings)
+        "embedding_dimension": len(embeddings),
     }

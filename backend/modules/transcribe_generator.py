@@ -3,7 +3,11 @@ import google.generativeai as genai
 import base64
 from dotenv import load_dotenv
 
+from gemini_model_config import GEMINI_SMALL
+
+
 load_dotenv()
+
 
 def configure_gemini():
     """Configures the Gemini API with the key from environment variables."""
@@ -12,12 +16,14 @@ def configure_gemini():
         raise ValueError("GOOGLE_API_KEY not found. Please set it in a .env file.")
     genai.configure(api_key=api_key)
 
+
 # Initialize Gemini at startup
 configure_gemini()
 
+
 def transcribe_audio_with_gemini(audio_path: str) -> str:
     """Transcribe audio file to text using Gemini multimodal."""
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel(GEMINI_SMALL)
     prompt = "You are an expert transcriptionist. Transcribe the following audio file to text. Only return the transcript, no extra commentary."
 
     # Read audio as Base64
@@ -28,7 +34,7 @@ def transcribe_audio_with_gemini(audio_path: str) -> str:
     # Wrap properly for Gemini
     audio_part = {
         "mime_type": "audio/mp3" if audio_path.endswith(".mp3") else "audio/wav",
-        "data": audio_b64
+        "data": audio_b64,
     }
 
     # Pass as structured input

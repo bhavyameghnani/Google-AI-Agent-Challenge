@@ -9,16 +9,13 @@ from .prompts import (
     COMPANY_BASIC_INFO_EXTRACTION_INSTRUCTIONS,
     COMPANY_PROFILE_DATA_SYNTHESIS_INSTRUCTIONS,
 )
-
-
-# Model configuration
-GEMINI_MODEL = "gemini-2.0-flash"
+from gemini_model_config import GEMINI_SMALL
 
 
 # Enhanced Financial Agent with Citations
 financial_agent = LlmAgent(
     name="FinancialAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=FINANCIAL_DATA_EXTRACTION_INSTRUCTIONS,
     description="Extracts financial metrics with mandatory source citations.",
     tools=[google_search],
@@ -28,7 +25,7 @@ financial_agent = LlmAgent(
 # Enhanced People Agent with Citations
 people_agent = LlmAgent(
     name="PeopleAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=LEADERSHIP_PROFILE_EXTRACTION_INSTRUCTIONS,
     description="Extracts leadership profiles with source citations.",
     tools=[google_search],
@@ -38,7 +35,7 @@ people_agent = LlmAgent(
 # Enhanced Market Agent with Citations
 market_agent = LlmAgent(
     name="MarketAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=MARKET_DATA_EXTRACTION_INSTRUCTIONS,
     description="Extracts market data with mandatory source citations.",
     tools=[google_search],
@@ -48,7 +45,7 @@ market_agent = LlmAgent(
 # Enhanced Reputation Agent with News Citations
 reputation_agent = LlmAgent(
     name="ReputationAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=REPUTATION_DATA_EXTRACTION_INSTRUCTIONS,
     description="Extracts reputation data with mandatory news citations.",
     tools=[google_search],
@@ -58,7 +55,7 @@ reputation_agent = LlmAgent(
 # Keep existing company_info_agent unchanged
 company_info_agent = LlmAgent(
     name="CompanyInfoAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=COMPANY_BASIC_INFO_EXTRACTION_INSTRUCTIONS,
     description="Extracts basic company information with selective citations.",
     tools=[google_search],
@@ -81,7 +78,7 @@ parallel_extraction_agent = ParallelAgent(
 # Enhanced Data Synthesis Agent
 data_synthesis_agent = LlmAgent(
     name="DataSynthesisAgent",
-    model=GEMINI_MODEL,
+    model=GEMINI_SMALL,
     instruction=COMPANY_PROFILE_DATA_SYNTHESIS_INSTRUCTIONS,
     description="Synthesizes company data into structured profile with cleaned citations.",
     output_schema=CompanyProfile,

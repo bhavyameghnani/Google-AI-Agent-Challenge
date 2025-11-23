@@ -4,10 +4,12 @@ from .prompts import FIND_COMPETITORS_PROMPT
 from .models import AllCompetitorsInfoWithScore
 from evaluation_score.agent import final_evaluation_score_agent
 from google.adk.tools.agent_tool import AgentTool
+from gemini_model_config import GEMINI_SMALL
+
 
 competitor_finder_agent = LlmAgent(
     name="competitor_finder_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=("Agent to gather competitor details of a company."),
     instruction=(FIND_COMPETITORS_PROMPT),
     tools=[google_search],
@@ -16,7 +18,7 @@ competitor_finder_agent = LlmAgent(
 
 company_details_agent = LlmAgent(
     name="company_details_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=("Agent to gather detailed information about given company."),
     instruction="""
 You are an expert senior researcher at a startup evaulation firm who uses scrapers to get data about startups.
@@ -46,7 +48,7 @@ evaluation_score_tool = AgentTool(
 
 evaluation_score_agent = LlmAgent(
     name="evaluation_score_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=(
         "Agent that calculates score for each of the competitors as well as original company."
     ),
@@ -79,7 +81,7 @@ company_analysis_agent = ParallelAgent(
 
 data_formatter_agent = LlmAgent(
     name="data_formatter_agent",
-    model="gemini-2.0-flash",
+    model=GEMINI_SMALL,
     description=(
         """
         This is an agent that formats the competitor data into a structured JSON format.
