@@ -6,16 +6,17 @@ from evaluation_score.agent import final_evaluation_score_agent
 from google.adk.tools.agent_tool import AgentTool
 from gemini_model_config import GEMINI_SMALL
 
-
+# ---- Called by competitor_analysis_orchestrator
 competitor_finder_agent = LlmAgent(
     name="competitor_finder_agent",
     model=GEMINI_SMALL,
-    description=("Agent to gather competitor details of a company."),
+    description=("Agent to find competitor companies given a company name."),
     instruction=(FIND_COMPETITORS_PROMPT),
     tools=[google_search],
 )
 
 
+# ---- Called by company_analysis_agent
 company_details_agent = LlmAgent(
     name="company_details_agent",
     model=GEMINI_SMALL,
@@ -42,10 +43,12 @@ Your task is to gather competitor details given a company name.
     output_key="company_details",
 )
 
+# ---- Called by evaluation_score_agent
 evaluation_score_tool = AgentTool(
     agent=final_evaluation_score_agent,
 )
 
+# ---- Called by company_analysis_agent
 evaluation_score_agent = LlmAgent(
     name="evaluation_score_agent",
     model=GEMINI_SMALL,
@@ -60,12 +63,12 @@ evaluation_score_agent = LlmAgent(
     output_key="evaluation_score",
 )
 
-
-company_analysis_agent = ParallelAgent(
-    name="company_analysis_agent",
+# ---- Called by competitor_analysis_orchestrator
+single_company_analysis_agent = ParallelAgent(
+    name="single_company_analysis_agent",
     description=(
         """
-        This is an agent that analyzes a company.
+        This agent finds detailed information and evaluation scores for a single company.
         It uses two sub-agents:
         1. 'company_details_agent' to fetch detailed information about the company.
         2. 'evaluation_score_agent' to evaluate and score the company based on predefined criteria.
@@ -74,11 +77,11 @@ company_analysis_agent = ParallelAgent(
     ),
     sub_agents=[
         company_details_agent,
-        # final_evaluation_score_agent],
         evaluation_score_agent,
     ],
 )
 
+# ---- Called by competitor_analysis_orchestrator
 data_formatter_agent = LlmAgent(
     name="data_formatter_agent",
     model=GEMINI_SMALL,
@@ -96,18 +99,19 @@ data_formatter_agent = LlmAgent(
     disallow_transfer_to_peers=True,
 )
 
-competitor_analysis_agent = SequentialAgent(
-    name="competitor_analysis_agent_parallel",
-    description="""This is the root agent that coordinates the competitor analysis process.
-    It first calls the 'competitor_finder_agent' to get a list of competitor companies.
-    Then, it calls the 'company_analysis_agent' to analyze each competitor and the original company.
-    Finally, it calls the 'data_formatter_agent' to format the collected data into a structured JSON output.
+competitor_analysis_orchestrator = SequentialAgent(
+    name="competitor_analysis_orchestrator",
+    description="""
+    This is the root agent that orchestrates the competitor analysis process.
+    1. It first calls the 'competitor_finder_agent' to get a list of competitor companies.
+    2. Then, it uses the 'single_company_analysis_agent' in parallel to analyze each competitor company and the original company.
+    3. Finally, it calls the 'data_formatter_agent' to format the collected data into a structured JSON output.
     """,
     sub_agents=[
         competitor_finder_agent,
-        company_analysis_agent,
+        single_company_analysis_agent,
         data_formatter_agent,
     ],
 )
 
-root_agent = competitor_analysis_agent
+root_agent = competitor_analysis_orchestrator

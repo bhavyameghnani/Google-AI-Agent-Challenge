@@ -12,7 +12,7 @@ import firebase_admin
 import fitz
 import google.cloud.logging
 from competitor_analysis_agent.agent import (
-    competitor_analysis_agent,
+    competitor_analysis_orchestrator,
 )
 from competitor_analysis_agent.models import (
     AllCompetitorsInfoWithScore,
@@ -105,7 +105,7 @@ companies_ref = db.collection("companies")
 competitors_ref = db.collection("company_competitors")
 logs_ref = db.collection("extraction_logs")
 
-#newly added for Human in the loop verification
+# newly added for Human in the loop verification
 verified_company_ref = db.collection("verified_company_data")
 raw_companies_ref = db.collection("companies")  # existing
 
@@ -415,7 +415,7 @@ async def competitor_analysis_with_adk(
 
     session_service = InMemorySessionService()
     runner = Runner(
-        agent=competitor_analysis_agent,
+        agent=competitor_analysis_orchestrator,
         app_name="competitor_analysis",
         session_service=session_service,
     )
