@@ -12,7 +12,7 @@ export SERVICE_ACCOUNT_ID="" # ---- Change service account ID
 export SERVICE_ACCOUNT="projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT_ID}"
 
 # ---- Substitution variable values
-export SERVICE_NAME="main-podcast-generator-service-vs1" # ---- Change service name
+export SERVICE_NAME="main-startup-evaluator-service-vs1" # ---- Change service name
 export ROOT_DIR="agents" # ---- Change name
 export GOOGLE_API_KEY="" # ---- Change Google API key
 export ARTIFACT_REPO_NAME="startup-evaluator-repo"
