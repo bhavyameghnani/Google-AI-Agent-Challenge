@@ -111,9 +111,9 @@ class RecordAllFiles(BaseModel):
     description: Optional[str] = None
     theme: Optional[str] = "Finance Report"
     speakers: Optional[list] = None
-    english: FileInfo
-    hindi: FileInfo
-    report_md: FileInfo
+    english: Optional[FileInfo] = None
+    hindi: Optional[FileInfo] = None
+    report_md: Optional[FileInfo] = None
     report_pdf: Optional[FileInfo] = None
 
 
