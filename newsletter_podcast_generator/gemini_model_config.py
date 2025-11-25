@@ -5,4 +5,4 @@ GEMINI_LARGE = "gemini-2.5-pro"
 GEMINI_SMALL = "gemini-2.0-flash"
 
 # VOICE: Stable, low-latency text-to-speech
-TTS_MODEL = "gemini-2.5-flash-tts"
+TTS_MODEL = "gemini-2.5-flash-preview-tts"
