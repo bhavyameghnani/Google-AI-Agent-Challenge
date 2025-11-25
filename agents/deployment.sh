@@ -1,5 +1,5 @@
 # ---- Value of CLI options for create trigger command
-export TRIGGER_NAME="main-podcast-generator-trigger" # ---- Change trigger name
+export TRIGGER_NAME="main-startup-evaluator-trigger" # ---- Change trigger name
 export GIT_REPO_NAME="Google-AI-Agent-Challenge"
 export GIT_REPO_OWNER="DeveloperDowny"
 export BRANCH_PATTERN="^main$"
