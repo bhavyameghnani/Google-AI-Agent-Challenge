@@ -719,6 +719,36 @@ async def competitor_analysis(request: CompanyRequest):
     )
 
 
+def parse_company(doc):
+    data = doc.to_dict()
+    cache_age = (
+        (datetime.now(timezone.utc) - data["last_updated"]).days
+        if data.get("last_updated")
+        else None
+    )
+    company_item = CompanyListItem(
+        company_name=data.get("company_name", "Unknown"),
+        industry_sector=data.get("data", {})
+        .get("company_info", {})
+        .get("industry_sector"),
+        year_founded=data.get("data", {}).get("company_info", {}).get("year_founded"),
+        headquarters_location=data.get("data", {})
+        .get("company_info", {})
+        .get("headquarters_location"),
+        latest_valuation=data.get("data", {})
+        .get("financial_data", {})
+        .get("valuation", {})
+        .get("value"),
+        last_updated=(
+            data["last_updated"].isoformat() if data.get("last_updated") else None
+        ),
+        cache_age_days=cache_age,
+        extraction_status=data.get("extraction_status", "unknown"),
+        is_fresh=is_data_fresh(data.get("last_updated")),
+    )
+    return company_item
+
+
 @app.get("/companies", response_model=CompanyListResponse)
 async def list_companies():
     """
@@ -731,44 +761,17 @@ async def list_companies():
         docs = companies_ref.stream()
 
         for doc in docs:
-            data = doc.to_dict()
-            cache_age = (
-                (datetime.now(timezone.utc) - data["last_updated"]).days
-                if data.get("last_updated")
-                else None
-            )
-
-            companies.append(
-                CompanyListItem(
-                    company_name=data.get("company_name", "Unknown"),
-                    industry_sector=data.get("data", {})
-                    .get("company_info", {})
-                    .get("industry_sector"),
-                    year_founded=data.get("data", {})
-                    .get("company_info", {})
-                    .get("year_founded"),
-                    headquarters_location=data.get("data", {})
-                    .get("company_info", {})
-                    .get("headquarters_location"),
-                    latest_valuation=data.get("data", {})
-                    .get("financial_data", {})
-                    .get("valuation", {})
-                    .get("value"),
-                    last_updated=(
-                        data["last_updated"].isoformat()
-                        if data.get("last_updated")
-                        else None
-                    ),
-                    cache_age_days=cache_age,
-                    extraction_status=data.get("extraction_status", "unknown"),
-                    is_fresh=is_data_fresh(data.get("last_updated")),
-                )
-            )
+            try:
+                company_item = parse_company(doc)
+                companies.append(company_item)
+            except Exception as e:
+                logger.info(f"⚠️ Error parsing company document {doc}: {e}")
+                continue
 
         return CompanyListResponse(total_companies=len(companies), companies=companies)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/stats", response_model=StatsResponse)
@@ -852,6 +855,11 @@ async def get_company(company_name: str):
     )
 
 
+def _get_raw_companies(doc):
+    data = doc.to_dict()
+    data["id"] = doc.id
+    return data
+
 @app.get("/raw_companies")
 async def get_raw_companies():
     """
@@ -862,9 +870,12 @@ async def get_raw_companies():
         docs = companies_ref.stream()
         companies = []
         for doc in docs:
-            data = doc.to_dict()
-            data["id"] = doc.id
-            companies.append(data)
+            try:
+                data = _get_raw_companies(doc)
+                companies.append(data)
+            except Exception as e:
+                logger.info(f"⚠️ Error parsing company document {doc}: {e}")
+
         return {"status": "success", "data": companies}
     except Exception as e:
         logger.error(f"❌ Error fetching companies: {e}")
@@ -891,7 +902,6 @@ if __name__ == "__main__":
     import uvicorn
 
     if LOCAL_RUN:
-
         host = "127.0.0.1"
     else:
         host = "0.0.0.0"

@@ -1077,6 +1077,20 @@ async def list_sectors():
         "description": "Valid sectors for newsletter generation",
     }
 
+def extract_record(doc):
+    record_data = doc.to_dict()
+    record = {
+        "id": record_data.get("id"),
+        "title": record_data.get("title"),
+        "theme": record_data.get("theme"),
+        "content_type": record_data.get("content_type"),
+        "session_id": record_data.get("session_id"),
+        "created_at": record_data.get("created_at"),
+        "has_english_audio": record_data.get("english") is not None,
+        "has_hindi_audio": record_data.get("hindi") is not None,
+        "has_report": record_data.get("report_md") is not None,
+    }
+    return record
 
 @app.get("/firebase-records")
 async def list_firebase_records():
@@ -1089,20 +1103,14 @@ async def list_firebase_records():
         records = []
 
         for doc in docs:
-            record_data = doc.to_dict()
-            records.append(
-                {
-                    "id": record_data.get("id"),
-                    "title": record_data.get("title"),
-                    "theme": record_data.get("theme"),
-                    "content_type": record_data.get("content_type"),
-                    "session_id": record_data.get("session_id"),
-                    "created_at": record_data.get("created_at"),
-                    "has_english_audio": record_data.get("english") is not None,
-                    "has_hindi_audio": record_data.get("hindi") is not None,
-                    "has_report": record_data.get("report_md") is not None,
-                }
-            )
+            try:
+                record = extract_record(doc)
+                records.append(
+                    record
+                )
+            except Exception as e:
+                print(f"Error processing record {doc}: {e}")
+                continue
 
         return {"status": "success", "total_records": len(records), "records": records}
     except Exception as e:
