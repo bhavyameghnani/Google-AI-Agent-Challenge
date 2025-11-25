@@ -24,7 +24,7 @@ company_details_agent = LlmAgent(
     name="company_details_agent",
     model=GEMINI_SMALL,
     description=("Agent to gather detailed information about given company."),
-    instruction="""
+    instruction=f"""
 You are an expert senior researcher at a startup evaulation firm who uses scrapers to get data about startups.
 
 Your task is to gather competitor details given a company name.
