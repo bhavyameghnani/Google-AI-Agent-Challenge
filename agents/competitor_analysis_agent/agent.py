@@ -15,6 +15,9 @@ competitor_finder_agent = LlmAgent(
     tools=[google_search],
 )
 
+import os
+
+COMPETITOR_COUNT = int(os.getenv("COMPETITOR_COUNT", 5))
 
 # ---- Called by company_analysis_agent
 company_details_agent = LlmAgent(
@@ -29,7 +32,7 @@ Your task is to gather competitor details given a company name.
 ## Use planning agent design pattern. Following are the steps of the plan
 
 1. Gather information about the specified company
-2. Use that information to search for 5 competitor companies matching the description of the specified company
+2. Use that information to search for {COMPETITOR_COUNT} competitor companies matching the description of the specified company
 3. For each competitor and including the specified company, get the following data:
     - company name
     - last funding (date in 16-Oct-2025 format)

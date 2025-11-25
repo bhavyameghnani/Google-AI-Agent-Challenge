@@ -17,9 +17,10 @@ export ROOT_DIR="agents" # ---- Change name
 export GOOGLE_API_KEY="" # ---- Change Google API key
 export ARTIFACT_REPO_NAME="startup-evaluator-repo"
 export STORAGE_BUCKET="sense-ai-podcasts" # ---- Change storage bucket name
+export COMPETITOR_COUNT=2
 
 # ---- For --substitutions CLI option
-export SUBSTITUTIONS="_SERVICE_NAME=${SERVICE_NAME},_ROOT_DIR=${ROOT_DIR},_GOOGLE_GENAI_USE_VERTEXAI=false,_GOOGLE_API_KEY=${GOOGLE_API_KEY},_ARTIFACT_REPO_NAME=${ARTIFACT_REPO_NAME},_STORAGE_BUCKET=${STORAGE_BUCKET}"
+export SUBSTITUTIONS="_SERVICE_NAME=${SERVICE_NAME},_ROOT_DIR=${ROOT_DIR},_GOOGLE_GENAI_USE_VERTEXAI=false,_GOOGLE_API_KEY=${GOOGLE_API_KEY},_ARTIFACT_REPO_NAME=${ARTIFACT_REPO_NAME},_STORAGE_BUCKET=${STORAGE_BUCKET},_COMPETITOR_COUNT=${COMPETITOR_COUNT}"
 
 # ---- Create trigger command with above set env vars passed via CLI options
 gcloud builds triggers create github \
