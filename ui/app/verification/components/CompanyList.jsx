@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Search, Filter } from "lucide-react";
 import { fetchCompanies } from "../api/companyApi";
 import CompanyCard from "./CompanyCard";
-import { Navbar } from "../../dashboard/CompanyDashboard";
+import { Navbar } from "@/components/Navbar";
 
 const CompanyList = ({ onCompanyClick }) => {
   const [companies, setCompanies] = useState([]);
@@ -45,12 +45,10 @@ const CompanyList = ({ onCompanyClick }) => {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 w-full z-20 bg-white/70 backdrop-blur-md shadow-sm">
-        <Navbar />
-      </div>
+      <Navbar forceSolid={true} />
 
       {/* Page Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
         {/* Header */}
         <div className="mb-8 text-center md:text-left">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
