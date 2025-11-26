@@ -1,7 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { streamText, convertToModelMessages } from "ai";
 
-export const maxDuration = 30;
+export const maxDuration = 180;
 
 export async function POST(req) {
   try {

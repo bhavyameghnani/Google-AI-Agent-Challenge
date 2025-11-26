@@ -1,8 +1,8 @@
 import { google } from "@ai-sdk/google";
 import { streamText, convertToModelMessages } from "ai";
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+// Allow streaming responses up to 180 seconds
+export const maxDuration = 180;
 
 export async function POST(req) {
   const { messages } = await req.json();
