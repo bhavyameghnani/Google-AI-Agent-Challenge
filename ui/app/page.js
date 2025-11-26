@@ -108,9 +108,13 @@ export default function LandingPage() {
               <Button
                 onClick={handleAnalyze}
                 size="lg"
-                className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 transition-all hover:scale-105"
+                className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 transition-all hover:scale-105 relative group overflow-visible"
               >
-                Analyze
+                <span className="relative z-10">Analyze</span>
+                <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10">
+                  <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-[length:200%_100%] animate-border-spin opacity-75 blur-sm"></span>
+                  <span className="absolute inset-[2px] rounded-full bg-blue-600"></span>
+                </span>
               </Button>
             </div>
           </div>
@@ -146,10 +150,14 @@ export default function LandingPage() {
             </div>
             <Button
               variant="outline"
-              className="hidden md:flex rounded-full border-slate-200"
+              className="hidden md:flex rounded-full border-slate-200 relative group overflow-visible"
               onClick={() => router.push("/dashboard")}
             >
-              View Features
+              <span className="relative z-10">View Features</span>
+              <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 bg-[length:200%_100%] animate-border-spin opacity-75 blur-sm"></span>
+                <span className="absolute inset-[2px] rounded-full bg-white"></span>
+              </span>
             </Button>
           </div>
 
@@ -196,17 +204,25 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   onClick={() => router.push("/dashboard")}
-                  className="w-full sm:w-auto rounded-full bg-white text-slate-900 hover:bg-slate-100 text-base px-8 h-14 font-semibold"
+                  className="w-full sm:w-auto rounded-full bg-white text-slate-900 hover:bg-slate-100 text-base px-8 h-14 font-semibold relative group overflow-visible"
                 >
-                  Start Analyzing Now
+                  <span className="relative z-10">Start Analyzing Now</span>
+                  <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10">
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-[length:200%_100%] animate-border-spin opacity-75 blur-sm"></span>
+                    <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                  </span>
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   onClick={() => router.push("/chat")}
-                  className="w-full sm:w-auto rounded-full border-slate-700 text-white hover:bg-slate-800 hover:text-white text-base px-8 h-14 bg-transparent"
+                  className="w-full sm:w-auto rounded-full border-slate-700 text-white hover:bg-slate-800 hover:text-white text-base px-8 h-14 bg-transparent relative group overflow-visible"
                 >
-                  Talk to SenseAI
+                  <span className="relative z-10">Talk to SenseAI</span>
+                  <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-[length:200%_100%] animate-border-spin opacity-75 blur-sm"></span>
+                    <span className="absolute inset-[2px] rounded-full bg-slate-900"></span>
+                  </span>
                 </Button>
               </div>
             </div>
