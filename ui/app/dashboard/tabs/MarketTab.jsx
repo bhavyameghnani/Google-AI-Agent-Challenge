@@ -11,7 +11,9 @@ import {
 } from "lucide-react";
 
 const MarketTab = ({ company }) => {
-  const marketData = company.data.market_data;
+  // Defensive: Handle both old malformed structure (company.data.data) and new correct structure (company.data)
+  const companyData = company?.data?.data || company?.data || {};
+  const marketData = companyData.market_data || {};
 
   return (
     <div className="space-y-6">
@@ -160,7 +162,7 @@ const MarketTab = ({ company }) => {
             <div>
               <span className="font-semibold text-blue-700">Industry:</span>
               <p className="text-blue-600">
-                {company.data.company_info.industry_sector}
+                {companyData.company_info?.industry_sector || "N/A"}
               </p>
             </div>
             <div>
@@ -168,7 +170,7 @@ const MarketTab = ({ company }) => {
                 Business Model:
               </span>
               <p className="text-blue-600">
-                {company.data.company_info.business_model}
+                {companyData.company_info?.business_model || "N/A"}
               </p>
             </div>
             <div>

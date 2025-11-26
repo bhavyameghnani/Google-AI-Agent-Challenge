@@ -3,6 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, BarChart3, Users, Globe } from "lucide-react";
 
 const OverviewTab = ({ company }) => {
+  // Defensive: Handle both old malformed structure (company.data.data) and new correct structure (company.data)
+  const companyData = company?.data?.data || company?.data || {};
+  const financialData = companyData.financial_data || {};
+  const companyInfo = companyData.company_info || {};
+  const marketData = companyData.market_data || {};
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -15,7 +21,7 @@ const OverviewTab = ({ company }) => {
               </span>
             </div>
             <p className="text-xl font-bold">
-              {company.data.financial_data.total_equity_funding?.value || "N/A"}
+              {financialData.total_equity_funding?.value || "N/A"}
             </p>
           </CardContent>
         </Card>
@@ -29,7 +35,7 @@ const OverviewTab = ({ company }) => {
               </span>
             </div>
             <p className="text-xl font-bold">
-              {company.data.financial_data.valuation?.value || "N/A"}
+              {financialData.valuation?.value || "N/A"}
             </p>
           </CardContent>
         </Card>
@@ -43,7 +49,7 @@ const OverviewTab = ({ company }) => {
               </span>
             </div>
             <p className="text-xl font-bold">
-              {company.data.company_info.employee_count?.value || "N/A"}
+              {companyInfo.employee_count?.value || "N/A"}
             </p>
           </CardContent>
         </Card>
@@ -57,7 +63,7 @@ const OverviewTab = ({ company }) => {
               </span>
             </div>
             <p className="text-xl font-bold">
-              {company.data.market_data.market_size?.value || "N/A"}
+              {marketData.market_size?.value || "N/A"}
             </p>
           </CardContent>
         </Card>
@@ -69,7 +75,7 @@ const OverviewTab = ({ company }) => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-700 leading-relaxed">
-            {company.data.extraction_summary}
+            {companyData.extraction_summary || "No summary available"}
           </p>
         </CardContent>
       </Card>

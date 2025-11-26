@@ -10,7 +10,9 @@ import {
 } from "lucide-react";
 
 const PeopleTab = ({ company }) => {
-  const peopleData = company.data.people_data;
+  // Defensive: Handle both old malformed structure (company.data.data) and new correct structure (company.data)
+  const companyData = company?.data?.data || company?.data || {};
+  const peopleData = companyData.people_data || {};
 
   return (
     <div className="space-y-6">
@@ -87,11 +89,11 @@ const PeopleTab = ({ company }) => {
           </CardHeader>
           <CardContent>
             <p className="text-lg font-semibold text-purple-700">
-              {company.data.company_info.employee_count?.value || "N/A"}
+              {companyData.company_info?.employee_count?.value || "N/A"}
             </p>
-            {company.data.company_info.employee_count?.source_name && (
+            {companyData.company_info?.employee_count?.source_name && (
               <p className="text-xs text-gray-500 mt-1">
-                Source: {company.data.company_info.employee_count.source_name}
+                Source: {companyData.company_info.employee_count.source_name}
               </p>
             )}
           </CardContent>
@@ -129,16 +131,16 @@ const PeopleTab = ({ company }) => {
 
             <div className="text-center">
               <div className="text-2xl font-bold text-green-700">
-                {company.data.company_info.employee_count?.value || "N/A"}
+                {companyData.company_info?.employee_count?.value || "N/A"}
               </div>
               <div className="text-green-600">Total Employees</div>
             </div>
 
             <div className="text-center">
               <div className="text-2xl font-bold text-green-700">
-                {company.data.company_info.year_founded
+                {companyData.company_info?.year_founded
                   ? new Date().getFullYear() -
-                    company.data.company_info.year_founded
+                    companyData.company_info.year_founded
                   : "N/A"}
               </div>
               <div className="text-green-600">Years Operating</div>

@@ -42,9 +42,11 @@ export default function StartupPitchAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [loadingFactCheck, setLoadingFactCheck] = useState(false);
   const [loadingVideo, setLoadingVideo] = useState(false);
+  const [loadingAddCompany, setLoadingAddCompany] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("pdf");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const uploadAudioFile = async () => {
     setError("");
@@ -174,6 +176,39 @@ export default function StartupPitchAnalyzer() {
     }
   };
 
+  const addCompanyFromPitchDeck = async () => {
+    setError("");
+    setSuccessMessage("");
+    if (!pdfFile) {
+      setError("Select a .pdf file to extract company data.");
+      return;
+    }
+    setLoadingAddCompany(true);
+    try {
+      const form = new FormData();
+      form.append("file", pdfFile);
+      const res = await fetch(
+        `${API_BASE}/extract-company-from-pitch-deck/`,
+        {
+          method: "POST",
+          body: form,
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Server error");
+
+      // Show success message
+      setSuccessMessage(`Company "${data.company_name}" added successfully to Firebase!`);
+
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoadingAddCompany(false);
+    }
+  };
+
   const uploadVideo = async () => {
     setError("");
     if (!videoFile && !youtubeUrl.trim()) {
@@ -249,6 +284,27 @@ export default function StartupPitchAnalyzer() {
             </Badge>
           </div>
         </div>
+
+        {/* Success Display */}
+        {successMessage && (
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border-2 border-green-300 rounded-lg shadow-md animate-in slide-in-from-top duration-300">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2 text-green-800 flex-1">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                <div>
+                  <span className="font-semibold text-sm sm:text-base block">Success!</span>
+                  <p className="text-green-700 text-xs sm:text-sm mt-1 break-words">{successMessage}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSuccessMessage("")}
+                className="text-green-600 hover:text-green-800 transition-colors flex-shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Error Display */}
         {error && (
@@ -474,7 +530,7 @@ export default function StartupPitchAnalyzer() {
                         <>Analyze Pitch Deck</>
                       )}
                     </Button>
-                    <div className="mt-2">
+                    <div className="mt-2 space-y-2">
                       <Button
                         onClick={factCheckPdfFile}
                         disabled={loadingFactCheck || !pdfFile}
@@ -490,6 +546,24 @@ export default function StartupPitchAnalyzer() {
                           <>
                             <FileText className="mr-2 h-4 w-4" />
                             Fact-check Pitch Deck
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={addCompanyFromPitchDeck}
+                        disabled={loadingAddCompany || !pdfFile}
+                        variant="outline"
+                        className="w-full text-sm sm:text-base bg-green-50 hover:bg-green-100 border-green-300"
+                      >
+                        {loadingAddCompany ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Adding Company...
+                          </>
+                        ) : (
+                          <>
+                            <Building2 className="mr-2 h-4 w-4" />
+                            Add Company
                           </>
                         )}
                       </Button>

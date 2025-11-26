@@ -7,6 +7,7 @@ import time
 import functools
 import fitz  # PyMuPDF
 from PIL import Image
+from datetime import datetime
 import google.generativeai as genai
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
@@ -21,8 +22,10 @@ from modules.transcript_analysis import analyze_transcript_with_ai
 from modules.pitch_deck_analysis import process_pitch_deck
 from modules.transcribe_generator import transcribe_audio_with_gemini
 from modules.video_transcribe import transcribe_video, SUPPORTED_VIDEO_EXTENSIONS
+from modules.company_data_extractor import extract_company_data_from_pitch_deck
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+import requests
 
 
 # ===============================
@@ -189,6 +192,74 @@ async def analyze_video(file: UploadFile = None, youtube_url: str = Form(None)):
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
+
+
+@app.post("/extract-company-from-pitch-deck/")
+async def extract_company_from_pitch_deck_endpoint(file: UploadFile = File(...)):
+    """
+    Extract company data from pitch deck and save to Firebase companies collection.
+    """
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only .pdf files are supported.")
+
+    temp_path = f"temp_{file.filename}"
+    try:
+        # Save uploaded file temporarily
+        with open(temp_path, "wb") as f:
+            f.write(await file.read())
+
+        # Extract company data from pitch deck (returns just the data structure)
+        extracted_data = extract_company_data_from_pitch_deck(temp_path)
+
+        # Get company name from the extracted data
+        company_name = extracted_data.get("company_info", {}).get("company_name", "Unknown Company")
+
+        # Get the agents service URL
+        agents_service_url = os.getenv("AGENTS_SERVICE_URL", "http://localhost:8080")
+
+        # Prepare the complete document for saving to Firebase
+        company_document = {
+            "company_name": company_name,
+            "data": extracted_data,
+            "source": "Pitch Deck Analysis",
+            "last_updated": datetime.utcnow().isoformat(),
+            "cache_age_days": 0,
+            "extraction_status": "completed"
+        }
+
+        # Save to Firebase via agents service
+        try:
+            save_response = requests.post(
+                f"{agents_service_url}/save-company-from-pitch-deck",
+                json=company_document,
+                timeout=30
+            )
+
+            if save_response.status_code == 200:
+                return JSONResponse(content={
+                    "success": True,
+                    "message": "Company data extracted and saved successfully",
+                    "company_name": company_name,
+                    "data": extracted_data
+                })
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to save to Firebase: {save_response.text}"
+                )
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to connect to agents service: {str(e)}"
+            )
+
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 
 if __name__ == "__main__":

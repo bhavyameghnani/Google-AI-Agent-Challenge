@@ -514,21 +514,35 @@ async def extract_company(request: CompanyRequest):
         logger.info(f"🗄️ Returning cached data with citations for: {company_name}")
 
         try:
+            # Try to deserialize as CompanyProfile (for ADK-extracted data)
             company_profile = deserialize_company_data(cached_data["data"])
-        except ValueError as e:
-            logger.info(f"⚠️ Cached data corrupted, re-extracting: {e}")
-            # If cached data is corrupted, extract fresh data
-            company_profile = await extract_company_data_with_adk(company_name)
-            save_company_to_firebase(company_name, company_profile)
+        except (ValueError, Exception) as e:
+            logger.info(f"⚠️ Data doesn't match CompanyProfile schema (likely from pitch deck): {e}")
+            # If it's pitch deck data or doesn't match schema, return raw data
+            # This allows pitch deck extracted companies to work without re-extraction
+            try:
+                return CompanyResponse(
+                    company_name=company_name,
+                    data=cached_data["data"],  # Return raw data dict
+                    source=cached_data.get("source", "database"),
+                    last_updated=cached_data["last_updated"].isoformat(),
+                    cache_age_days=cache_age,
+                    extraction_status=cached_data.get("extraction_status", "completed"),
+                )
+            except Exception as e2:
+                logger.info(f"❌ Failed to return raw data: {e2}, re-extracting")
+                # Last resort: re-extract
+                company_profile = await extract_company_data_with_adk(company_name)
+                save_company_to_firebase(company_name, company_profile)
 
-            return CompanyResponse(
-                company_name=company_name,
-                data=company_profile,
-                source="extraction",  # Was corrupted, so extracted fresh
-                last_updated=datetime.now(timezone.utc).isoformat(),
-                cache_age_days=0,
-                extraction_status="completed",
-            )
+                return CompanyResponse(
+                    company_name=company_name,
+                    data=company_profile,
+                    source="extraction",
+                    last_updated=datetime.now(timezone.utc).isoformat(),
+                    cache_age_days=0,
+                    extraction_status="completed",
+                )
 
         return CompanyResponse(
             company_name=company_name,
@@ -895,6 +909,42 @@ async def save_verified_company(company: dict = Body(...)):
         return {"status": "success", "message": "Company saved successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/save-company-from-pitch-deck")
+async def save_company_from_pitch_deck(company_data: dict = Body(...)):
+    """
+    Save company data extracted from pitch deck to Firebase companies collection.
+    """
+    try:
+        company_name = company_data.get("company_name", "Unknown Company")
+        doc_id = company_name.lower().replace(" ", "_")
+
+        # Prepare the document for Firebase
+        document_data = {
+            "company_name": company_name,
+            "data": company_data.get("data", {}),
+            "source": company_data.get("source", "Pitch Deck Analysis"),
+            "last_updated": datetime.now(timezone.utc),
+            "cache_age_days": 0,
+            "extraction_status": company_data.get("extraction_status", "completed"),
+            "created_at": firestore.SERVER_TIMESTAMP,
+        }
+
+        # Save to companies collection
+        companies_ref.document(doc_id).set(document_data)
+
+        logger.info(f"✅ Saved company '{company_name}' from pitch deck to Firebase")
+
+        return {
+            "status": "success",
+            "message": f"Company '{company_name}' saved successfully to Firebase",
+            "company_name": company_name,
+            "document_id": doc_id
+        }
+    except Exception as e:
+        logger.error(f"❌ Error saving company from pitch deck: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save company: {str(e)}")
 
 
 # --- Run Server ---

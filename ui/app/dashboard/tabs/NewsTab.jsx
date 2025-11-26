@@ -10,7 +10,9 @@ import {
 } from "lucide-react";
 
 const NewsTab = ({ company }) => {
-  const reputationData = company.data.reputation_data;
+  // Defensive: Handle both old malformed structure (company.data.data) and new correct structure (company.data)
+  const companyData = company?.data?.data || company?.data || {};
+  const reputationData = companyData.reputation_data || {};
 
   return (
     <div className="space-y-6">

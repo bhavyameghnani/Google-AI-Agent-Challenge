@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union, Dict, Any
 from research_agent.models import CompanyProfile
 from competitor_analysis_agent.models import (
     AllCompetitorsInfoWithScore,
@@ -12,7 +12,7 @@ class CompanyRequest(BaseModel):
 
 class CompanyResponse(BaseModel):
     company_name: str
-    data: CompanyProfile
+    data: Union[CompanyProfile, Dict[str, Any]]  # Accept both CompanyProfile and raw dict (for pitch deck data)
     source: str  # "database" or "extraction" or "forced_extraction"
     last_updated: str
     cache_age_days: int

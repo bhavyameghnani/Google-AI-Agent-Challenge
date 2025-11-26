@@ -139,7 +139,10 @@ const CompaniesList = ({
                       {company.company_name}
                     </CardTitle>
                     {company.industry_sector && (
-                      <Badge variant="secondary" className="mt-1 text-xs max-w-full truncate block">
+                      <Badge
+                        variant="secondary"
+                        className="mt-1 text-xs max-w-full truncate block"
+                      >
                         {company.industry_sector}
                       </Badge>
                     )}
@@ -172,7 +175,9 @@ const CompaniesList = ({
                 {company.year_founded && (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                    <span className="truncate">Founded {company.year_founded}</span>
+                    <span className="truncate">
+                      Founded {company.year_founded}
+                    </span>
                   </div>
                 )}
 
@@ -204,49 +209,63 @@ const CompaniesList = ({
   </div>
 );
 
-const CompanyHeader = ({ company }) => (
-  <div className="mb-4 sm:mb-6">
-    <div className="flex items-start gap-3 sm:gap-4">
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-        {company.data.company_info.logo_url ? (
-          <img
-            src={company.data.company_info.logo_url}
-            alt={`${company.data.company_info.company_name} logo`}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded"
-          />
-        ) : (
-          <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
-        )}
-      </div>
+const CompanyHeader = ({ company }) => {
+  // Defensive: Handle both old malformed structure (company.data.data) and new correct structure (company.data)
+  const companyData = company?.data?.data || company?.data || {};
+  const companyInfo = companyData.company_info || {};
 
-      <div className="flex-1 min-w-0">
-        <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 truncate">
-          {company.data.company_info.company_name}
-        </h2>
-        <p className="text-sm sm:text-base text-gray-600 mb-2 line-clamp-2 sm:line-clamp-none">
-          {company.data.company_info.company_description}
-        </p>
-
-        <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          <Badge variant="secondary" className="text-xs">
-            {company.data.company_info.industry_sector}
-          </Badge>
-          <Badge variant="secondary" className="text-xs">
-            {company.data.company_info.company_stage.value}
-          </Badge>
-          <Badge variant="secondary" className="text-xs">
-            {company.data.company_info.headquarters_location}
-          </Badge>
-          {company.data.company_info.year_founded && (
-            <Badge variant="secondary" className="text-xs">
-              Founded {company.data.company_info.year_founded}
-            </Badge>
+  return (
+    <div className="mb-4 sm:mb-6">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          {companyInfo?.logo_url ? (
+            <img
+              src={companyInfo.logo_url}
+              alt={`${companyInfo.company_name} logo`}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded"
+            />
+          ) : (
+            <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
           )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 truncate">
+            {companyInfo?.company_name ||
+              company?.company_name ||
+              "Unknown Company"}
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600 mb-2 line-clamp-2 sm:line-clamp-none">
+            {companyInfo?.company_description || "No description available"}
+          </p>
+
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            {companyInfo?.industry_sector && (
+              <Badge variant="secondary" className="text-xs">
+                {companyInfo.industry_sector}
+              </Badge>
+            )}
+            {companyInfo?.company_stage?.value && (
+              <Badge variant="secondary" className="text-xs">
+                {companyInfo.company_stage.value}
+              </Badge>
+            )}
+            {companyInfo?.headquarters_location && (
+              <Badge variant="secondary" className="text-xs">
+                {companyInfo.headquarters_location}
+              </Badge>
+            )}
+            {companyInfo?.year_founded && (
+              <Badge variant="secondary" className="text-xs">
+                Founded {companyInfo.year_founded}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const LoadingState = ({ message }) => (
   <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
@@ -310,6 +329,8 @@ const CompanyDashboard = () => {
       setCompanyData(extractData);
       setLoadingExtract(false);
 
+      // Temporarily disabled due to API quota limits
+      // You can enable this when you have more API quota
       setLoadingCompetitors(true);
       const competitorResponse = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/competitor-analysis`,
@@ -359,7 +380,11 @@ const CompanyDashboard = () => {
         />
       )}
 
-      <div className={`container mx-auto px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 md:pb-8 ${companyData ? 'pt-28' : 'pt-4 sm:pt-6 md:pt-8'}`}>
+      <div
+        className={`container mx-auto px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 md:pb-8 ${
+          companyData ? "pt-28" : "pt-4 sm:pt-6 md:pt-8"
+        }`}
+      >
         {(loadingCompanies || !companyData) && <InfoBanner />}
 
         {/* Show companies list when not analyzing */}
