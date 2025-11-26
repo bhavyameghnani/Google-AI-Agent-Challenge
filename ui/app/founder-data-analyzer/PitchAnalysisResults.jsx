@@ -24,11 +24,11 @@ const PitchAnalysisResults = ({ result }) => {
   const renderFactCheckV2 = () => {
     if (!factCheckV2) return null;
     return (
-      <div className="mb-8 p-6 bg-white rounded-lg border border-gray-200">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="font-bold text-lg">Fact Check</span>
+      <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white rounded-lg border border-gray-200">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-2">
+          <span className="font-bold text-base sm:text-lg">Fact Check</span>
           <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+            className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
               factCheckV2.verdict === "True"
                 ? "bg-green-100 text-green-700"
                 : "bg-red-100 text-red-700"
@@ -37,40 +37,40 @@ const PitchAnalysisResults = ({ result }) => {
             {factCheckV2.verdict}
           </span>
           {factCheckV2.confidence_score !== undefined && (
-            <span className="ml-2 text-xs text-gray-500">
+            <span className="text-xs text-gray-500">
               Confidence: {(factCheckV2.confidence_score * 100).toFixed(0)}%
             </span>
           )}
         </div>
-        <div className="mb-2">
+        <div className="mb-2 text-sm sm:text-base">
           <span className="font-medium">Statement Checked:</span>{" "}
-          {factCheckV2.statement_checked}
+          <span className="break-words">{factCheckV2.statement_checked}</span>
         </div>
-        <div className="mb-2">
+        <div className="mb-2 text-sm sm:text-base">
           <span className="font-medium">Reasoning:</span>{" "}
-          {factCheckV2.reasoning}
+          <span className="break-words">{factCheckV2.reasoning}</span>
         </div>
         {factCheckV2.correction_if_false && (
-          <div className="mb-2">
+          <div className="mb-2 text-sm sm:text-base">
             <span className="font-medium">Correction:</span>{" "}
-            {factCheckV2.correction_if_false}
+            <span className="break-words">{factCheckV2.correction_if_false}</span>
           </div>
         )}
         {factCheckV2.evidence_sources &&
           factCheckV2.evidence_sources.length > 0 && (
             <div>
-              <div className="font-medium mb-1">Evidence Sources:</div>
+              <div className="font-medium mb-2 text-sm sm:text-base">Evidence Sources:</div>
               <ul className="space-y-2">
                 {factCheckV2.evidence_sources.map((src, idx) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-center">
+                  <li key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-center text-xs sm:text-sm flex-shrink-0">
                       {idx + 1}
                     </span>
                     <a
                       href={src.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 underline"
+                      className="text-blue-600 underline break-words text-sm sm:text-base"
                     >
                       {src.source_name || src.url}
                     </a>
@@ -171,22 +171,22 @@ const PitchAnalysisResults = ({ result }) => {
     return (
       <div className="mb-8">
         {/* Summary Card */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <Info className="h-5 w-5 text-white" />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <Info className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
               </div>
               Fact-Check Results
             </h3>
-            <Badge variant="secondary" className="text-base px-4 py-2">
+            <Badge variant="secondary" className="text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2">
               {factCheckClaims.length}{" "}
               {factCheckClaims.length === 1 ? "Claim" : "Claims"} Verified
             </Badge>
           </div>
 
           {/* Verdict Summary */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             {Object.entries(verdictCounts).map(([verdict, count]) => {
               const colorClass =
                 verdictColorMap[verdict] || verdictColorMap.default;
@@ -194,11 +194,11 @@ const PitchAnalysisResults = ({ result }) => {
               return (
                 <div
                   key={verdict}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border ${colorClass}`}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border ${colorClass}`}
                 >
-                  <span className="font-bold text-lg">{icon}</span>
-                  <span className="font-semibold">{count}</span>
-                  <span className="text-sm">{verdict}</span>
+                  <span className="font-bold text-base sm:text-lg">{icon}</span>
+                  <span className="font-semibold text-sm sm:text-base">{count}</span>
+                  <span className="text-xs sm:text-sm">{verdict}</span>
                 </div>
               );
             })}
@@ -252,10 +252,10 @@ const PitchAnalysisResults = ({ result }) => {
                 className="bg-white rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Claim Header */}
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
                         <Badge
                           variant="outline"
                           className="text-xs font-mono border-gray-300"
@@ -263,9 +263,9 @@ const PitchAnalysisResults = ({ result }) => {
                           {claimId}
                         </Badge>
                         <div
-                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold border-2 ${verdictColor}`}
+                          className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1 rounded-full text-xs sm:text-sm font-bold border-2 ${verdictColor}`}
                         >
-                          <span className="text-lg">{verdictIcon}</span>
+                          <span className="text-base sm:text-lg">{verdictIcon}</span>
                           {verdict}
                         </div>
                         {normalizedField && (
@@ -277,16 +277,16 @@ const PitchAnalysisResults = ({ result }) => {
                           </Badge>
                         )}
                       </div>
-                      <div className="text-base font-semibold text-gray-900 leading-relaxed">
+                      <div className="text-sm sm:text-base font-semibold text-gray-900 leading-relaxed break-words">
                         {claimText}
                       </div>
 
                       {/* Metadata row */}
-                      <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 text-xs text-gray-600">
                         {extractedValue && (
                           <div className="flex items-center gap-1">
                             <span className="font-medium">Extracted:</span>
-                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-mono">
+                            <span className="px-1.5 sm:px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-mono break-words">
                               {extractedValue}
                             </span>
                           </div>
@@ -294,15 +294,15 @@ const PitchAnalysisResults = ({ result }) => {
                         {location && (
                           <div className="flex items-center gap-1">
                             <span className="font-medium">Source:</span>
-                            <span className="text-gray-700">{location}</span>
+                            <span className="text-gray-700 break-words">{location}</span>
                           </div>
                         )}
                       </div>
                     </div>
 
                     {typeof confidence === "number" && (
-                      <div className="flex-shrink-0 text-center">
-                        <div className="text-2xl font-bold text-gray-900">
+                      <div className="flex-shrink-0 text-center mt-2 sm:mt-0">
+                        <div className="text-xl sm:text-2xl font-bold text-gray-900">
                           {Math.round(confidence * 100)}%
                         </div>
                         <div className="text-xs text-gray-500 uppercase tracking-wide">
@@ -314,7 +314,7 @@ const PitchAnalysisResults = ({ result }) => {
                 </div>
 
                 {/* Claim Body */}
-                <div className="px-6 py-4 space-y-4">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
                   {/* Context */}
                   {context && (
                     <div className="bg-slate-50 border-l-4 border-slate-400 px-4 py-3 rounded-r">
@@ -607,10 +607,10 @@ const PitchAnalysisResults = ({ result }) => {
           </div>
         )}
       {/* Analysis Header */}
-      <div className="flex items-center gap-2 text-green-600 mb-6">
-        <Star className="h-5 w-5" />
-        <span className="font-semibold">Analysis Complete</span>
-        <Badge variant="secondary" className="ml-2">
+      <div className="flex flex-wrap items-center gap-2 text-green-600 mb-4 sm:mb-6">
+        <Star className="h-4 w-4 sm:h-5 sm:w-5" />
+        <span className="font-semibold text-sm sm:text-base">Analysis Complete</span>
+        <Badge variant="secondary" className="text-xs sm:text-sm">
           {isPitchDeckAnalysis
             ? "Pitch Deck"
             : `${analysisData.length} ${
@@ -622,12 +622,12 @@ const PitchAnalysisResults = ({ result }) => {
       {/* Company Analysis Cards */}
       {analysisData.map((company, index) => (
         <Card key={index} className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <Building2 className="h-6 w-6 text-blue-600" />
-                <div>
-                  <CardTitle className="text-xl text-foreground">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-lg sm:text-xl text-foreground break-words">
                     {company["company / startup_name"] ||
                       company.company_name ||
                       (isPitchDeckAnalysis
@@ -635,7 +635,7 @@ const PitchAnalysisResults = ({ result }) => {
                         : `Company ${index + 1}`)}
                   </CardTitle>
                   {company.summary && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
                       {company.summary}
                     </p>
                   )}
@@ -644,7 +644,7 @@ const PitchAnalysisResults = ({ result }) => {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6">
             {/* Render pitch deck analysis sections if it's that format */}
             {isPitchDeckAnalysis && (
               <div className="space-y-6">
@@ -872,7 +872,7 @@ const PitchAnalysisResults = ({ result }) => {
                   )}
 
                 {/* Problem & Solution */}
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {company.problem_statement && (
                     <div>
                       <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -909,7 +909,7 @@ const PitchAnalysisResults = ({ result }) => {
                       <DollarSign className="h-4 w-4 text-green-600" />
                       Funding Information
                     </h4>
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {company.funding.raised && (
                         <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                           <div className="text-sm text-green-700 font-medium">

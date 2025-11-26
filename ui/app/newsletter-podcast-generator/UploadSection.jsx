@@ -93,31 +93,31 @@ const UploadSection = ({ onUploadComplete }) => {
   };
 
   return (
-    <section className="container mx-auto px-4 py-16" id="upload">
+    <section className="container mx-auto px-3 sm:px-4 md:px-6 py-12 sm:py-16" id="upload">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-3xl font-bold mb-4">Upload Your Files</h2>
-          <p className="text-muted-foreground">
+        <div className="text-center mb-8 sm:mb-12 animate-fade-in">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Upload Your Files</h2>
+          <p className="text-sm sm:text-base text-muted-foreground px-2">
             Upload audio files in both English and hindi, along with your report
             documents
           </p>
         </div>
 
         <Card className="shadow-elevated animate-scale-in">
-          <CardHeader>
-            <CardTitle>File Upload Form</CardTitle>
-            <CardDescription>
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-lg sm:text-xl">File Upload Form</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               All fields are required except PDF report
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="p-4 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
                 <Label
                   htmlFor="english-audio"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-sm sm:text-base"
                 >
-                  <FileAudio className="h-4 w-4 text-primary" />
+                  <FileAudio className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
                   English Audio File *
                 </Label>
                 <Input
@@ -126,10 +126,10 @@ const UploadSection = ({ onUploadComplete }) => {
                   accept="audio/*"
                   onChange={(e) => setEnglishAudio(e.target.files?.[0] || null)}
                   required
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {englishAudio && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Selected: {englishAudio.name}
                   </p>
                 )}
@@ -138,10 +138,10 @@ const UploadSection = ({ onUploadComplete }) => {
               <div className="space-y-2">
                 <Label
                   htmlFor="hindi-audio"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-sm sm:text-base"
                 >
-                  <FileAudio className="h-4 w-4 text-primary" />
-                  hindi Audio File *
+                  <FileAudio className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                  Hindi Audio File *
                 </Label>
                 <Input
                   id="hindi-audio"
@@ -149,18 +149,18 @@ const UploadSection = ({ onUploadComplete }) => {
                   accept="audio/*"
                   onChange={(e) => sethindiAudio(e.target.files?.[0] || null)}
                   required
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {hindiAudio && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Selected: {hindiAudio.name}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="report-md" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
+                <Label htmlFor="report-md" className="flex items-center gap-2 text-sm sm:text-base">
+                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
                   Report (Markdown) *
                 </Label>
                 <Input
@@ -169,17 +169,17 @@ const UploadSection = ({ onUploadComplete }) => {
                   accept=".md,.markdown"
                   onChange={(e) => setReportMd(e.target.files?.[0] || null)}
                   required
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {reportMd && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Selected: {reportMd.name}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title" className="text-sm sm:text-base">Title</Label>
                 <Input
                   id="title"
                   type="text"
@@ -187,27 +187,29 @@ const UploadSection = ({ onUploadComplete }) => {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter a title for this record"
                   required
+                  className="text-sm sm:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm sm:text-base">Description</Label>
                 <Input
                   id="description"
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Short description"
+                  className="text-sm sm:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="theme">Theme</Label>
+                <Label htmlFor="theme" className="text-sm sm:text-base">Theme</Label>
                 <select
                   id="theme"
                   value={theme}
                   onChange={(e) => setTheme(e.target.value)}
-                  className="w-full border rounded-md p-2"
+                  className="w-full border rounded-md p-2 text-sm sm:text-base"
                 >
                   <option value="Finance Report">Finance Report</option>
                   <option value="Finance Topic">Finance Topic</option>
@@ -217,16 +219,17 @@ const UploadSection = ({ onUploadComplete }) => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2">Speakers</Label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <Label className="flex items-center gap-2 text-sm sm:text-base">Speakers</Label>
                   <Button
                     type="button"
                     variant="ghost"
                     onClick={() =>
                       setSpeakers((s) => [...s, { title: "", description: "" }])
                     }
+                    className="text-xs sm:text-sm"
                   >
-                    <PlusCircle className="h-4 w-4 mr-2" /> Add Speaker
+                    <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Add Speaker
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -236,7 +239,7 @@ const UploadSection = ({ onUploadComplete }) => {
                       className="grid grid-cols-12 gap-2 items-center"
                     >
                       <Input
-                        className="col-span-12 sm:col-span-4"
+                        className="col-span-12 sm:col-span-4 text-sm"
                         placeholder="Name / Role"
                         value={sp.title || ""}
                         onChange={(e) =>
@@ -248,7 +251,7 @@ const UploadSection = ({ onUploadComplete }) => {
                         }
                       />
                       <Input
-                        className="col-span-12 sm:col-span-7"
+                        className="col-span-12 sm:col-span-7 text-sm"
                         placeholder="Short description"
                         value={sp.description || ""}
                         onChange={(e) =>
@@ -264,14 +267,14 @@ const UploadSection = ({ onUploadComplete }) => {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="col-span-12 sm:col-span-1"
+                        className="col-span-12 sm:col-span-1 p-2"
                         onClick={() =>
                           setSpeakers((prev) =>
                             prev.filter((_, i) => i !== idx)
                           )
                         }
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
                       </Button>
                     </div>
                   ))}
@@ -279,8 +282,8 @@ const UploadSection = ({ onUploadComplete }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="report-pdf" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-accent" />
+                <Label htmlFor="report-pdf" className="flex items-center gap-2 text-sm sm:text-base">
+                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
                   Report (PDF) - Optional
                 </Label>
                 <Input
@@ -288,10 +291,10 @@ const UploadSection = ({ onUploadComplete }) => {
                   type="file"
                   accept=".pdf"
                   onChange={(e) => setReportPdf(e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {reportPdf && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Selected: {reportPdf.name}
                   </p>
                 )}
@@ -299,10 +302,10 @@ const UploadSection = ({ onUploadComplete }) => {
 
               <Button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary/90 shadow-card"
+                className="w-full bg-primary hover:bg-primary/90 shadow-card text-sm sm:text-base"
                 size="lg"
               >
-                <Upload className="mr-2 h-5 w-5" />
+                <Upload className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Upload All Files
               </Button>
             </form>
@@ -316,20 +319,20 @@ const UploadSection = ({ onUploadComplete }) => {
             {uploadedInfo && (
               <div className="mt-4">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Upload Complete</CardTitle>
-                    <CardDescription>
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="text-base sm:text-lg">Upload Complete</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                       Record ID: {uploadedInfo.id}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p className="mb-2">Files uploaded:</p>
-                    <ul className="list-disc ml-6">
+                  <CardContent className="p-4 sm:p-6">
+                    <p className="mb-2 text-sm sm:text-base">Files uploaded:</p>
+                    <ul className="list-disc ml-4 sm:ml-6 space-y-1 text-xs sm:text-sm">
                       {uploadedInfo.english && (
-                        <li>
+                        <li className="break-words">
                           English:{" "}
                           <a
-                            className="text-primary"
+                            className="text-primary underline"
                             href={uploadedInfo.english.public_url}
                             target="_blank"
                             rel="noreferrer"
@@ -339,10 +342,10 @@ const UploadSection = ({ onUploadComplete }) => {
                         </li>
                       )}
                       {uploadedInfo.hindi && (
-                        <li>
-                          hindi:{" "}
+                        <li className="break-words">
+                          Hindi:{" "}
                           <a
-                            className="text-primary"
+                            className="text-primary underline"
                             href={uploadedInfo.hindi.public_url}
                             target="_blank"
                             rel="noreferrer"
@@ -352,10 +355,10 @@ const UploadSection = ({ onUploadComplete }) => {
                         </li>
                       )}
                       {uploadedInfo.report_md && (
-                        <li>
+                        <li className="break-words">
                           MD Report:{" "}
                           <a
-                            className="text-primary"
+                            className="text-primary underline"
                             href={uploadedInfo.report_md.public_url}
                             target="_blank"
                             rel="noreferrer"
@@ -365,10 +368,10 @@ const UploadSection = ({ onUploadComplete }) => {
                         </li>
                       )}
                       {uploadedInfo.report_pdf && (
-                        <li>
+                        <li className="break-words">
                           PDF:{" "}
                           <a
-                            className="text-primary"
+                            className="text-primary underline"
                             href={uploadedInfo.report_pdf.public_url}
                             target="_blank"
                             rel="noreferrer"
@@ -379,7 +382,7 @@ const UploadSection = ({ onUploadComplete }) => {
                       )}
                     </ul>
                     <div className="mt-4">
-                      <Button onClick={() => setUploadedInfo(null)}>
+                      <Button onClick={() => setUploadedInfo(null)} className="w-full sm:w-auto text-sm sm:text-base">
                         Close
                       </Button>
                     </div>

@@ -1,25 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Search,
   TrendingUp,
   Users,
-  Globe,
-  BarChart3,
-  Building2,
-  Zap,
   Brain,
-  MessageSquare,
-  ArrowRight,
-  CheckCircle,
   Sparkles,
+  Layers,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Navbar } from "@/components/Navbar";
+import { Badge } from "@/components/ui/badge";
 
 export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,293 +20,209 @@ export default function LandingPage() {
 
   const handleAnalyze = () => {
     if (searchQuery.trim()) {
-      // ✅ Only navigate, let dashboard handle the API
       router.push(`/dashboard?company=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   const features = [
     {
-      icon: <TrendingUp className="h-6 w-6" />,
+      icon: <TrendingUp className="h-5 w-5" />,
       title: "Financial Intelligence",
-      description:
-        "Deep dive into funding, valuation, and growth metrics with real-time data",
-      color: "from-blue-500 to-blue-600",
+      description: "Real-time deep dives into valuation and growth metrics.",
+      bg: "bg-blue-50 text-blue-600",
     },
     {
-      icon: <Users className="h-6 w-6" />,
+      icon: <Users className="h-5 w-5" />,
       title: "SenseAI Score",
-      description:
-        "Our proprietary algorithm rates company health and growth potential",
-      color: "from-purple-500 to-purple-600",
+      description: "Proprietary algorithmic health & potential rating.",
+      bg: "bg-purple-50 text-purple-600",
     },
     {
-      icon: <Globe className="h-6 w-6" />,
-      title: "Multimodal Insights",
-      description:
-        "Leverage startup spitchdecks, transcripts, reports, videos and more",
-      color: "from-green-500 to-green-600",
+      icon: <Layers className="h-5 w-5" />,
+      title: "Multimodal Analysis",
+      description: "Processing decks, videos, and transcripts simultaneously.",
+      bg: "bg-indigo-50 text-indigo-600",
     },
     {
-      icon: <Brain className="h-6 w-6" />,
-      title: "AI-Powered Chat",
-      description:
-        "Ask anything about companies and get instant, intelligent responses",
-      color: "from-orange-500 to-orange-600",
+      icon: <Brain className="h-5 w-5" />,
+      title: "AI Consultant",
+      description: "Interactive chat for instant, data-backed answers.",
+      bg: "bg-emerald-50 text-emerald-600",
     },
   ];
 
   const stats = [
-    { number: "10K+", label: "Datapoints analyzed" },
-    { number: ">96%", label: "Data Accuracy (Manually vetted)" },
-    { number: "<120s", label: "Analysis Time" },
-    { number: "On demand", label: "Data Updates" },
+    { number: "10K+", label: "Companies Analyzed" },
+    { number: "96%", label: "Data Accuracy" },
+    { number: "<2m", label: "Analysis Time" },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-slate-50/50 selection:bg-blue-100 selection:text-blue-900 font-sans text-slate-900">
+      {/* Abstract Background */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-32 h-16 flex items-center justify-center p-1">
-                <img
-                  src="/images/senseai-logo.png"
-                  alt="SenseAI Logo"
-                  className="w-32 h-32  object-contain hover:scale-105 transition-transform duration-200"
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
+      <Navbar />
+
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
+        <div className="container mx-auto max-w-5xl text-center">
+          <Badge
+            variant="outline"
+            className="mb-8 px-4 py-1.5 rounded-full border-blue-200 bg-blue-50/50 text-blue-700 text-sm font-medium backdrop-blur-sm animate-fade-in-up"
+          >
+            <Sparkles className="w-3.5 h-3.5 mr-2 inline-block" />
+            The Future of Due Diligence
+          </Badge>
+
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.1]">
+            X-Ray Vision for <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              Modern Startups
+            </span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Instantly analyze any company with AI. From funding history to
+            founder personality, get the complete picture in seconds.
+          </p>
+
+          {/* Hero Search */}
+          <div className="max-w-2xl mx-auto relative group mb-16">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="relative flex items-center bg-white rounded-full shadow-2xl shadow-blue-900/5 ring-1 ring-slate-200/60 p-2 pl-6 transition-all focus-within:ring-blue-500/50 focus-within:shadow-blue-500/10">
+              <Search className="h-5 w-5 text-slate-400 mr-3" />
+              <input
+                type="text"
+                placeholder="Enter company name (e.g., Stripe, SpaceX)..."
+                className="flex-1 bg-transparent border-none outline-none text-lg text-slate-900 placeholder:text-slate-400 h-12 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+              />
               <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
-                onClick={() => router.push("/chat")}
+                onClick={handleAnalyze}
+                size="lg"
+                className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 transition-all hover:scale-105"
               >
-                🤖 Talk to SenseAI
-              </Button>
-              <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
-                onClick={() => router.push("/founder-data-analyzer")}
-              >
-                ⚡ Analyze Founder Data
-              </Button>
-              <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100"
-                onClick={() => router.push("/podcast")}
-              >
-                🎙️ Generate Startup Podcast
-              </Button>
-              <Button
-                onClick={() => router.push("/dashboard")}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                Get Started
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Analyze
               </Button>
             </div>
           </div>
-        </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-16">
-        <div className="container mx-auto px-6 text-center">
-          <div className="max-w-4xl mx-auto">
-            <Badge
-              variant="secondary"
-              className="mb-6 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              AI-Powered Company Intelligence
-            </Badge>
-
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent leading-tight">
-              X-Ray Vision for
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                {" "}
-                Startups
-              </span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Get comprehensive insights on any company. From financials to
-              leadership, market position to growth metrics - all powered by
-              SenseAI.
-            </p>
-
-            {/* Search Bar */}
-            <div className="max-w-4xl mx-auto mb-16">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
-                <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200/50 p-2 flex items-center">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-                    <Input
-                      placeholder="Enter any company name (e.g., OpenAI, Tesla, Stripe)"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault(); // ✅ avoid accidental double trigger
-                          handleAnalyze();
-                        }
-                      }}
-                      className="pl-12 pr-4 py-6 text-lg border-0 focus:ring-0 focus:outline-none bg-transparent"
-                    />
-                  </div>
-                  <Button
-                    onClick={handleAnalyze}
-                    size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    Analyze
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+          {/* Mini Stats */}
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 border-t border-slate-200/60 pt-8 max-w-3xl mx-auto">
+            {stats.map((stat, i) => (
+              <div key={i} className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-slate-900">
+                  {stat.number}
+                </div>
+                <div className="text-sm font-medium text-slate-500 uppercase tracking-wide mt-1">
+                  {stat.label}
                 </div>
               </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                    {stat.number}
-                  </div>
-                  <div className="text-slate-600 text-sm">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-2xl mx-auto">
-              <Button
-                size="lg"
-                onClick={() => router.push("/chat")}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px]"
-              >
-                🤖 Talk to SenseAI
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => router.push("/founder-data-analyzer")}
-                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px] bg-white"
-              >
-                ⚡ Analyze Founder Data
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => router.push("/podcast")}
-                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 min-w-[200px] bg-white"
-              >
-                🎙️ Generate Startup Podcast
-              </Button>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white/50 backdrop-blur-sm">
+      {/* Features Grid */}
+      <section className="py-24 bg-white relative">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-              Everything You Need to Know
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              From startup to enterprise, get the complete picture of any
-              company with our comprehensive analysis suite.
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="max-w-xl">
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                Intelligence, Simplified.
+              </h2>
+              <p className="text-slate-500 text-lg">
+                We aggregate thousands of data points into a single, beautiful
+                dashboard. No more tab switching.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="hidden md:flex rounded-full border-slate-200"
+              onClick={() => router.push("/dashboard")}
+            >
+              View Features
+            </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {features.map((feature, index) => (
-              <Card
-                key={index}
-                className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm hover:-translate-y-1"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, i) => (
+              <div
+                key={i}
+                className="group p-8 rounded-3xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-slate-200 transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50"
               >
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-4">
-                    <div
-                      className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-200`}
-                    >
-                      {feature.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2 text-slate-900">
-                        {feature.title}
-                      </h3>
-                      <p className="text-slate-600 leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                <div
+                  className={`w-12 h-12 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+                >
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-500 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 border-0 shadow-2xl">
-              <CardContent className="p-12 text-center text-white">
-                <Building2 className="h-16 w-16 mx-auto mb-6 opacity-90" />
-                <h2 className="text-4xl font-bold mb-4">
-                  Ready to Discover Company Intelligence?
-                </h2>
-                <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-                  Join thousands of investors, analysts, and business
-                  professionals who trust SenseAI for their research needs.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button
-                    size="lg"
-                    onClick={() => router.push("/dashboard")}
-                    className="bg-white text-blue-600 hover:bg-gray-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    Start Analyzing
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => router.push("/chat")}
-                    className="border-white text-blue-600 hover:bg-white hover:text-blue-900 px-8 py-4 text-lg font-semibold backdrop-blur-sm"
-                  >
-                    <MessageSquare className="mr-2 h-5 w-5" />
-                    Try 🤖 Talk to SenseAI
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+      <section className="py-24 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <div className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden px-8 py-20 md:p-20 text-center">
+            {/* Background Effects */}
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
+
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+                Ready to see the unseen?
+              </h2>
+              <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+                Join forward-thinking investors and founders using SenseAI to
+                make better decisions, faster.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button
+                  size="lg"
+                  onClick={() => router.push("/dashboard")}
+                  className="w-full sm:w-auto rounded-full bg-white text-slate-900 hover:bg-slate-100 text-base px-8 h-14 font-semibold"
+                >
+                  Start Analyzing Now
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => router.push("/chat")}
+                  className="w-full sm:w-auto rounded-full border-slate-700 text-white hover:bg-slate-800 hover:text-white text-base px-8 h-14 bg-transparent"
+                >
+                  Talk to SenseAI
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-12">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <BarChart3 className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-slate-900">SenseAI</span>
-            </div>
-            <p className="text-slate-600">
-              © 2025 SenseAI. Powered by AI. Built for the future of business
-              intelligence.
-            </p>
+      {/* Minimal Footer */}
+      <footer className="py-12 border-t border-slate-100 bg-white">
+        <div className="container mx-auto px-6 flex justify-center items-center">
+          <div className="h-9 sm:h-12 flex items-center justify-center">
+            <img
+              src="/images/senseai-logo.png"
+              alt="SenseAI Logo"
+              className="h-full w-auto object-contain"
+            />
           </div>
         </div>
       </footer>

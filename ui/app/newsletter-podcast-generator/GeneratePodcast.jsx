@@ -202,28 +202,29 @@ export default function GeneratePodcast() {
   };
 
   return (
-    <Card className="mt-8 shadow-elevated">
-      <CardHeader>
-        <CardTitle>Generate Podcast & Newsletter</CardTitle>
-        <CardDescription>
+    <Card className="mt-6 sm:mt-8 shadow-elevated">
+      <CardHeader className="pb-3 sm:pb-4">
+        <CardTitle className="text-lg sm:text-xl">Generate Podcast & Newsletter</CardTitle>
+        <CardDescription className="text-sm">
           Create startup analysis podcasts or newsletters by providing relevant
           inputs.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         {/* 🎙️ Podcast Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Podcast by Name */}
-          <div className="space-y-3">
-            <Label>Startup Name</Label>
+          <div className="space-y-2 sm:space-y-3">
+            <Label className="text-sm sm:text-base">Startup Name</Label>
             <Input
               placeholder="e.g. Zomato or Razorpay"
               value={startupName}
               onChange={(e) => setStartupName(e.target.value)}
               disabled={loading || newsletterLoading}
+              className="text-sm sm:text-base"
             />
-            <div className="flex items-center gap-2">
-              <Button onClick={handleGenerateByName} disabled={loading}>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Button onClick={handleGenerateByName} disabled={loading} className="w-full sm:w-auto text-sm sm:text-base">
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin h-4 w-4 mr-2" />{" "}
@@ -242,6 +243,7 @@ export default function GeneratePodcast() {
                   clearPodcastState();
                 }}
                 disabled={loading}
+                className="w-full sm:w-auto text-sm sm:text-base"
               >
                 Clear
               </Button>
@@ -249,20 +251,22 @@ export default function GeneratePodcast() {
           </div>
 
           {/* Podcast from PDF */}
-          <div className="space-y-3">
-            <Label>Upload PDF</Label>
+          <div className="space-y-2 sm:space-y-3">
+            <Label className="text-sm sm:text-base">Upload PDF</Label>
             <input
               ref={fileInputRef}
               type="file"
               accept="application/pdf"
               onChange={handlePdfChange}
               disabled={loading || newsletterLoading}
+              className="w-full text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Button
                 onClick={handleGenerateFromPdf}
                 disabled={loading || !pdfFile}
+                className="w-full sm:w-auto text-sm sm:text-base"
               >
                 {loading ? (
                   <>
@@ -283,13 +287,14 @@ export default function GeneratePodcast() {
                   clearPodcastState();
                 }}
                 disabled={loading}
+                className="w-full sm:w-auto text-sm sm:text-base"
               >
                 Clear
               </Button>
             </div>
 
             {pdfFile && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-muted-foreground break-words">
                 Selected: {pdfFile.name} ({Math.round(pdfFile.size / 1024)} KB)
               </div>
             )}
@@ -297,14 +302,14 @@ export default function GeneratePodcast() {
         </div>
 
         {/* Podcast Status */}
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           {error && (
-            <div className="p-3 rounded-md bg-destructive/10 text-destructive-foreground text-sm">
+            <div className="p-3 rounded-md bg-destructive/10 text-destructive-foreground text-xs sm:text-sm break-words">
               Error: {error}
             </div>
           )}
           {result && (
-            <div className="p-3 rounded-md bg-success/10 text-success-foreground text-sm space-y-2">
+            <div className="p-3 rounded-md bg-success/10 text-success-foreground text-xs sm:text-sm space-y-2">
               <div className="font-medium">Podcast Generation Completed</div>
               <div className="text-xs text-muted-foreground">
                 Session: {result.session_id || result.session}
@@ -315,27 +320,29 @@ export default function GeneratePodcast() {
         </div>
 
         {/* 📰 Newsletter Section */}
-        <div className="border-t mt-8 pt-6">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Mail className="h-5 w-5" /> Generate Newsletter
+        <div className="border-t mt-6 sm:mt-8 pt-4 sm:pt-6">
+          <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2 mb-3 sm:mb-4">
+            <Mail className="h-4 w-4 sm:h-5 sm:w-5" /> Generate Newsletter
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             Create an automated newsletter from the given topic and highlights.
           </p>
 
-          <div className="space-y-3">
-            <Label>Newsletter Topic</Label>
+          <div className="space-y-2 sm:space-y-3">
+            <Label className="text-sm sm:text-base">Newsletter Topic</Label>
             <Input
               placeholder="e.g. FinTech Market Update, AI Startup Trends"
               value={newsletterTopic}
               onChange={(e) => setNewsletterTopic(e.target.value)}
               disabled={newsletterLoading}
+              className="text-sm sm:text-base"
             />
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Button
                 onClick={handleGenerateNewsletter}
                 disabled={newsletterLoading}
+                className="w-full sm:w-auto text-sm sm:text-base"
               >
                 {newsletterLoading ? (
                   <>
@@ -355,6 +362,7 @@ export default function GeneratePodcast() {
                   clearNewsletterState();
                 }}
                 disabled={newsletterLoading}
+                className="w-full sm:w-auto text-sm sm:text-base"
               >
                 Clear
               </Button>
@@ -362,14 +370,14 @@ export default function GeneratePodcast() {
           </div>
 
           {/* Newsletter Result */}
-          <div className="mt-4">
+          <div className="mt-3 sm:mt-4">
             {newsletterError && (
-              <div className="p-3 rounded-md bg-destructive/10 text-destructive-foreground text-sm">
+              <div className="p-3 rounded-md bg-destructive/10 text-destructive-foreground text-xs sm:text-sm break-words">
                 Error: {newsletterError}
               </div>
             )}
             {newsletterResult && (
-              <div className="p-3 rounded-md bg-success/10 text-success-foreground text-sm space-y-2">
+              <div className="p-3 rounded-md bg-success/10 text-success-foreground text-xs sm:text-sm space-y-2">
                 <div className="font-medium">
                   Newsletter Generated Successfully
                 </div>
@@ -378,7 +386,7 @@ export default function GeneratePodcast() {
                     href={newsletterResult.download_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="underline text-sm"
+                    className="underline text-xs sm:text-sm"
                   >
                     Download Newsletter
                   </a>

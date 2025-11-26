@@ -100,13 +100,13 @@ const AudioPlayer = ({ title, language, audioFile }) => {
   };
 
   return (
-    <Card className="p-6 shadow-card animate-scale-in">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-semibold text-lg">{title}</h3>
-          <p className="text-sm text-muted-foreground">{language} Audio</p>
+    <Card className="p-4 sm:p-6 shadow-card animate-scale-in">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-base sm:text-lg break-words">{title}</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">{language} Audio</p>
         </div>
-        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+        <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
           language === "English" 
             ? "bg-primary/10 text-primary" 
             : "bg-accent/10 text-accent"
@@ -117,7 +117,7 @@ const AudioPlayer = ({ title, language, audioFile }) => {
 
       <audio ref={audioRef} src={audioFile} preload="metadata" />
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div className="space-y-2">
           <Slider
             value={[currentTime]}
@@ -132,25 +132,25 @@ const AudioPlayer = ({ title, language, audioFile }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Button
             size="lg"
             onClick={togglePlay}
-            className="rounded-full w-12 h-12 p-0 shadow-elevated hover:scale-110 transition-transform"
+            className="rounded-full w-10 h-10 sm:w-12 sm:h-12 p-0 shadow-elevated hover:scale-110 transition-transform flex-shrink-0"
           >
-            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+            {isPlaying ? <Pause className="h-4 w-4 sm:h-5 sm:w-5" /> : <Play className="h-4 w-4 sm:h-5 sm:w-5 ml-0.5" />}
           </Button>
 
-          <div className="flex items-center gap-2 flex-1">
-            <Button variant="ghost" size="sm" onClick={toggleMute} className="rounded-full p-2">
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+            <Button variant="ghost" size="sm" onClick={toggleMute} className="rounded-full p-1.5 sm:p-2 flex-shrink-0">
+              {isMuted ? <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" /> : <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />}
             </Button>
             <Slider
               value={[isMuted ? 0 : volume]}
               max={100}
               step={1}
               onValueChange={(value) => setVolume(value[0])}
-              className="w-24 cursor-pointer"
+              className="w-16 sm:w-24 cursor-pointer"
             />
           </div>
         </div>

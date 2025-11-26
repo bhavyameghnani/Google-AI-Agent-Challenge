@@ -43,7 +43,7 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
-import { Navbar } from "../dashboard/CompanyDashboard";
+import { Navbar } from "@/components/Navbar";
 
 const models = [
   {
@@ -151,14 +151,12 @@ const ChatBotDemo = () => {
   };
 
   return (
-    <div>
-      <div className="absolute top-0 left-0 w-full z-10">
-        <Navbar />
-      </div>
-      <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
-        <div className="flex flex-col h-full">
-          <Conversation className="h-full">
-            <ConversationContent>
+    <div className="min-h-screen bg-background">
+      <Navbar forceSolid={true} />
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 pt-24 h-[calc(100vh-5rem)] flex flex-col">
+        <div className="flex flex-col flex-1 min-h-0">
+          <Conversation className="flex-1 min-h-0 overflow-hidden">
+            <ConversationContent className="pb-4">
               {messages.map((message) => (
                 <div key={message.id}>
                   {message.role === "assistant" &&
@@ -230,25 +228,30 @@ const ChatBotDemo = () => {
                           <Fragment key={`${message.id}-${i}`}>
                             <Message from={message.role}>
                               <MessageContent>
-                                <div className="border rounded p-2 mb-2">
+                                <div className="border rounded p-2 mb-2 overflow-hidden">
                                   {part.mediaType?.startsWith("image/") ? (
                                     <img
                                       src={part.url}
                                       alt="Uploaded image"
-                                      className="max-w-xs rounded"
+                                      className="max-w-full sm:max-w-xs rounded"
                                     />
                                   ) : part.mediaType === "application/pdf" ? (
-                                    <iframe
-                                      src={part.url}
-                                      width="500"
-                                      height="600"
-                                      title="PDF attachment"
-                                      className="rounded"
-                                    />
+                                    <div className="w-full overflow-auto">
+                                      <iframe
+                                        src={part.url}
+                                        width="100%"
+                                        height="600"
+                                        title="PDF attachment"
+                                        className="rounded min-h-[400px] sm:min-h-[500px] md:min-h-[600px]"
+                                        style={{ minWidth: "100%" }}
+                                      />
+                                    </div>
                                   ) : (
                                     <div className="flex items-center space-x-2">
                                       <span>📁</span>
-                                      <span>File attached</span>
+                                      <span className="text-sm sm:text-base">
+                                        File attached
+                                      </span>
                                     </div>
                                   )}
                                 </div>
@@ -269,7 +272,7 @@ const ChatBotDemo = () => {
 
           <PromptInput
             onSubmit={handleSubmit}
-            className="mt-4"
+            className="mt-2 sm:mt-4 flex-shrink-0"
             globalDrop
             multiple
           >
@@ -280,10 +283,11 @@ const ChatBotDemo = () => {
               <PromptInputTextarea
                 onChange={(e) => setInput(e.target.value)}
                 value={input}
+                className="min-h-[60px] sm:min-h-[80px] text-sm sm:text-base"
               />
             </PromptInputBody>
-            <PromptInputToolbar>
-              <PromptInputTools>
+            <PromptInputToolbar className="flex-wrap gap-2">
+              <PromptInputTools className="flex-wrap gap-2">
                 <PromptInputActionMenu>
                   <PromptInputActionMenuTrigger />
                   <PromptInputActionMenuContent>
@@ -293,9 +297,10 @@ const ChatBotDemo = () => {
                 <PromptInputButton
                   variant={webSearch ? "default" : "ghost"}
                   onClick={() => setWebSearch(!webSearch)}
+                  className="text-xs sm:text-sm"
                 >
-                  <GlobeIcon size={16} />
-                  <span>Search</span>
+                  <GlobeIcon size={14} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Search</span>
                 </PromptInputButton>
                 <PromptInputModelSelect
                   onValueChange={(value) => {
@@ -303,7 +308,7 @@ const ChatBotDemo = () => {
                   }}
                   value={model}
                 >
-                  <PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectTrigger className="text-xs sm:text-sm min-w-[120px] sm:min-w-[150px]">
                     <PromptInputModelSelectValue />
                   </PromptInputModelSelectTrigger>
                   <PromptInputModelSelectContent>
@@ -318,6 +323,7 @@ const ChatBotDemo = () => {
               <PromptInputSubmit
                 disabled={!input && status !== "streaming"}
                 status={status}
+                className="flex-shrink-0"
               />
             </PromptInputToolbar>
           </PromptInput>

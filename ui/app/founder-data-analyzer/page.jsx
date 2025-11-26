@@ -27,7 +27,7 @@ import {
   Play,
   Search,
 } from "lucide-react";
-import { Navbar } from "../dashboard/CompanyDashboard";
+import { Navbar } from "@/components/Navbar";
 import PitchAnalysisResults from "./PitchAnalysisResults";
 
 const API_BASE = process.env.NEXT_PUBLIC_PITCH_URL;
@@ -219,29 +219,29 @@ export default function StartupPitchAnalyzer() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
-      <Navbar />
+      <Navbar forceSolid={true} />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 pb-6 sm:pb-8 md:pb-10 pt-28">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 Founder Data Analyzer
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">
                 AI-powered analysis for pitch decks, founder call transcripts,
                 video and presentations
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant="secondary"
-              className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0"
+              className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 border-0 text-xs sm:text-sm"
             >
-              <Sparkles className="w-4 h-4 mr-1" />
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               Powered by SenseAI
             </Badge>
             <Badge variant="outline" className="text-xs">
@@ -252,16 +252,16 @@ export default function StartupPitchAnalyzer() {
 
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 text-red-800">
-              <AlertCircle className="h-4 w-4" />
-              <span className="font-medium">Error</span>
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium text-sm sm:text-base">Error</span>
             </div>
-            <p className="text-red-700 text-sm mt-1">{error}</p>
+            <p className="text-red-700 text-xs sm:text-sm mt-1 break-words">{error}</p>
           </div>
         )}
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {/* Input Section */}
           <div>
             <Card>
@@ -273,62 +273,62 @@ export default function StartupPitchAnalyzer() {
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-5">
+                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto gap-1 sm:gap-2 p-1 overflow-x-auto">
                     <TabsTrigger
                       value="pdf"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2"
                     >
-                      <Download className="h-4 w-4" />
-                      PDF
+                      <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">PDF</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="text"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2"
                     >
-                      <FileText className="h-4 w-4" />
-                      Text
+                      <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Text</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="audio"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2"
                     >
-                      <Mic className="h-4 w-4" />
-                      Audio
+                      <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Audio</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="txt"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2"
                     >
-                      <FileText className="h-4 w-4" />
-                      TXT File
+                      <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">TXT</span>
                     </TabsTrigger>
 
                     <TabsTrigger
                       value="video"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-2"
                     >
-                      <Video className="h-4 w-4" />
-                      Video
+                      <Video className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Video</span>
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="text" className="space-y-4">
+                  <TabsContent value="text" className="space-y-3 sm:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                         Paste your transcript here
                       </label>
                       <Textarea
                         value={transcriptText}
                         onChange={(e) => setTranscriptText(e.target.value)}
                         placeholder="Enter your pitch transcript here..."
-                        className="min-h-[200px] resize-none"
+                        className="min-h-[150px] sm:min-h-[200px] resize-none text-sm sm:text-base"
                       />
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         onClick={fetchAnalyzeText}
                         disabled={loading || !transcriptText.trim()}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto text-sm sm:text-base"
                       >
                         {loading ? (
                           <>
@@ -346,29 +346,30 @@ export default function StartupPitchAnalyzer() {
                         variant="outline"
                         onClick={() => setTranscriptText("")}
                         disabled={!transcriptText.trim()}
+                        className="w-full sm:w-auto text-sm sm:text-base"
                       >
                         Clear
                       </Button>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="audio" className="space-y-4">
+                  <TabsContent value="audio" className="space-y-3 sm:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                         Upload audio file
                       </label>
-                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <Mic className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                      <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center hover:border-blue-400 transition-colors">
+                        <Mic className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
                         <input
                           type="file"
                           accept="audio/*,.wav,.mp3,.m4a,.ogg"
                           onChange={(e) =>
                             setAudioFile(e.target.files?.[0] ?? null)
                           }
-                          className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="w-full text-xs sm:text-sm text-muted-foreground file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
                         {audioFile && (
-                          <p className="text-sm text-muted-foreground mt-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words">
                             Selected: {audioFile.name}
                           </p>
                         )}
@@ -378,7 +379,7 @@ export default function StartupPitchAnalyzer() {
                     <Button
                       onClick={uploadAudioFile}
                       disabled={loading || !audioFile}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full text-sm sm:text-base"
                     >
                       {loading ? (
                         <>
@@ -394,23 +395,23 @@ export default function StartupPitchAnalyzer() {
                     </Button>
                   </TabsContent>
 
-                  <TabsContent value="txt" className="space-y-4">
+                  <TabsContent value="txt" className="space-y-3 sm:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                         Upload text file
                       </label>
-                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <FileText className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                      <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center hover:border-blue-400 transition-colors">
+                        <FileText className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
                         <input
                           type="file"
                           accept=".txt"
                           onChange={(e) =>
                             setTxtFile(e.target.files?.[0] ?? null)
                           }
-                          className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="w-full text-xs sm:text-sm text-muted-foreground file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
                         {txtFile && (
-                          <p className="text-sm text-muted-foreground mt-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words">
                             Selected: {txtFile.name}
                           </p>
                         )}
@@ -420,7 +421,7 @@ export default function StartupPitchAnalyzer() {
                     <Button
                       onClick={uploadTxtFile}
                       disabled={loading || !txtFile}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full text-sm sm:text-base"
                     >
                       {loading ? (
                         <>
@@ -436,23 +437,23 @@ export default function StartupPitchAnalyzer() {
                     </Button>
                   </TabsContent>
 
-                  <TabsContent value="pdf" className="space-y-4">
+                  <TabsContent value="pdf" className="space-y-3 sm:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                         Upload pitch deck (PDF)
                       </label>
-                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                        <Download className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                      <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center hover:border-blue-400 transition-colors">
+                        <Download className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
                         <input
                           type="file"
                           accept=".pdf"
                           onChange={(e) =>
                             setPdfFile(e.target.files?.[0] ?? null)
                           }
-                          className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="w-full text-xs sm:text-sm text-muted-foreground file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         />
                         {pdfFile && (
-                          <p className="text-sm text-muted-foreground mt-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words">
                             Selected: {pdfFile.name}
                           </p>
                         )}
@@ -462,7 +463,7 @@ export default function StartupPitchAnalyzer() {
                     <Button
                       onClick={uploadPdfFile}
                       disabled={loading || loadingFactCheck || !pdfFile}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full text-sm sm:text-base"
                     >
                       {loading ? (
                         <>
@@ -478,7 +479,7 @@ export default function StartupPitchAnalyzer() {
                         onClick={factCheckPdfFile}
                         disabled={loadingFactCheck || !pdfFile}
                         variant="outline"
-                        className="w-full"
+                        className="w-full text-sm sm:text-base"
                       >
                         {loadingFactCheck ? (
                           <>
@@ -495,24 +496,24 @@ export default function StartupPitchAnalyzer() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="video" className="space-y-4">
-                    <div className="space-y-4">
+                  <TabsContent value="video" className="space-y-3 sm:space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                           Upload video file
                         </label>
-                        <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                          <Video className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                        <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center hover:border-blue-400 transition-colors">
+                          <Video className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
                           <input
                             type="file"
                             accept="video/*,.mp4,.mov,.avi,.mkv"
                             onChange={(e) =>
                               setVideoFile(e.target.files?.[0] ?? null)
                             }
-                            className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            className="w-full text-xs sm:text-sm text-muted-foreground file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                           />
                           {videoFile && (
-                            <p className="text-sm text-muted-foreground mt-2">
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words">
                               Selected: {videoFile.name}
                             </p>
                           )}
@@ -531,17 +532,17 @@ export default function StartupPitchAnalyzer() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                           YouTube URL
                         </label>
                         <div className="flex items-center gap-2">
-                          <Youtube className="h-5 w-5 text-red-600" />
+                          <Youtube className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />
                           <Input
                             type="url"
                             placeholder="https://youtube.com/watch?v=..."
                             value={youtubeUrl}
                             onChange={(e) => setYoutubeUrl(e.target.value)}
-                            className="flex-1"
+                            className="flex-1 text-sm sm:text-base"
                           />
                         </div>
                       </div>
@@ -552,7 +553,7 @@ export default function StartupPitchAnalyzer() {
                       disabled={
                         loadingVideo || (!videoFile && !youtubeUrl.trim())
                       }
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full text-sm sm:text-base"
                     >
                       {loadingVideo ? (
                         <>
@@ -569,11 +570,12 @@ export default function StartupPitchAnalyzer() {
                   </TabsContent>
                 </Tabs>
 
-                <div className="flex justify-between items-center mt-6 pt-4 border-t">
+                <div className="flex justify-between items-center mt-4 sm:mt-6 pt-3 sm:pt-4 border-t">
                   <Button
                     variant="outline"
                     onClick={clearAll}
                     disabled={loading || loadingVideo}
+                    className="w-full sm:w-auto text-sm sm:text-base"
                   >
                     <Zap className="mr-2 h-4 w-4" />
                     Clear All
@@ -586,34 +588,34 @@ export default function StartupPitchAnalyzer() {
           {/* Results Section */}
           <div className="lg:col-span-1">
             <Card className="h-fit">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-green-600" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   Analysis Results
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 {loading || loadingVideo ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                    <p className="text-muted-foreground text-center">
+                  <div className="flex flex-col items-center justify-center py-6 sm:py-8 px-4">
+                    <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-blue-600 mb-3 sm:mb-4" />
+                    <p className="text-sm sm:text-base text-muted-foreground text-center">
                       {loadingVideo
                         ? "Processing video..."
                         : "Analyzing your content..."}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 text-center">
                       This may take a few moments
                     </p>
                   </div>
                 ) : result ? (
                   <PitchAnalysisResults result={result} />
                 ) : (
-                  <div className="text-center py-8">
-                    <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground mb-2">
+                  <div className="text-center py-6 sm:py-8 px-4">
+                    <Brain className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                    <p className="text-sm sm:text-base text-muted-foreground mb-2">
                       No analysis yet
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Upload content to see AI-powered insights
                     </p>
                   </div>

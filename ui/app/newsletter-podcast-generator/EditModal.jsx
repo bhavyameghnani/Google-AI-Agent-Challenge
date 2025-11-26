@@ -111,8 +111,8 @@ const EditModal = ({ record, onSave, onCancel }) => {
           w-[95vw]
           max-h-[85vh]
           overflow-y-auto
-          p-6
-          rounded-2xl
+          p-4 sm:p-6
+          rounded-lg sm:rounded-2xl
           bg-white
           shadow-2xl
           scrollbar-thin
@@ -145,101 +145,107 @@ const EditModal = ({ record, onSave, onCancel }) => {
           </div>
         )}
 
-        <DialogHeader className="border-b pb-3 mb-4">
-          <DialogTitle className="text-lg font-semibold">
+        <DialogHeader className="border-b pb-2 sm:pb-3 mb-3 sm:mb-4">
+          <DialogTitle className="text-base sm:text-lg font-semibold">
             Edit Record #{record.id}
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
+          <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
             Update the file names for this record
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           {/* File upload fields */}
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             <div>
-              <Label className="flex items-center gap-2 mb-1">
-                <FileAudio className="h-4 w-4 text-primary" />
-                English Audio (current:{" "}
-                {currentFiles?.english?.filename || record.englishAudio})
+              <Label className="flex items-center gap-2 mb-1 text-xs sm:text-sm">
+                <FileAudio className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                <span className="break-words">English Audio (current:{" "}
+                {currentFiles?.english?.filename || record.englishAudio})</span>
               </Label>
               <Input
                 type="file"
                 accept="audio/*"
                 onChange={(e) => setEnglishFile(e.target.files?.[0] || null)}
+                className="text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
             </div>
 
             <div>
-              <Label className="flex items-center gap-2 mb-1">
-                <FileAudio className="h-4 w-4 text-primary" />
-                Hind Audio (current:{" "}
-                {currentFiles?.hindi?.filename || record.hindiAudio})
+              <Label className="flex items-center gap-2 mb-1 text-xs sm:text-sm">
+                <FileAudio className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                <span className="break-words">Hindi Audio (current:{" "}
+                {currentFiles?.hindi?.filename || record.hindiAudio})</span>
               </Label>
               <Input
                 type="file"
                 accept="audio/*"
                 onChange={(e) => sethindiFile(e.target.files?.[0] || null)}
+                className="text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
             </div>
 
             <div>
-              <Label className="flex items-center gap-2 mb-1">
-                <FileText className="h-4 w-4 text-accent" />
-                Markdown Report (current:{" "}
-                {currentFiles?.report_md?.filename || record.reportMd})
+              <Label className="flex items-center gap-2 mb-1 text-xs sm:text-sm">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
+                <span className="break-words">Markdown Report (current:{" "}
+                {currentFiles?.report_md?.filename || record.reportMd})</span>
               </Label>
               <Input
                 type="file"
                 accept=".md,.markdown"
                 onChange={(e) => setReportMdFile(e.target.files?.[0] || null)}
+                className="text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
             </div>
 
             <div>
-              <Label className="flex items-center gap-2 mb-1">
-                <FileText className="h-4 w-4 text-accent" />
-                PDF Report (current:{" "}
+              <Label className="flex items-center gap-2 mb-1 text-xs sm:text-sm">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
+                <span className="break-words">PDF Report (current:{" "}
                 {currentFiles?.report_pdf?.filename ||
                   record.reportPdf ||
                   "N/A"}
-                )
+                )</span>
               </Label>
               <Input
                 type="file"
                 accept=".pdf"
                 onChange={(e) => setReportPdfFile(e.target.files?.[0] || null)}
+                className="text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
             </div>
           </div>
 
           {/* Text fields */}
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="edit-title">Title</Label>
+              <Label htmlFor="edit-title" className="text-xs sm:text-sm">Title</Label>
               <Input
                 id="edit-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                className="text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description" className="text-xs sm:text-sm">Description</Label>
               <Input
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                className="text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-theme">Theme</Label>
+              <Label htmlFor="edit-theme" className="text-xs sm:text-sm">Theme</Label>
               <select
                 id="edit-theme"
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
-                className="w-full border rounded-md p-2"
+                className="w-full border rounded-md p-2 text-sm sm:text-base"
               >
                 <option value="Finance Report">Finance Report</option>
                 <option value="Finance Topic">Finance Topic</option>
@@ -250,9 +256,9 @@ const EditModal = ({ record, onSave, onCancel }) => {
           </div>
 
           {/* Speakers Section */}
-          <div className="border-t pt-4">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Speakers</Label>
+          <div className="border-t pt-3 sm:pt-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+              <Label className="text-xs sm:text-sm font-medium">Speakers</Label>
               <Button
                 type="button"
                 variant="ghost"
@@ -260,16 +266,17 @@ const EditModal = ({ record, onSave, onCancel }) => {
                 onClick={() =>
                   setSpeakers((s) => [...s, { title: "", description: "" }])
                 }
+                className="text-xs sm:text-sm"
               >
-                <PlusCircle className="h-4 w-4 mr-1" /> Add Speaker
+                <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Add Speaker
               </Button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {speakers.map((sp, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2">
                   <Input
-                    className="col-span-5"
+                    className="col-span-12 sm:col-span-5 text-sm"
                     placeholder="Name / Role"
                     value={sp.title || ""}
                     onChange={(e) =>
@@ -281,7 +288,7 @@ const EditModal = ({ record, onSave, onCancel }) => {
                     }
                   />
                   <Input
-                    className="col-span-6"
+                    className="col-span-12 sm:col-span-6 text-sm"
                     placeholder="Short description"
                     value={sp.description || ""}
                     onChange={(e) =>
@@ -295,12 +302,12 @@ const EditModal = ({ record, onSave, onCancel }) => {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="col-span-1"
+                    className="col-span-12 sm:col-span-1 p-2"
                     onClick={() =>
                       setSpeakers((prev) => prev.filter((_, i) => i !== idx))
                     }
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
                   </Button>
                 </div>
               ))}
@@ -308,21 +315,22 @@ const EditModal = ({ record, onSave, onCancel }) => {
           </div>
 
           {/* Action buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t mt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={loading}
+              className="w-full sm:w-auto text-sm sm:text-base"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 w-full sm:w-auto text-sm sm:text-base"
               disabled={loading}
             >
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
