@@ -5,7 +5,7 @@ steps:
       [
         "build",
         "-t",
-        "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/${_SERVICE_NAME}:$COMMIT_SHA",
+        "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA",
         ".",
       ]
     dir: "${_ROOT_DIR}"
@@ -14,7 +14,7 @@ steps:
     args:
       [
         "push",
-        "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/${_SERVICE_NAME}:$COMMIT_SHA",
+        "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA",
       ]
   # Deploy image to Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -24,9 +24,9 @@ steps:
       - "deploy"
       - "${_SERVICE_NAME}"
       - "--image"
-      - "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/${_SERVICE_NAME}:$COMMIT_SHA"
+      - "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA"
       - "--region"
-      - "asia-south1"
+      - "${LOCATION}"
       - "--set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=${_GOOGLE_GENAI_USE_VERTEXAI},GOOGLE_API_KEY=${_GOOGLE_API_KEY},STORAGE_BUCKET=${_STORAGE_BUCKET}"
       - "--allow-unauthenticated"
       - "--min-instances"
@@ -43,6 +43,6 @@ steps:
       - "1"
 
 images:
-  - "asia-south1-docker.pkg.dev/glimpsify-445707/ai-startup-evaluator-images/${_SERVICE_NAME}:$COMMIT_SHA"
+  - "${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REPO_NAME}/${_SERVICE_NAME}:$COMMIT_SHA"
 options:
   logging: CLOUD_LOGGING_ONLY
