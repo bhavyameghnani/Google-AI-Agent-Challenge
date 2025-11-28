@@ -51,7 +51,8 @@ const Index = () => {
       onClick={() => router.push("/newsletter-podcast-generator")}
       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto text-sm sm:text-base"
     >
-      🎙️ Generate New Podcast
+      🎙️ Analyze Market (with podcast)
+      {/* 🎙️ Generate New Podcast */}
     </Button>
   );
   return (
@@ -73,18 +74,16 @@ const Index = () => {
             <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-accent/20 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6">
               <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
               <span className="text-xs sm:text-sm font-medium text-primary-foreground">
-                Premium Financial Content
+                In-depth Market Analysis
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 px-2">
-              SenseAI: Financial Insights Podcast
+              Analyze the Market with Our Bilingual Podcast
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-primary-foreground/90 mb-6 sm:mb-8 px-2">
-              The beat of the financial world. Bilingual financial analysis and
-              expert interviews. Available in both English and Hindi with
-              comprehensive reports.
+              Dive into comprehensive market insights and trends with our market analysis feature
             </p>
 
             <div className="relative max-w-xl mx-auto px-2">

@@ -69,7 +69,7 @@ export function Navbar({ forceSolid = false }) {
             onClick={() => router.push("/podcast")}
             className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors relative px-4 py-2 rounded-full group"
           >
-            <span className="relative z-10">Podcast Gen</span>
+            <span className="relative z-10">Analyze Market (with podcast)</span>
             <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 bg-[length:200%_100%] animate-border-spin opacity-75 blur-sm"></span>
               <span className="absolute inset-[2px] rounded-full bg-white"></span>
@@ -122,7 +122,7 @@ export function Navbar({ forceSolid = false }) {
             className="justify-start"
             onClick={() => router.push("/podcast")}
           >
-            <Play className="mr-2 h-4 w-4" /> Podcast Gen
+            <Play className="mr-2 h-4 w-4" /> Analyze Market (with podcast)
           </Button>
           <div className="h-px bg-slate-100 my-2" />
           <Button

@@ -204,7 +204,9 @@ export default function GeneratePodcast() {
   return (
     <Card className="mt-6 sm:mt-8 shadow-elevated">
       <CardHeader className="pb-3 sm:pb-4">
-        <CardTitle className="text-lg sm:text-xl">Generate Podcast & Newsletter</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">
+          Generate Podcast & Newsletter
+        </CardTitle>
         <CardDescription className="text-sm">
           Create startup analysis podcasts or newsletters by providing relevant
           inputs.
@@ -224,7 +226,11 @@ export default function GeneratePodcast() {
               className="text-sm sm:text-base"
             />
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <Button onClick={handleGenerateByName} disabled={loading} className="w-full sm:w-auto text-sm sm:text-base">
+              <Button
+                onClick={handleGenerateByName}
+                disabled={loading}
+                className="w-full sm:w-auto text-sm sm:text-base"
+              >
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin h-4 w-4 mr-2" />{" "}
@@ -310,7 +316,9 @@ export default function GeneratePodcast() {
           )}
           {result && (
             <div className="p-3 rounded-md bg-success/10 text-success-foreground text-xs sm:text-sm space-y-2">
-              <div className="font-medium">Podcast Generation Completed</div>
+              <div className="font-medium">
+                Analyze Market (with podcast)eration Completed
+              </div>
               <div className="text-xs text-muted-foreground">
                 Session: {result.session_id || result.session}
               </div>
