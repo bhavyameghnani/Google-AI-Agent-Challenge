@@ -30,7 +30,7 @@ steps:
       - "--set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=${_GOOGLE_GENAI_USE_VERTEXAI},GOOGLE_API_KEY=${_GOOGLE_API_KEY},COMPETITOR_COUNT=${_COMPETITOR_COUNT}"
       - "--allow-unauthenticated"
       - "--min-instances"
-      - "0"
+      - "1"
       - "--max-instances"
       - "10"
       - "--platform"
