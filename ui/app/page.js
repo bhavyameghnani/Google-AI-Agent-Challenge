@@ -81,9 +81,9 @@ export default function LandingPage() {
           </Badge>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.1]">
-            Research Companion Powered By <br className="hidden sm:block" />
+            Research Companion <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-              Agentic AI
+              Powered By Agentic AI
             </span>
           </h1>
 
