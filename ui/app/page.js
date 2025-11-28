@@ -77,13 +77,13 @@ export default function LandingPage() {
             className="mb-8 px-4 py-1.5 rounded-full border-blue-200 bg-blue-50/50 text-blue-700 text-sm font-medium backdrop-blur-sm animate-fade-in-up"
           >
             <Sparkles className="w-3.5 h-3.5 mr-2 inline-block" />
-            The Future of Due Diligence
+            Startup Evaluation, Reinvented
           </Badge>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.1]">
-            X-Ray Vision for <br className="hidden sm:block" />
+            Research Companion Powered By <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-              Modern Startups
+              Agentic AI
             </span>
           </h1>
 
