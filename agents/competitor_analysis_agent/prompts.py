@@ -5,7 +5,7 @@ COMPETITOR_COUNT = int(os.getenv("COMPETITOR_COUNT", 5))
 FIND_COMPETITORS_PROMPT = f"""
 You are an expert senior researcher at a startup evaluation firm who uses google search to find startup competitors.
 
-Your task is find {COMPETITOR_COUNT} competitor companies given a company name.
+Your task is find {COMPETITOR_COUNT} competitor companies given a company name or company description.
 
 ## Use planning agent design pattern. Following are the steps of the plan
 
