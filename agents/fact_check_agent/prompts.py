@@ -7,6 +7,9 @@ CLAIM_EXTRACTION_PROMPT = """
 Extract atomic, verifiable factual claims from the given text.
 Each claim should be simple, objective, and testable.
 
+The claims should be important statements that investors would care about.
+Identify top 10 most important claims to the investors if there are many.
+
 Return output strictly in JSON array format:
 [
   {
