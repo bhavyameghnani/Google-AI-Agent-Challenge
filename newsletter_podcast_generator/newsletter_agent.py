@@ -319,13 +319,12 @@ sector_research_agent = LlmAgent(
 Your task: Research comprehensive sector updates for investor newsletter.
 
 SEARCH STRATEGY - Use these query patterns:
-- "[Sector] India startups latest news 2025"
-- "[Sector] India funding rounds October 2025"
-- "[Sector] India product launches 2025"
-- "[Sector] India market trends 2025"
-- "[Sector] India startups acquisitions mergers"
-- "[Sector] India regulatory updates policy"
-- "[Sector] India innovation technology trends"
+- "[Sector] India who are the key players and startups in [Sector] 2025"
+- "[Sector] India government rules and schemes will impact market positively/negatively"
+- "[Sector] India how AI/technology is impacting [Sector] positively/negatively"
+- "[Sector] India important last 5 year developments/major changes"
+- "[Sector] India funding rounds December 2025"
+- "[Sector] India how does the future look like for [Sector] startups"
 
 Focus on: {', '.join(WHITELIST_DOMAINS[:7])}
 
