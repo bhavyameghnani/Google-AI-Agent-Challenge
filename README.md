@@ -5,6 +5,12 @@ SenseAI helps investors move from manual research to fast, grounded insights. Bu
 - Live demo: https://sense--ai.vercel.app/
 - Video demo: https://www.youtube.com/watch?v=PWvQIz2qNng
 
+> Update: This project won the <b>2nd runner up position</b> in <b>Google GenAI Exchange Hackathon</b>. Below are pictures from the finale held on 29th November 2025 in Bangalore.
+
+![alt text](win-announcement.jpg)
+
+![alt text](group-photo.jpg)
+
 ---
 
 ## Why SenseAI?
@@ -58,4 +64,29 @@ SenseAI helps investors move from manual research to fast, grounded insights. Bu
 1. Visit the live app: https://sense--ai.vercel.app/
 2. Watch the demo: https://www.youtube.com/watch?v=PWvQIz2qNng
 
+## Agent Usage
+
+We created 4 main agents and about 20 specialized sub-agents to power all our features.
+
+Here are they:
+
+1. Company Analysis Agent
+
+![alt text](1-company-analysis-agent.png)
+
+2. Competitor Analysis Agent
+
+![alt text](2-competitor-analysis-agent.png)
+
+3. Fact Check Agent
+
+![alt text](4-fact-check-agent.png)
+
+4. Market Analysis Agent (with Podcast Generation)
+
+![alt text](5-podcast-generator.png)
+
+Following diagram shows how we used Gemini API for Founder Data Analysis feature:
+
+![alt text](3-founder-data-analysis.png)
 ---
