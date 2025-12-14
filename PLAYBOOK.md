@@ -101,3 +101,28 @@
       gcloud builds triggers delete ${TRIGGER_NAME} --region=${REGION}
 
   ```
+
+### Delete Cloud Run Services
+- ```bash
+    export SERVICE_NAME=""
+    gcloud beta run services delete ${SERVICE_NAME}
+  ```
+
+### Delete Cloud Firestore
+
+- ```bash
+  export DATABASE_NAME=""
+  gcloud firestore databases delete --database ${DATABASE_NAME}$
+  ```
+
+### Delete Cloud Storage
+- ```bash
+  export STORAGE_BUCKET_NAME=""
+  gcloud storage buckets delete gs://${STORAGE_BUCKET_NAME}
+  ```
+
+### Delete Artifact Repository
+- ```bash
+  export ARTIFACT_REPO_NAME=""
+  gcloud artifacts repositories delete ${ARTIFACT_REPO_NAME}$ --location=${REGION}
+  ```
