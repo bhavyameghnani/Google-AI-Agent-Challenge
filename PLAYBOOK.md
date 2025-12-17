@@ -1,4 +1,14 @@
 # Pre-requisites
+
+- GCP Project
+  - Steps to create GCP project
+
+   ```bash
+   export PROJECT_ID="<enter-project-id>"
+   gcloud projects create ${PROJECT_ID} --set-as-default
+   gcloud config set project ${PROJECT_ID}
+   ```
+
 - Enable Gemini API
 
 # Firestore Database Setup Guide
